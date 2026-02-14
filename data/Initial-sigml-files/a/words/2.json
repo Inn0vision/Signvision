@@ -1,0 +1,933 @@
+[
+    {
+        "gloss": "OPTION",
+        "category": "CORE",
+        "anchor": [
+            "ALTERNATIVE",
+            "CHOICE",
+            "OTHER",
+            "ALTERNATIVE FUELS",
+            "ALTERNATIVE TOURISM",
+            "ALTERNATIVE CURRENT",
+            "ALTERNATIVE DISPUTE RESOLUTION"
+        ]
+    },
+    {
+        "gloss": "KINDNESS",
+        "category": "COMPOUND",
+        "anchor": [
+            "KIND"
+        ]
+    },
+    {
+        "gloss": "ALWAYS",
+        "category": "COMPOUND",
+        "anchor": [
+            "EVERY TIME",
+            "FOREVER",
+            "REGULAR"
+        ]
+    },
+    {
+        "gloss": "BEGINNER",
+        "category": "COMPOUND",
+        "anchor": [
+            "NON-PROFESSIONAL",
+            "AMATEUR",
+            "LEARNER"
+        ]
+    },
+    {
+        "gloss": "SURPRISE",
+        "category": "CORE",
+        "anchor": [
+            "AMAZE",
+            "SHOCK",
+            "WONDER"
+        ]
+    },
+    {
+        "gloss": "AMAZON",
+        "category": "CORE",
+        "anchor": [
+            "ONLINE SHOPPING",
+            "AMAZON RIVER"
+        ]
+    },
+    {
+        "gloss": "AMBITIOUS",
+        "category": "CORE",
+        "anchor": [
+            "ASPIRATION",
+            "DETERMINED",
+            "GOAL-ORIENTED",
+            "HARD WORKING"
+        ]
+    },
+    {
+        "gloss": "AMBULANCE",
+        "category": "CORE",
+        "anchor": [
+            "HOSPITAL VAN",
+            "EMERGENCY VEHICLE",
+            "MEDICAL TRANSPORT"
+        ]
+    },
+    {
+        "gloss": "AMITABH BACHCHAN",
+        "category": "COMPOUND",
+        "anchor": [
+            "BIG B",
+            "BOLLYWOOD ACTOR"
+        ]
+    },
+    {
+        "gloss": "BETWEEN",
+        "category": "CORE",
+        "anchor": [
+            "AMONG",
+            "MIDDLE",
+            "MIDST"
+        ]
+    },
+    {
+        "gloss": "TOTAL",
+        "category": "NUMBERS & TIME",
+        "anchor": [
+            "AMOUNT",
+            "QUANTITY",
+            "SUM",
+            "VALUE"
+        ]
+    },
+    {
+        "gloss": "RESEARCH",
+        "category": "CORE",
+        "anchor": [
+            "ANALYSIS",
+            "EXAMINATION",
+            "STUDY",
+            "INVESTIGATION"
+        ]
+    },
+    {
+        "gloss": "ANCESTOR",
+        "category": "CORE",
+        "anchor": [
+            "FOREFATHER",
+            "HERITAGE",
+            "PAST FAMILY"
+        ]
+    },
+    {
+        "gloss": "ANGEL",
+        "category": "CORE",
+        "anchor": [
+            "DIVINE MESSENGER",
+            "SPIRIT"
+        ]
+    },
+    {
+        "gloss": "ANGRY",
+        "category": "CORE",
+        "anchor": [
+            "MAD",
+            "FURIOUS",
+            "ANNOYED",
+            "RAGE"
+        ]
+    },
+    {
+        "gloss": "ANIMAL",
+        "category": "CORE",
+        "anchor": [
+            "ANIMALS",
+            "CREATURE",
+            "FAUNA"
+        ]
+    },
+    {
+        "gloss": "ANNIVERSARY",
+        "category": "CORE",
+        "anchor": [
+            "CELEBRATION",
+            "ANNUAL EVENT",
+            "MILESTONE"
+        ]
+    },
+    {
+        "gloss": "ANNOUNCE",
+        "category": "COMPOUND",
+        "anchor": [
+            "DECLARE",
+            "RELEASE",
+            "PROCLAIM",
+            "TELL ALL"
+        ]
+    },
+    {
+        "gloss": "YEARLY",
+        "category": "COMPOUND",
+        "anchor": [
+            "ANNUAL",
+            "PER YEAR",
+            "EVERY YEAR"
+        ]
+    },
+    {
+        "gloss": "HIDDEN",
+        "category": "CORE",
+        "anchor": [
+            "ANONYMOUS",
+            "UNKNOWN",
+            "SECRET"
+        ]
+    },
+    {
+        "gloss": "ANSWER",
+        "category": "CORE",
+        "anchor": [
+            "REPLY",
+            "RESPONSE",
+            "ANSWER SHEET"
+        ]
+    },
+    {
+        "gloss": "ANT",
+        "category": "CORE",
+        "anchor": [
+            "INSECT",
+            "ANTHILL",
+            "COLONY",
+            "MOUND"
+        ]
+    },
+    {
+        "gloss": "WORRIED",
+        "category": "CORE",
+        "anchor": [
+            "ANXIOUS",
+            "TENSION",
+            "NERVOUS",
+            "UNEASY"
+        ]
+    },
+    {
+        "gloss": "ANY",
+        "category": "GRAMMAR & FUNCTION",
+        "anchor": [
+            "ANYTHING",
+            "ANYONE",
+            "ANYTHING GOES",
+            "WHATEVER"
+        ]
+    },
+    {
+        "gloss": "FLAT",
+        "category": "CORE",
+        "anchor": [
+            "APARTMENT",
+            "BUILDING",
+            "RESIDENCE",
+            "QUARTERS"
+        ]
+    },
+    {
+        "gloss": "TOP",
+        "category": "CORE",
+        "anchor": [
+            "APEX",
+            "PEAK",
+            "SUPREME",
+            "APEX COURT",
+            "HIGHEST"
+        ]
+    },
+    {
+        "gloss": "APP",
+        "category": "CORE",
+        "anchor": [
+            "APPLICATION",
+            "MOBILE APP",
+            "SOFTWARE"
+        ]
+    },
+    {
+        "gloss": "CLOTHES",
+        "category": "COMPOUND",
+        "anchor": [
+            "APPAREL",
+            "GARMENT",
+            "DRESS",
+            "WEAR"
+        ]
+    },
+    {
+        "gloss": "CLAP",
+        "category": "CORE",
+        "anchor": [
+            "APPLAUSE",
+            "CHEER"
+        ]
+    },
+    {
+        "gloss": "APPLE",
+        "category": "CORE",
+        "anchor": [
+            "FRUIT",
+            "RED FRUIT"
+        ]
+    },
+    {
+        "gloss": "APPLY",
+        "category": "CORE",
+        "anchor": [
+            "APPLICATION",
+            "APPLICANT",
+            "REQUEST",
+            "FORM",
+            "APPLICATION EFFICIENCY"
+        ]
+    },
+    {
+        "gloss": "APPOINTMENT",
+        "category": "CORE",
+        "anchor": [
+            "APPOINT",
+            "MEETING",
+            "FIXED TIME",
+            "BOOKING"
+        ]
+    },
+    {
+        "gloss": "CHECK",
+        "category": "CORE",
+        "anchor": [
+            "EVALUATE",
+            "INSPECT",
+            "REVIEW"
+        ]
+    },
+    {
+        "gloss": "TRAINEE",
+        "category": "COMPOUND",
+        "anchor": [
+            "APPRENTICE",
+            "NOVICE",
+            "LEARNER",
+            "STUDENT"
+        ]
+    },
+    {
+        "gloss": "APPROACH",
+        "category": "CORE",
+        "anchor": [
+            "COME NEAR",
+            "METHOD",
+            "WAY"
+        ]
+    },
+    {
+        "gloss": "PROPER",
+        "category": "COMPOUND",
+        "anchor": [
+            "APPROPRIATE",
+            "RELEVANT",
+            "SUITABLE",
+            "FIT"
+        ]
+    },
+    {
+        "gloss": "ABOUT",
+        "category": "CORE",
+        "anchor": [
+            "APPROXIMATE",
+            "ESTIMATE",
+            "NEARLY",
+            "AROUND"
+        ]
+    },
+    {
+        "gloss": "APRIL",
+        "category": "NUMBERS & TIME",
+        "anchor": [
+            "MONTH 4"
+        ]
+    },
+    {
+        "gloss": "APRON",
+        "category": "CORE",
+        "anchor": [
+            "KITCHEN CLOTH",
+            "PROTECTIVE GEAR"
+        ]
+    },
+    {
+        "gloss": "AQUARIUM",
+        "category": "COMPOUND",
+        "anchor": [
+            "FISH TANK",
+            "FISH BOWL",
+            "FISH HOME"
+        ]
+    },
+    {
+        "gloss": "ARCH",
+        "category": "CORE",
+        "anchor": [
+            "CURVE",
+            "BEND",
+            "GATEWAY"
+        ]
+    },
+    {
+        "gloss": "ARCHAEOLOGIST",
+        "category": "CORE",
+        "anchor": [
+            "HISTORY EXPERT",
+            "DIGGING EXPERT",
+            "OLD OBJECT STUDY"
+        ]
+    },
+    {
+        "gloss": "OLD",
+        "category": "CORE",
+        "anchor": [
+            "ARCHAIC",
+            "ANCIENT",
+            "ANTIQUE"
+        ]
+    },
+    {
+        "gloss": "ARCHERY",
+        "category": "CORE",
+        "anchor": [
+            "BOW AND ARROW",
+            "SHOOTING"
+        ]
+    },
+    {
+        "gloss": "ARCHIVE",
+        "category": "CORE",
+        "anchor": [
+            "RECORD ROOM",
+            "STORED DATA",
+            "OLD FILES"
+        ]
+    },
+    {
+        "gloss": "AREA",
+        "category": "CORE",
+        "anchor": [
+            "LOCATION",
+            "REGION",
+            "PLACE",
+            "ZONE"
+        ]
+    },
+    {
+        "gloss": "DRY",
+        "category": "CORE",
+        "anchor": [
+            "ARID",
+            "ARID REGIONS",
+            "DESERT",
+            "THIRSTY LAND"
+        ]
+    },
+    {
+        "gloss": "ARM",
+        "category": "CORE",
+        "anchor": [
+            "BODY PART",
+            "UPPER ARM"
+        ]
+    },
+    {
+        "gloss": "WEAPON",
+        "category": "COMPOUND",
+        "anchor": [
+            "ARMOUR",
+            "GUN",
+            "DEFENSE"
+        ]
+    },
+    {
+        "gloss": "ARMY",
+        "category": "CORE",
+        "anchor": [
+            "SOLDIER",
+            "MILITARY",
+            "ARMY BOOTS",
+            "COMBAT BOOTS",
+            "FORCE"
+        ]
+    },
+    {
+        "gloss": "SMELL",
+        "category": "COMPOUND",
+        "anchor": [
+            "AROMA",
+            "FRAGRANCE",
+            "SCENT",
+            "ODOR"
+        ]
+    },
+    {
+        "gloss": "AROUND",
+        "category": "GRAMMAR & FUNCTION",
+        "anchor": [
+            "APPROXIMATELY",
+            "SURROUNDING",
+            "NEARBY"
+        ]
+    },
+    {
+        "gloss": "ARRANGED MARRIAGE",
+        "category": "COMPOUND",
+        "anchor": [
+            "TRADITIONAL MARRIAGE",
+            "FAMILY MATCH"
+        ]
+    },
+    {
+        "gloss": "ARREST",
+        "category": "CORE",
+        "anchor": [
+            "CUSTODY",
+            "CATCH",
+            "POLICE TAKE"
+        ]
+    },
+    {
+        "gloss": "ARRIVE",
+        "category": "CORE",
+        "anchor": [
+            "REACH",
+            "COME",
+            "LAND"
+        ]
+    },
+    {
+        "gloss": "PROUD",
+        "category": "CORE",
+        "anchor": [
+            "ARROGANT",
+            "EGO",
+            "HAUGHTY"
+        ]
+    },
+    {
+        "gloss": "ARROW",
+        "category": "CORE",
+        "anchor": [
+            "POINTER",
+            "ARCHERY SYMBOL"
+        ]
+    },
+    {
+        "gloss": "WEAPON STORE",
+        "category": "COMPOUND",
+        "anchor": [
+            "ARSENAL",
+            "ARMOURY",
+            "ARMS STORAGE"
+        ]
+    },
+    {
+        "gloss": "ART",
+        "category": "CORE",
+        "anchor": [
+            "DRAWING",
+            "PAINTING",
+            "CREATIVITY"
+        ]
+    },
+    {
+        "gloss": "FAKE",
+        "category": "COMPOUND",
+        "anchor": [
+            "ARTIFICIAL",
+            "IMITATION",
+            "NOT REAL",
+            "DUPLICATE"
+        ]
+    },
+    {
+        "gloss": "ARTISAN",
+        "category": "COMPOUND",
+        "anchor": [
+            "CRAFTSMAN",
+            "SKILLED WORKER",
+            "MAKER"
+        ]
+    },
+    {
+        "gloss": "CLIMB",
+        "category": "COMPOUND",
+        "anchor": [
+            "ASCEND",
+            "GO UP",
+            "STAIRS"
+        ]
+    },
+    {
+        "gloss": "ASH",
+        "category": "CORE",
+        "anchor": [
+            "ASHES",
+            "DUST",
+            "BURNT REMAINS"
+        ]
+    },
+    {
+        "gloss": "SHAME",
+        "category": "CORE",
+        "anchor": [
+            "ASHAMED",
+            "GUILTY",
+            "EMBARRASSED"
+        ]
+    },
+    {
+        "gloss": "ASK",
+        "category": "COMPOUND",
+        "anchor": [
+            "QUESTION",
+            "INQUIRE",
+            "QUERY"
+        ]
+    },
+    {
+        "gloss": "GOAL",
+        "category": "COMPOUND",
+        "anchor": [
+            "ASPIRE",
+            "AIM",
+            "PURSUE",
+            "DREAM"
+        ]
+    },
+    {
+        "gloss": "ASSAM",
+        "category": "COMPOUND",
+        "anchor": [
+            "ASSAM TEA GARDENS",
+            "NORTH EAST STATE"
+        ]
+    },
+    {
+        "gloss": "TASK",
+        "category": "COMPOUND",
+        "anchor": [
+            "ASSIGNMENT",
+            "WORK",
+            "PROJECT",
+            "HOMEWORK"
+        ]
+    },
+    {
+        "gloss": "HELP",
+        "category": "CORE",
+        "anchor": [
+            "ASSISTANT",
+            "HELPER",
+            "ASSIST"
+        ]
+    },
+    {
+        "gloss": "PROFESSOR",
+        "category": "COMPOUND",
+        "anchor": [
+            "ASSISTANT PROFESSOR",
+            "ASSOCIATE PROFESSOR",
+            "LECTURER",
+            "TEACHER"
+        ]
+    },
+    {
+        "gloss": "ASSOCIATION",
+        "category": "CORE",
+        "anchor": [
+            "ORGANIZATION",
+            "SOCIETY",
+            "GROUP",
+            "ASSOCIATION OF SIGN LANGUAGE INTERPRETERS",
+            "ASLI"
+        ]
+    },
+    {
+        "gloss": "PROMISE",
+        "category": "CORE",
+        "anchor": [
+            "ASSURE",
+            "REASSURE",
+            "GUARANTEE",
+            "RELIEVE DOUBT"
+        ]
+    },
+    {
+        "gloss": "ASTRONAUT",
+        "category": "CORE",
+        "anchor": [
+            "SPACE TRAVELER",
+            "COSMONAUT"
+        ]
+    },
+    {
+        "gloss": "SPORTSMAN",
+        "category": "COMPOUND",
+        "anchor": [
+            "ATHLETE",
+            "SPORTSPERSON",
+            "PLAYER"
+        ]
+    },
+    {
+        "gloss": "FIT",
+        "category": "COMPOUND",
+        "anchor": [
+            "ATHLETIC",
+            "ACTIVE",
+            "HEALTHY",
+            "STRONG"
+        ]
+    },
+    {
+        "gloss": "RUNNING",
+        "category": "COMPOUND",
+        "anchor": [
+            "ATHLETICS",
+            "TRACK AND FIELD EVENTS",
+            "RACE"
+        ]
+    },
+    {
+        "gloss": "ATM",
+        "category": "CORE",
+        "anchor": [
+            "CASH MACHINE",
+            "MONEY MACHINE",
+            "BANK"
+        ]
+    },
+    {
+        "gloss": "APOLOGIZE",
+        "category": "COMPOUND",
+        "anchor": [
+            "ATONE",
+            "MAKE AMENDS",
+            "REPARATION",
+            "SORRY"
+        ]
+    },
+    {
+        "gloss": "AUDIENCE",
+        "category": "CORE",
+        "anchor": [
+            "SPECTATORS",
+            "PUBLIC",
+            "CROWD"
+        ]
+    },
+    {
+        "gloss": "AUGUST",
+        "category": "NUMBERS & TIME",
+        "anchor": [
+            "MONTH 8"
+        ]
+    },
+    {
+        "gloss": "REAL",
+        "category": "COMPOUND",
+        "anchor": [
+            "AUTHENTIC",
+            "ORIGINAL",
+            "GENUINE",
+            "TRUE"
+        ]
+    },
+    {
+        "gloss": "AUTOMATIC",
+        "category": "CORE",
+        "anchor": [
+            "SELF-ACTING",
+            "AUTO",
+            "AUTOMATIC FILM PROCESSOR",
+            "AUTOMATIC STABILIZER"
+        ]
+    },
+    {
+        "gloss": "RICKSHAW",
+        "category": "CORE",
+        "anchor": [
+            "AUTORICKSHAW",
+            "AUTO",
+            "TUK TUK"
+        ]
+    },
+    {
+        "gloss": "READY",
+        "category": "CORE",
+        "anchor": [
+            "AVAILABLE",
+            "PRESENT"
+        ]
+    },
+    {
+        "gloss": "AVERAGE",
+        "category": "COMPOUND",
+        "anchor": [
+            "MEDIOCRE",
+            "NOT WORTHY OF PRAISE",
+            "NORMAL"
+        ]
+    },
+    {
+        "gloss": "AWARD",
+        "category": "COMPOUND",
+        "anchor": [
+            "PRIZE",
+            "TROPHY",
+            "MEDAL",
+            "REWARD"
+        ]
+    },
+    {
+        "gloss": "SKILL",
+        "category": "CORE",
+        "anchor": [
+            "ABILITIY",
+            "TALENT",
+            "CAPABILITY"
+        ]
+    },
+    {
+        "gloss": "FAST",
+        "category": "CORE",
+        "anchor": [
+            "ACCELERATION",
+            "ACCELERATOR",
+            "SPEED UP"
+        ]
+    },
+    {
+        "gloss": "ACID",
+        "category": "CORE",
+        "anchor": [
+            "SOUR",
+            "ACID RAIN",
+            "ACID REFLEX DISORDER",
+            "ACID MINE DRAINAGE"
+        ]
+    },
+    {
+        "gloss": "ADJECTIVE",
+        "category": "CORE",
+        "anchor": []
+    },
+    {
+        "gloss": "ADOLF HITLER",
+        "category": "COMPOUND",
+        "anchor": []
+    },
+    {
+        "gloss": "CHARGER",
+        "category": "CORE",
+        "anchor": [
+            "ALTERNATOR",
+            "BATTERY CHARGE",
+            "GENERATOR"
+        ]
+    },
+    {
+        "gloss": "ANDROID",
+        "category": "CORE",
+        "anchor": [
+            "PHONE SYSTEM",
+            "GOOGLE OS",
+            "ANDROID AUTO",
+            "ANDROID TV"
+        ]
+    },
+    {
+        "gloss": "MACHINE CONTROL",
+        "category": "COMPOUND",
+        "anchor": [
+            "APPLIANCES CONTROL",
+            "REMOTE",
+            "SWITCH",
+            "HOME AUTOMATION"
+        ]
+    },
+    {
+        "gloss": "WELD",
+        "category": "COMPOUND",
+        "anchor": [
+            "ARC WELDING",
+            "IRON JOIN",
+            "SPARK",
+            "METAL WORK"
+        ]
+    },
+    {
+        "gloss": "BUILDING PLANNER",
+        "category": "CORE",
+        "anchor": [
+            "ARCHITECT",
+            "MAP MAKER",
+            "DESIGNER"
+        ]
+    },
+    {
+        "gloss": "FIGHT",
+        "category": "CORE",
+        "anchor": [
+            "ARGUMENT",
+            "DISPUTE",
+            "DEBATE",
+            "VERBAL CLASH",
+            "ATTACK"
+        ]
+    },
+    {
+        "gloss": "MATH UNIT",
+        "category": "COMPOUND",
+        "anchor": [
+            "ARITHMETIC AND LOGIC UNIT",
+            "ALU",
+            "COMPUTER BRAIN",
+            "ARITHMETIC MEAN",
+            "ARITHMETIC SEQUENCE"
+        ]
+    },
+    "done",
+    {
+        "gloss": "DRILL",
+        "category": "CORE",
+        "anchor": [
+            "AUGER",
+            "HOLE MAKER",
+            "TWIST"
+        ]
+    },
+    {
+        "gloss": "MACHINE WORK",
+        "category": "CORE",
+        "anchor": [
+            "AUTOMATION",
+            "AUTOMATIC",
+            "SELF OPERATE",
+            "ROBOT WORK"
+        ]
+    },
+    {
+        "gloss": "AUTO TOTAL",
+        "category": "CORE",
+        "anchor": [
+            "AUTOSUM",
+            "TOTAL",
+            "ADD ALL"
+        ]
+    }
+]

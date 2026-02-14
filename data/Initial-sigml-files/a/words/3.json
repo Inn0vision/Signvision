@@ -1,0 +1,871 @@
+[
+    {
+        "gloss": "SPACE ROCK",
+        "category": "CORE",
+        "anchor": [
+            "ASTEROID",
+            "METEOR",
+            "STAR ROCK"
+        ]
+    },
+    "done",
+    {
+        "gloss": "ACCIDENT",
+        "category": "CORE",
+        "anchor": [
+            "CRASH",
+            "COLLISION",
+            "MISTAKE",
+            "SUDDEN"
+        ]
+    },
+    {
+        "gloss": "PRAISE",
+        "category": "CORE",
+        "anchor": [
+            "ACCOLADE",
+            "AWARD",
+            "HONOUR",
+            "REWARD"
+        ]
+    },
+    {
+        "gloss": "EXPERT",
+        "category": "CORE",
+        "anchor": [
+            "ACE",
+            "BEST",
+            "TOP",
+            "SKILL"
+        ]
+    },
+    {
+        "gloss": "REAL",
+        "category": "CORE",
+        "anchor": [
+            "ACTUAL",
+            "TRUE",
+            "FACT"
+        ]
+    },
+    {
+        "gloss": "ADJUST",
+        "category": "CORE",
+        "anchor": [
+            "ADJUSTMENT",
+            "CHANGE"
+        ]
+    },
+    {
+        "gloss": "BEAUTY",
+        "category": "CORE",
+        "anchor": [
+            "AESTHETIC",
+            "LOOK GOOD"
+        ]
+    },
+    {
+        "gloss": "LIFE AFTER DIE",
+        "category": "CORE",
+        "anchor": [
+            "AFTERLIFE",
+            "HEAVEN",
+            "SPIRIT WORLD"
+        ]
+    },
+    {
+        "gloss": "OFFICE",
+        "category": "CORE",
+        "anchor": [
+            "AGENCY",
+            "ORGANIZATION",
+            "DEPARTMENT",
+            "BRANCH"
+        ]
+    },
+    {
+        "gloss": "AIRBAG",
+        "category": "CORE",
+        "anchor": [
+            "CAR SAFETY",
+            "BALLOON",
+            "PROTECTION"
+        ]
+    },
+    {
+        "gloss": "AIRLINE",
+        "category": "CORE",
+        "anchor": [
+            "FLIGHT COMPANY",
+            "PLANE SERVICE",
+            "AVIATION"
+        ]
+    },
+    {
+        "gloss": "STEP",
+        "category": "CORE",
+        "anchor": [
+            "ALGORITHM",
+            "PROCESS",
+            "FORMULA",
+            "COMPUTER RULE"
+        ]
+    },
+    {
+        "gloss": "STORY",
+        "category": "CORE",
+        "anchor": [
+            "ALLEGORY",
+            "MORAL",
+            "SYMBOL",
+            "HIDDEN MEANING"
+        ]
+    },
+    {
+        "gloss": "HINT",
+        "category": "CORE",
+        "anchor": [
+            "REFER"
+        ]
+    },
+    {
+        "gloss": "CONFUSE",
+        "category": "CORE",
+        "anchor": [
+            "AMBIGUITY",
+            "NOT CLEAR",
+            "DOUBT",
+            "TWO MEANING"
+        ]
+    },
+    {
+        "gloss": "LOUD",
+        "category": "CORE",
+        "anchor": [
+            "AMPLIFICATION",
+            "EXPAND",
+            "SOUND UP"
+        ]
+    },
+    {
+        "gloss": "SPREAD",
+        "category": "COMPOUND",
+        "anchor": []
+    },
+    {
+        "gloss": "OPPOSITE",
+        "category": "CORE",
+        "anchor": [
+            "ANTITHESIS",
+            "AGAINST",
+            "CONTRAST",
+            "REVERSE"
+        ]
+    },
+    {
+        "gloss": "SEPARATE",
+        "category": "CORE",
+        "anchor": [
+            "APART",
+            "AWAY",
+            "DISTANCE",
+            "SPLIT"
+        ]
+    },
+    {
+        "gloss": "SHOW",
+        "category": "CORE",
+        "anchor": [
+            "APPEAR",
+            "VISIBLE",
+            "COME OUT",
+            "PRESENT"
+        ]
+    },
+    {
+        "gloss": "ARRIVE",
+        "category": "CORE",
+        "anchor": [
+            "ARRIVAL",
+            "REACH",
+            "LAND",
+            "ARRIVAL AREA"
+        ]
+    },
+    "done",
+    {
+        "gloss": "HEALTHY",
+        "category": "CORE",
+        "anchor": [
+            "NORMAL"
+        ]
+    },
+    {
+        "gloss": "GOOD",
+        "category": "CORE",
+        "anchor": [
+            "AUSPICIOUS",
+            "LUCKY",
+            "PROSPER"
+        ]
+    },
+    {
+        "gloss": "FREEDOM",
+        "category": "CORE",
+        "anchor": [
+            "AUTONOMY",
+            "INDEPENDENT",
+            "FREE"
+        ]
+    },
+    {
+        "gloss": "FLY",
+        "category": "CORE",
+        "anchor": [
+            "AVIATION",
+            "AIRCRAFT",
+            "FLIGHT",
+            "PILOT"
+        ]
+    },
+    {
+        "gloss": "WAIT",
+        "category": "CORE",
+        "anchor": [
+            "AWAITE",
+            "WAITING",
+            "STAY",
+            "STOP"
+        ]
+    },
+    {
+        "gloss": "ROD",
+        "category": "CORE",
+        "anchor": [
+            "AXLE",
+            "WHEEL SHAFT",
+            "BAR",
+            "CENTRE"
+        ]
+    },
+    {
+        "gloss": "AADHAR",
+        "category": "COMPOUND",
+        "anchor": [
+            "AADHAR CARD",
+            "IDENTITY CARD",
+            "GOVERNMENT ID",
+            "BIOMETRIC"
+        ]
+    },
+    {
+        "gloss": "DIFFERENT",
+        "category": "CORE",
+        "anchor": [
+            "ABNORMAL",
+            "STRANGE",
+            "SPECIAL",
+            "NOT SAME"
+        ]
+    },
+    {
+        "gloss": "STUPID",
+        "category": "CORE",
+        "anchor": [
+            "ABSURD",
+            "SILLY",
+            "FOOLISH",
+            "NO SENSE"
+        ]
+    },
+    {
+        "gloss": "PLANE",
+        "category": "CORE",
+        "anchor": [
+            "AIRCRAFT",
+            "AIRPLANE",
+            "JET",
+            "FLIGHT"
+        ]
+    },
+    {
+        "gloss": "AIR FORCE",
+        "category": "COMPOUND",
+        "anchor": [
+            "MILITARY",
+            "SOLDIER",
+            "DEFENSE",
+            "AIR WING"
+        ]
+    },
+    {
+        "gloss": "PLANE MODE",
+        "category": "COMPOUND",
+        "anchor": [
+            "AIRPLANE MODE",
+            "FLIGHT MODE",
+            "OFFLINE",
+            "PHONE SETTING"
+        ]
+    },
+    {
+        "gloss": "AIR",
+        "category": "CORE",
+        "anchor": [
+            "OXYGEN",
+            "WIND",
+            "ATMOSPHERE"
+        ]
+    },
+    {
+        "gloss": "DRINK",
+        "category": "CORE",
+        "anchor": []
+    },
+    {
+        "gloss": "MEDICINE",
+        "category": "CORE",
+        "anchor": [
+            "ALLOPATHY",
+            "DOCTOR TREATMENT",
+            "DRUG",
+            "TABLET"
+        ]
+    },
+    {
+        "gloss": "FACILITY",
+        "category": "CORE",
+        "anchor": [
+            "AMENITY",
+            "SERVICE",
+            "COMFORT",
+            "BENEFIT"
+        ]
+    },
+    {
+        "gloss": "CHARM",
+        "category": "CORE",
+        "anchor": [
+            "AMULET",
+            "LUCKY SYMBOL"
+        ]
+    },
+    {
+        "gloss": "STUCK",
+        "category": "CORE",
+        "anchor": [
+            "ANCHOR",
+            "STAY",
+            "HOLD",
+            "ANCHOR BOLT"
+        ]
+    },
+    {
+        "gloss": "ANKLET",
+        "category": "CORE",
+        "anchor": [
+            "FOOT ORNAMENT",
+            "PAYAL"
+        ]
+    },
+    {
+        "gloss": "ANSWER",
+        "category": "COMPOUND",
+        "anchor": [
+            "REPLY",
+            "RESPONSE",
+            "ANSWER SHEET"
+        ]
+    },
+    {
+        "gloss": "SATISFY",
+        "category": "CORE",
+        "anchor": [
+            "APPEASE",
+            "CALM",
+            "PEACE",
+            "MAKE HAPPY"
+        ]
+    },
+    {
+        "gloss": "APPETITE",
+        "category": "CORE",
+        "anchor": []
+    },
+    {
+        "gloss": "ASTROLOGY",
+        "category": "CORE",
+        "anchor": []
+    },
+    {
+        "gloss": "ATTENTION",
+        "category": "CORE",
+        "anchor": [
+            "ATTENTION SEEKING",
+            "SHOW OFF",
+            "NOTICE ME"
+        ]
+    },
+    {
+        "gloss": "AVOCADO",
+        "category": "CORE",
+        "anchor": []
+    },
+    {
+        "gloss": "ENTER",
+        "category": "CORE",
+        "anchor": [
+            "ADMISSION",
+            "JOIN",
+            "ACCESS",
+            "ENTRY"
+        ]
+    },
+    {
+        "gloss": "MEET",
+        "category": "CORE",
+        "anchor": [
+            "ASSEMBLY",
+            "GATHER",
+            "GROUP",
+            "ASSEMBLY DRAWING",
+            "ASSEMBLY ROBOT"
+        ]
+    },
+    {
+        "gloss": "VEHICLE",
+        "category": "CORE",
+        "anchor": [
+            "AUTOMOBILE",
+            "CAR",
+            "MOTOR",
+            "TRANSPORT"
+        ]
+    },
+    {
+        "gloss": "KNOW",
+        "category": "CORE",
+        "anchor": [
+            "UNDERSTAND"
+        ]
+    },
+    {
+        "gloss": "LISTEN",
+        "category": "CORE",
+        "anchor": [
+            "HEAR",
+            "AUDITORY",
+            "SOUND",
+            "EAR",
+            "AUDITORY PHONETICS"
+        ]
+    },
+    "done",
+    {
+        "gloss": "UPSET",
+        "category": "CORE",
+        "anchor": [
+            "AGITATE",
+            "RESTLESS",
+            "DISTURB",
+            "SHAKY"
+        ]
+    },
+    {
+        "gloss": "IRRITATE",
+        "category": "CORE",
+        "anchor": [
+            "ANNOY",
+            "BOTHER",
+            "FRUSTRATE"
+        ]
+    },
+    {
+        "gloss": "BORE",
+        "category": "CORE",
+        "anchor": [
+            "APATHY",
+            "NO INTEREST",
+            "LAZY FEEL"
+        ]
+    },
+    {
+        "gloss": "ART THERAPY",
+        "category": "COMPOUND",
+        "anchor": [
+            "ARTS BASED THERAPY",
+            "PAINTING TREATMENT",
+            "DRAWING HELP"
+        ]
+    },
+    "done",
+    {
+        "gloss": "TEST",
+        "category": "COMPOUND",
+        "anchor": [
+            "ASSESSMENT TOOL",
+            "ASSESSMENT",
+            "EVALUATE",
+            "EXAM"
+        ]
+    },
+    {
+        "gloss": "CONNECT",
+        "category": "CORE",
+        "anchor": [
+            "ASSOCIAT",
+            "LINK",
+            "RELAT",
+            "ATTACH"
+        ]
+    },
+    {
+        "gloss": "REAL SELF",
+        "category": "COMPOUND",
+        "anchor": [
+            "AUTHENTIC SELF",
+            "GENUINE",
+            "TRUE IDENTITY"
+        ]
+    },
+    {
+        "gloss": "AUTISM",
+        "category": "COMPOUND",
+        "anchor": [
+            "AUTISM SPECTRUM DISORDERS",
+            "ASD",
+            "NEURODIVERGENT"
+        ]
+    },
+    {
+        "gloss": "AVOID",
+        "category": "CORE",
+        "anchor": [
+            "IGNORE",
+            "ESCAPE",
+            "AVOID SITUATIONS",
+            "STAY AWAY"
+        ]
+    },
+    {
+        "gloss": "AWARE",
+        "category": "CORE",
+        "anchor": [
+            "KNOW",
+            "AWARENESS",
+            "KNOWLEDGE",
+            "CONSCIOUS"
+        ]
+    },
+    {
+        "gloss": "BAD",
+        "category": "CORE",
+        "anchor": [
+            "AWFUL",
+            "TERRIBLE",
+            "HORRIBLE",
+            "VERY BAD"
+        ]
+    },
+    {
+        "gloss": "SHY",
+        "category": "CORE",
+        "anchor": [
+            "AWKWARD",
+            "CLUMSY",
+            "UNCOMFORTABLE"
+        ]
+    },
+    {
+        "gloss": "CHANGE",
+        "category": "CORE",
+        "anchor": [
+            "ADAPT",
+            "ADJUST",
+            "MODIFY"
+        ]
+    },
+    {
+        "gloss": "ANGRY",
+        "category": "CORE",
+        "anchor": [
+            "AGGRESSIVE",
+            "VIOLENT"
+        ]
+    },
+    "done",
+    {
+        "gloss": "POLLUTION",
+        "category": "COMPOUND",
+        "anchor": [
+            "AIR QUALITY INDEX",
+            "AQI",
+            "ENVIRONMENT",
+            "SMOG",
+            "AIR CONDITION"
+        ]
+    },
+    {
+        "gloss": "LINE",
+        "category": "CORE",
+        "anchor": [
+            "ALIGNMENT",
+            "STRAIGHT",
+            "ARRANGEMENT",
+            "ORDER"
+        ]
+    },
+    {
+        "gloss": "ATMOSPHERE",
+        "category": "CORE",
+        "anchor": [
+            "AMBIENCE",
+            "SURROUNDINGS",
+            "ENVIRONMENT",
+            "FEELING"
+        ]
+    },
+    {
+        "gloss": "FUN",
+        "category": "CORE",
+        "anchor": [
+            "AMUSE",
+            "ENTERTAIN",
+            "ENJOY"
+        ]
+    },
+    {
+        "gloss": "PAINTER",
+        "category": "CORE",
+        "anchor": [
+            "ARTIST",
+            "CREATOR",
+            "DRAWER"
+        ]
+    },
+    {
+        "gloss": "PRESENT",
+        "category": "CORE",
+        "anchor": [
+            "ATTENDANCE",
+            "PARTICIPATION",
+            "ROLL CALL",
+            "ATTENDANCE RECORD"
+        ]
+    },
+    "done",
+    {
+        "gloss": "AUTOMATIC",
+        "category": "CORE",
+        "anchor": [
+            "AUTOLAND",
+            "AUTOPILOT",
+            "SELF-OPERATING",
+            "AUTO-CONTROL"
+        ]
+    },
+    {
+        "gloss": "ELECTRONICS",
+        "category": "CORE",
+        "anchor": [
+            "AVIONICS",
+            "AIRCRAFT INSTRUMENTS",
+            "AVIATION ELECTRONICS"
+        ]
+    },
+    {
+        "gloss": "AIRFORCE",
+        "category": "CORE",
+        "anchor": [
+            "MILITARY PILOT",
+            "AIR DEFENSE",
+            "ARMED FORCES (AIR)"
+        ]
+    },
+    {
+        "gloss": "ADULT",
+        "category": "CORE",
+        "anchor": [
+            "GROWN-UP",
+            "MATURE",
+            "MAJOR",
+            "TEENAGE",
+            "PUBERTY",
+            "YOUTH"
+        ]
+    },
+    {
+        "gloss": "ADVANCE",
+        "category": "CORE",
+        "anchor": [
+            "PROGRESS",
+            "PROCEED",
+            "DEVELOPMENT"
+        ]
+    },
+    {
+        "gloss": "ADVENTURE",
+        "category": "COMPOUND",
+        "anchor": [
+            "ADVENTURE TOURISM",
+            "EXPEDITION",
+            "TREKKING"
+        ]
+    },
+    {
+        "gloss": "ADVERB",
+        "category": "CORE",
+        "anchor": [
+            "MODIFIER",
+            "QUALIFIER"
+        ]
+    },
+    {
+        "gloss": "ADVERTISE",
+        "category": "COMPOUND",
+        "anchor": [
+            "MARKETING",
+            "PROMOTE"
+        ]
+    },
+    {
+        "gloss": "AGRICULTURE",
+        "category": "CORE",
+        "anchor": [
+            "FARM",
+            "CULTIVATE",
+            "AGRO"
+        ]
+    },
+    {
+        "gloss": "ALGAE",
+        "category": "CORE",
+        "anchor": [
+            "SEAWEED",
+            "PHYTOPLANKTON"
+        ]
+    },
+    {
+        "gloss": "ALGEBRA",
+        "category": "CORE",
+        "anchor": [
+            "EQUATIONS",
+            "VARIABLES",
+            "MATHEMATICS"
+        ]
+    },
+    {
+        "gloss": "ALLIANCE",
+        "category": "CORE",
+        "anchor": [
+            "COALITION",
+            "PARTNERSHIP",
+            "PACT"
+        ]
+    },
+    {
+        "gloss": "ALLOY",
+        "category": "CORE",
+        "anchor": [
+            "METAL BLEND",
+            "COMPOSITE",
+            "ALLOY WHEEL"
+        ]
+    },
+    {
+        "gloss": "HEIGHT",
+        "category": "CORE",
+        "anchor": [
+            "ELEVATE",
+            "ALTITUDE"
+        ]
+    },
+    {
+        "gloss": "ALUMINIUM",
+        "category": "CORE",
+        "anchor": [
+            "LIGHT METAL"
+        ]
+    },
+    {
+        "gloss": "AMBASSADOR",
+        "category": "CORE",
+        "anchor": [
+            "DIPLOMAT",
+            "ENVOY",
+            "REPRESENTATIVE"
+        ]
+    },
+    {
+        "gloss": "AMMONIA",
+        "category": "CORE",
+        "anchor": [
+            "NH3",
+            "CHEMICAL"
+        ]
+    },
+    {
+        "gloss": "AMOEBA",
+        "category": "CORE",
+        "anchor": [
+            "PROTOZOAN"
+        ]
+    },
+    {
+        "gloss": "AMPLITUDE",
+        "category": "CORE",
+        "anchor": [
+            "MAGNITUDE",
+            "SIGNAL STRENGTH",
+            "OSCILLATION"
+        ]
+    },
+    {
+        "gloss": "ANAEMIA",
+        "category": "CORE",
+        "anchor": [
+            "ANEMIA",
+            "IRON DEFICIENCY"
+        ]
+    },
+    {
+        "gloss": "ANATOMY",
+        "category": "CORE",
+        "anchor": [
+            "STRUCTURE",
+            "MORPHOLOGY"
+        ]
+    },
+    {
+        "gloss": "ANIMATION",
+        "category": "CORE",
+        "anchor": [
+            "MOTION GRAPHICS"
+        ]
+    },
+    {
+        "gloss": "APPROXIMATE",
+        "category": "CORE",
+        "anchor": [
+            "ESTIMATE"
+        ]
+    },
+    {
+        "gloss": "AQUA",
+        "category": "CORE",
+        "anchor": [
+            "WATER-BASED",
+            "AQUATIC HABITAT",
+            "AQUATIC ANIMALS"
+        ]
+    },
+    {
+        "gloss": "ARC",
+        "category": "CORE",
+        "anchor": [
+            "CURVE",
+            "SEGMENT",
+            "ARC WELDING"
+        ]
+    }
+]

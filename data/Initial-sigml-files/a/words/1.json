@@ -1,0 +1,940 @@
+[
+    {
+        "gloss": "MANY",
+        "category": "",
+        "anchor": [
+            "AMPLE",
+            "PLENTY",
+            "ABUNDANT",
+            "LOT"
+        ]
+    },
+    {
+        "gloss": "AAM AADMI PARTY",
+        "category": "",
+        "anchor": []
+    },
+    {
+        "gloss": "AAMIR KHAN",
+        "category": "",
+        "anchor": []
+    },
+    {
+        "gloss": "ABACUS",
+        "category": "CORE",
+        "anchor": []
+    },
+    {
+        "gloss": "ABATE",
+        "category": "CORE",
+        "anchor": [
+            "SUBSIDE"
+        ]
+    },
+    {
+        "gloss": "HATE",
+        "category": "CORE",
+        "anchor": [
+            "LOATHE",
+            "ABHOR",
+            "DETEST",
+            "DESPISE"
+        ]
+    },
+    {
+        "gloss": "FOLLOW",
+        "category": "CORE",
+        "anchor": [
+            "COMPLY",
+            "COMPLY WITH",
+            "ABIDE",
+            "ABIDE BY",
+            "OBEY",
+            "ADHERE"
+        ]
+    },
+    {
+        "gloss": "ABLE",
+        "category": "CORE",
+        "anchor": [
+            "CAN"
+        ]
+    },
+    {
+        "gloss": "APARTMENT",
+        "category": "CORE",
+        "anchor": [
+            "ABODE",
+            "HOME",
+            "BUNGALOW"
+        ]
+    },
+    {
+        "gloss": "ABOLISH",
+        "category": "CORE",
+        "anchor": []
+    },
+    {
+        "gloss": "CANCEL",
+        "category": "CORE",
+        "anchor": [
+            "DISCONTINUE",
+            "HALT",
+            "ABORT"
+        ]
+    },
+    {
+        "gloss": "ABOVE",
+        "category": "CORE",
+        "anchor": [
+            "UP"
+        ]
+    },
+    {
+        "gloss": "ABROAD",
+        "category": "CORE",
+        "anchor": [
+            "OVERSEAS"
+        ]
+    },
+    {
+        "gloss": "ABSENT",
+        "category": "CORE",
+        "anchor": [
+            "MISSING"
+        ]
+    },
+    {
+        "gloss": "ABSTRACT",
+        "category": "CORE",
+        "anchor": []
+    },
+    {
+        "gloss": "ACCEPT",
+        "category": "CORE",
+        "anchor": [
+            "APPROVE",
+            "AGREE",
+            "CONSENT",
+            "CONCUR"
+        ]
+    },
+    {
+        "gloss": "ACCESS",
+        "category": "COMPOUND",
+        "anchor": []
+    },
+    {
+        "gloss": "ACCESSORY",
+        "category": "CORE",
+        "anchor": []
+    },
+    {
+        "gloss": "ACCOMPANY",
+        "category": "CORE",
+        "anchor": [
+            "TOGETHER",
+            "WITH",
+            "ALONG WITH"
+        ]
+    },
+    {
+        "gloss": "ACCOMPLISH",
+        "category": "COMPOUND",
+        "anchor": [
+            "ACHIEVE",
+            "ATTAIN",
+            "REALIZE",
+            "SUCCESS"
+        ]
+    },
+    {
+        "gloss": "ACCORDION",
+        "category": "CORE",
+        "anchor": [
+            "ACCORDION PLEATS",
+            "HARMONIUM"
+        ]
+    },
+    {
+        "gloss": "ACCOUNT",
+        "category": "CORE",
+        "anchor": []
+    },
+    {
+        "gloss": "ACCOUNTABLE",
+        "category": "COMPOUND",
+        "anchor": [
+            "ANSWERABLE",
+            "LIABLE",
+            "RESPONSIBLE"
+        ]
+    },
+    {
+        "gloss": "GATHER",
+        "category": "CORE",
+        "anchor": [
+            "COLLECT",
+            "ACCUMULATE",
+            "AMASS",
+            "PILE UP"
+        ]
+    },
+    {
+        "gloss": "ACCURATE",
+        "category": "CORE",
+        "anchor": [
+            "EXACT",
+            "PRECISE",
+            "CORRECT",
+            "PERFECT"
+        ]
+    },
+    {
+        "gloss": "ACCUSE",
+        "category": "COMPOUND",
+        "anchor": [
+            "BLAME",
+            "ALLEGATION",
+            "FAULT"
+        ]
+    },
+    {
+        "gloss": "ACHE",
+        "category": "COMPOUND",
+        "anchor": [
+            "PAIN"
+        ]
+    },
+    {
+        "gloss": "ACQUAINTANCE",
+        "category": "CORE",
+        "anchor": [
+            "ACQUAINTANCE RAPE",
+            "DATE RAPE",
+            "MARITAL RAPE",
+            "CUSTODIAL RAPE"
+        ]
+    },
+    {
+        "gloss": "GET",
+        "category": "CORE",
+        "anchor": [
+            "ACQUIRE",
+            "OBTAIN",
+            "RECEIVE",
+            "PROCURE"
+        ]
+    },
+    {
+        "gloss": "ACROSS",
+        "category": "CORE",
+        "anchor": [
+            "CROSS",
+            "OPPOSITE",
+            "OVER"
+        ]
+    },
+    {
+        "gloss": "ACTION",
+        "category": "CORE",
+        "anchor": [
+            "DO",
+            "ACT",
+            "ACTIVITY",
+            "PROCESS",
+            "ACTION PLAN",
+            "ACTION TAKEN REPORT",
+            "ACTION RESEARCH"
+        ]
+    },
+    {
+        "gloss": "REPLAY",
+        "category": "COMPOUND",
+        "anchor": [
+            "ACTION REPLAY",
+            "REPEAT",
+            "PLAY AGAIN"
+        ]
+    },
+    {
+        "gloss": "ACTIVE",
+        "category": "COMPOUND",
+        "anchor": [
+            "ENERGETIC",
+            "ENTHUSIASTIC",
+            "LIVELY",
+            "VIGOROUS"
+        ]
+    },
+    {
+        "gloss": "ADVOCATE",
+        "category": "COMPOUND",
+        "anchor": [
+            "ACTIVIST",
+            "CAMPAIGNER",
+            "SUPPORTER",
+            "REPRESENTATIVE"
+        ]
+    },
+    {
+        "gloss": "ACTOR",
+        "category": "CORE",
+        "anchor": [
+            "PERFORMER",
+            "ARTIST",
+            "HERO"
+        ]
+    },
+    {
+        "gloss": "ACTRESS",
+        "category": "CORE",
+        "anchor": [
+            "FEMALE ACTOR",
+            "HEROINE"
+        ]
+    },
+    {
+        "gloss": "SHARP",
+        "category": "CORE",
+        "anchor": [
+            "ACUITY",
+            "KEENNESS",
+            "CLARITY"
+        ]
+    },
+    {
+        "gloss": "INTELLIGENCE",
+        "category": "CORE",
+        "anchor": [
+            "ACUMEN",
+            "AWARENESS",
+            "SHREWDNESS",
+            "WIT"
+        ]
+    },
+    {
+        "gloss": "STUBBORN",
+        "category": "COMPOUND",
+        "anchor": [
+            "ADAMANT",
+            "OBSTINATE",
+            "FIXED"
+        ]
+    },
+    {
+        "gloss": "ADD",
+        "category": "NUMBERS & TIME",
+        "anchor": [
+            "ADD ON",
+            "PLUS",
+            "TOTAL",
+            "SUM"
+        ]
+    },
+    {
+        "gloss": "MORE",
+        "category": "COMPOUND",
+        "anchor": [
+            "ADD",
+            "ADDITIONAL",
+            "EXTRA",
+            "ALSO"
+        ]
+    },
+    {
+        "gloss": "ADDICT",
+        "category": "COMPOUND",
+        "anchor": [
+            "DEPEND",
+            "HABIT"
+        ]
+    },
+    {
+        "gloss": "ADDRESS",
+        "category": "CORE",
+        "anchor": [
+            "ADDRESS \u2018RISK FACTORS\u2019",
+            "LOCATION",
+            "RESIDENCE"
+        ]
+    },
+    {
+        "gloss": "ENOUGH",
+        "category": "COMPOUND",
+        "anchor": [
+            "ADEQUATE",
+            "SUFFICIENT",
+            "SATISFACTORY"
+        ]
+    },
+    {
+        "gloss": "FOLLOW",
+        "category": "COMPOUND",
+        "anchor": [
+            "ADHERE TO",
+            "ABIDE BY",
+            "COMPLY WITH",
+            "OBEY",
+            "ELBOW CONFORMER"
+        ]
+    },
+    {
+        "gloss": "PRAISE",
+        "category": "COMPOUND",
+        "anchor": [
+            "ADMIRE",
+            "COMMEND",
+            "APPRECIATE",
+            "CONGRATULATE",
+            "ACCOLADE",
+            "AWARD",
+            "HONOUR",
+            "REWARD"
+        ]
+    },
+    {
+        "gloss": "ADOPT",
+        "category": "CORE",
+        "anchor": [
+            "TAKE IN",
+            "FOSTER",
+            "CHOOSE"
+        ]
+    },
+    {
+        "gloss": "LOST",
+        "category": "COMPOUND",
+        "anchor": [
+            "ADRIFT",
+            "AIMLESS",
+            "DIRECTIONLESS",
+            "GOALLESS",
+            "PURPOSELESS",
+            "UNMOORED",
+            "UNANCHORED"
+        ]
+    },
+    {
+        "gloss": "ADULT",
+        "category": "CORE",
+        "anchor": [
+            "MATURE",
+            "GROWN UP",
+            "ADULT EDUCATION CENTRE"
+        ]
+    },
+    {
+        "gloss": "ADVANTAGE",
+        "category": "CORE",
+        "anchor": [
+            "BENEFIT",
+            "PROFIT",
+            "ADVANTAGE OF KITCHEN GARDENING",
+            "ADVANTAGE OF DISTANT MARKETS"
+        ]
+    },
+    {
+        "gloss": "HARMFUL",
+        "category": "COMPOUND",
+        "anchor": [
+            "ADVERSE",
+            "DETRIMENTAL",
+            "BAD",
+            "NEGATIVE"
+        ]
+    },
+    {
+        "gloss": "ADVERTISEMENT",
+        "category": "CORE",
+        "anchor": [
+            "AD",
+            "PROMOTION",
+            "PUBLICITY",
+            "COMMERCIAL"
+        ]
+    },
+    {
+        "gloss": "ADVISE",
+        "category": "COMPOUND",
+        "anchor": [
+            "COUNSEL",
+            "GUIDE",
+            "SUGGEST",
+            "ADVICE"
+        ]
+    },
+    {
+        "gloss": "AEROPLANE",
+        "category": "CORE",
+        "anchor": [
+            "PLANE",
+            "AIRCRAFT",
+            "FLIGHT",
+            "AEROPLANE DUSTER",
+            "AEROPLANE SPRAYER"
+        ]
+    },
+    {
+        "gloss": "INFLUENCE",
+        "category": "COMPOUND",
+        "anchor": [
+            "AFFECT",
+            "IMPACT",
+            "EFFECT",
+            "CONTROL"
+        ]
+    },
+    {
+        "gloss": "JOIN",
+        "category": "CORE",
+        "anchor": [
+            "AFFILIATE",
+            "ASSOCIATE",
+            "CONNECT",
+            "LINK"
+        ]
+    },
+    {
+        "gloss": "WEALTHY",
+        "category": "COMPOUND",
+        "anchor": [
+            "AFFLUENT",
+            "RICH",
+            "PROSPEROUS",
+            "MONEYED"
+        ]
+    },
+    {
+        "gloss": "AFFORD",
+        "category": "CORE",
+        "anchor": [
+            "CAN BUY",
+            "MANAGE",
+            "SPARE",
+            "COST"
+        ]
+    },
+    {
+        "gloss": "AFRAID",
+        "category": "COMPOUND",
+        "anchor": [
+            "SCARED",
+            "FEAR",
+            "FRIGHTENED",
+            "TERRIFIED"
+        ]
+    },
+    {
+        "gloss": "AFTER",
+        "category": "GRAMMAR & FUNCTION",
+        "anchor": [
+            "LATER",
+            "NEXT",
+            "FOLLOWING",
+            "POST"
+        ]
+    },
+    {
+        "gloss": "RESULT",
+        "category": "CORE",
+        "anchor": [
+            "AFTERMATH",
+            "OUTCOME",
+            "CONSEQUENCE"
+        ]
+    },
+    {
+        "gloss": "AFTERNOON",
+        "category": "NUMBERS & TIME",
+        "anchor": [
+            "PM",
+            "MIDDAY",
+            "LUNCHTIME"
+        ]
+    },
+    {
+        "gloss": "AFTERSHAVE",
+        "category": "COMPOUND",
+        "anchor": [
+            "AFTERSHAVE LOTION",
+            "SHAVE CREAM",
+            "LOTION"
+        ]
+    },
+    {
+        "gloss": "REPEAT",
+        "category": "COMPOUND",
+        "anchor": [
+            "AGAIN",
+            "REPLAY",
+            "REDO",
+            "ONCE MORE"
+        ]
+    },
+    {
+        "gloss": "AGE",
+        "category": "CORE",
+        "anchor": [
+            "AGE REGRESSION",
+            "AGE OF CONSENT",
+            "OLD AGE",
+            "AGE OLD",
+            "HOW OLD"
+        ]
+    },
+    {
+        "gloss": "BIAS",
+        "category": "COMPOUND",
+        "anchor": [
+            "AGEISM",
+            "AGE BIAS",
+            "DISCRIMINATION",
+            "PARTIALITY"
+        ]
+    },
+    {
+        "gloss": "DOUBT",
+        "category": "CORE",
+        "anchor": [
+            "AGNOSTIC",
+            "UNSURE",
+            "SKEPTIC"
+        ]
+    },
+    {
+        "gloss": "SUFFERING",
+        "category": "COMPOUND",
+        "anchor": [
+            "AGONY",
+            "PAIN",
+            "HURT",
+            "DISTRESS"
+        ]
+    },
+    {
+        "gloss": "HELP",
+        "category": "CORE",
+        "anchor": [
+            "AID",
+            "ASSISTANCE",
+            "SUPPORT",
+            "ASSISTANT",
+            "AID AND ABET",
+            "DISABILITY SUPPORT SERVICE",
+            "CHILD SUPPORT"
+        ]
+    },
+    {
+        "gloss": "GOAL",
+        "category": "COMPOUND",
+        "anchor": [
+            "AIM",
+            "TARGET",
+            "OBJECTIVE",
+            "PURPOSE"
+        ]
+    },
+    {
+        "gloss": "AIR",
+        "category": "CORE",
+        "anchor": [
+            "OXYGEN",
+            "WIND",
+            "ATMOSPHERE",
+            "AIR INDIA",
+            "ALLIANCE AIR",
+            "AIR DECCAN"
+        ]
+    },
+    {
+        "gloss": "AIR CONDITIONER",
+        "category": "COMPOUND",
+        "anchor": [
+            "AC",
+            "AIR COOLER",
+            "COOLING"
+        ]
+    },
+    {
+        "gloss": "FLIGHT ATTENDANT",
+        "category": "COMPOUND",
+        "anchor": [
+            "AIR HOSTESS",
+            "CABIN CREW",
+            "STEWARD"
+        ]
+    },
+    {
+        "gloss": "AIRLINE",
+        "category": "COMPOUND",
+        "anchor": [
+            "AIR INDIA",
+            "ALLIANCE AIR",
+            "AIR DECCAN",
+            "AIR VISTARA",
+            "AVIATION"
+        ]
+    },
+    {
+        "gloss": "POLLUTION",
+        "category": "COMPOUND",
+        "anchor": [
+            "AIR POLLUTION",
+            "SMOG",
+            "DIRTY AIR",
+            "ENVIRONMENTAL HAZARD"
+        ]
+    },
+    {
+        "gloss": "GUN",
+        "category": "COMPOUND",
+        "anchor": [
+            "AIR RIFLE",
+            "WEAPON",
+            "SHOOTING"
+        ]
+    },
+    {
+        "gloss": "AIRPORT",
+        "category": "CORE",
+        "anchor": [
+            "TERMINAL",
+            "AERODROME",
+            "AIRFIELD"
+        ]
+    },
+    {
+        "gloss": "TELECOM",
+        "category": "CORE",
+        "anchor": [
+            "AIRTEL",
+            "AIRCEL",
+            "MOBILE NETWORK",
+            "SIM CARD"
+        ]
+    },
+    {
+        "gloss": "AISHWARYA RAI",
+        "category": "COMPOUND",
+        "anchor": [
+            "AISHWARYA RAI BACHCHAN",
+            "ACTRESS",
+            "MISS WORLD"
+        ]
+    },
+    {
+        "gloss": "AKSHAY KUMAR",
+        "category": "COMPOUND",
+        "anchor": [
+            "ACTOR",
+            "KHILADI"
+        ]
+    },
+    {
+        "gloss": "PATH",
+        "category": "COMPOUND",
+        "anchor": [
+            "AISLE",
+            "PASSAGE",
+            "CORRIDOR",
+            "WAY",
+            "WALKWAY"
+        ]
+    },
+    {
+        "gloss": "AJMER SHARIF",
+        "category": "COMPOUND",
+        "anchor": [
+            "AJMER SHARIF DARGAH",
+            "DARGAH",
+            "SHRINE",
+            "HOLY PLACE"
+        ]
+    },
+    {
+        "gloss": "ALARM",
+        "category": "CORE",
+        "anchor": [
+            "WAKE UP",
+            "BELL",
+            "WARNING",
+            "DANGER SIGN",
+            "ALERT"
+        ]
+    },
+    {
+        "gloss": "ALCOHOL",
+        "category": "CORE",
+        "anchor": [
+            "DRINK",
+            "LIQUOR",
+            "WINE",
+            "BEER",
+            "ALCOHOL AND DRUG DEPENDENCE",
+            "ALCOHOL EDUCATION PROGRAM"
+        ]
+    },
+    {
+        "gloss": "WARNING",
+        "category": "CORE",
+        "anchor": [
+            "ALERT",
+            "WATCH OUT",
+            "DANGER"
+        ]
+    },
+    {
+        "gloss": "ALIEN",
+        "category": "COMPOUND",
+        "anchor": [
+            "EXTRATERRESTRIAL",
+            "OUTER SPACE",
+            "UFO",
+            "STRANGER"
+        ]
+    },
+    {
+        "gloss": "SAME",
+        "category": "COMPOUND",
+        "anchor": [
+            "ALIKE",
+            "SIMILAR",
+            "MATCH",
+            "EQUAL"
+        ]
+    },
+    {
+        "gloss": "ALIVE",
+        "category": "CORE",
+        "anchor": [
+            "LIFE",
+            "LIVING",
+            "EXIST",
+            "NOT DEAD"
+        ]
+    },
+    {
+        "gloss": "ALL",
+        "category": "GRAMMAR & FUNCTION",
+        "anchor": [
+            "EVERY",
+            "TOTAL",
+            "WHOLE",
+            "FULL",
+            "ENTIRE"
+        ]
+    },
+    {
+        "gloss": "ALONE",
+        "category": "COMPOUND",
+        "anchor": [
+            "ALL BY YOURSELF",
+            "ONLY",
+            "SINGLE",
+            "SOLO"
+        ]
+    },
+    {
+        "gloss": "ALL INDIA FEDERATION OF THE DEAF",
+        "category": "COMPOUND",
+        "anchor": [
+            "AIFD"
+        ]
+    },
+    {
+        "gloss": "ALL INDIA FOUNDATION OF DEAF WOMEN",
+        "category": "COMPOUND",
+        "anchor": [
+            "AIFDW"
+        ]
+    },
+    {
+        "gloss": "ALL THE BEST",
+        "category": "COMPOUND",
+        "anchor": [
+            "GOOD LUCK"
+        ]
+    },
+    {
+        "gloss": "ALL INDIA TRINAMOOL CONGRESS",
+        "category": "COMPOUND",
+        "anchor": []
+    },
+    {
+        "gloss": "ALLERGY",
+        "category": "CORE",
+        "anchor": [
+            "REACTION",
+            "INFECTION",
+            "SENSITIVITY"
+        ]
+    },
+    {
+        "gloss": "DISTRIBUTE",
+        "category": "COMPOUND",
+        "anchor": [
+            "ALLOCATE",
+            "ALLOT",
+            "APPORTION",
+            "GIVE OUT",
+            "SHARE"
+        ]
+    },
+    {
+        "gloss": "PERMIT",
+        "category": "CORE",
+        "anchor": [
+            "ALLOW",
+            "PERMISSION",
+            "LET",
+            "APPROVE"
+        ]
+    },
+    {
+        "gloss": "ALLY",
+        "category": "COMPOUND",
+        "anchor": [
+            "ALLIANCE",
+            "ALLIED",
+            "PARTNERSHIP",
+            "FRIEND",
+            "UNION"
+        ]
+    },
+    {
+        "gloss": "ALMOND",
+        "category": "CORE",
+        "anchor": [
+            "NUT",
+            "BADAM"
+        ]
+    },
+    {
+        "gloss": "ALMOST",
+        "category": "COMPOUND",
+        "anchor": [
+            "NEARLY",
+            "CLOSE TO",
+            "ABOUT"
+        ]
+    },
+    {
+        "gloss": "ALPHABET",
+        "category": "CORE",
+        "anchor": [
+            "LETTERS",
+            "A-Z",
+            "ABC"
+        ]
+    },
+    {
+        "gloss": "ALREADY",
+        "category": "CORE",
+        "anchor": [
+            "DONE",
+            "FINISH",
+            "BEFORE"
+        ]
+    }
+]

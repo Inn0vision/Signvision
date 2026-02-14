@@ -1,0 +1,917 @@
+[
+    {
+        "gloss": "ARCHAEOLOGY",
+        "category": "CORE",
+        "anchor": [
+            "ARCHEOLOGY",
+            "EXCAVATION"
+        ]
+    },
+    {
+        "gloss": "ARITHMETIC",
+        "category": "COMPOUND",
+        "anchor": [
+            "ARITHMETIC MEAN",
+            "AVERAGE",
+            "ARITHMETIC SEQUENCE"
+        ]
+    },
+    {
+        "gloss": "ARTERY",
+        "category": "CORE",
+        "anchor": [
+            "BLOOD VESSEL",
+            "CHANNEL"
+        ]
+    },
+    {
+        "gloss": "ESSAY",
+        "category": "CORE",
+        "anchor": [
+            "ITEM",
+            "ARTICLE",
+            "CLAUSE"
+        ]
+    },
+    {
+        "gloss": "ARTIFACT",
+        "category": "CORE",
+        "anchor": [
+            "RELIC",
+            "ANTIQUITY"
+        ]
+    },
+    {
+        "gloss": "ARTIFICIAL",
+        "category": "COMPOUND",
+        "anchor": [
+            "ARTIFICIAL INTELLIGENCE",
+            "AI",
+            "ARTIFICIAL SILK"
+        ]
+    },
+    {
+        "gloss": "ASCENDING",
+        "category": "COMPOUND",
+        "anchor": [
+            "ASCENDING ORDER",
+            "INCREASING"
+        ]
+    },
+    {
+        "gloss": "ASHOKA",
+        "category": "CORE",
+        "anchor": [
+            "MAURYAN EMPEROR",
+            "ASHOKA THE GREAT"
+        ]
+    },
+    {
+        "gloss": "ASHRAMA",
+        "category": "CORE",
+        "anchor": [
+            "STAGES OF LIFE",
+            "HERMITAGE"
+        ]
+    },
+    {
+        "gloss": "ASHVAMEDHA",
+        "category": "CORE",
+        "anchor": [
+            "HORSE SACRIFICE",
+            "VEDIC RITUAL"
+        ]
+    },
+    {
+        "gloss": "ASSUME",
+        "category": "CORE",
+        "anchor": [
+            "PREMISE",
+            "SUPPOSITION",
+            "HYPOTHESIS"
+        ]
+    },
+    {
+        "gloss": "ASTERISK",
+        "category": "CORE",
+        "anchor": [
+            "STAR SYMBOL",
+            "MARKER"
+        ]
+    },
+    {
+        "gloss": "ATLAS",
+        "category": "CORE",
+        "anchor": [
+            "MAP BOOK",
+            "GAZETTEER"
+        ]
+    },
+    {
+        "gloss": "ATMOSPHERE",
+        "category": "CORE",
+        "anchor": [
+            "AIR",
+            "ENVIRONMENT"
+        ]
+    },
+    {
+        "gloss": "ATOM",
+        "category": "CORE",
+        "anchor": [
+            "ATOMIC STRUCTURE",
+            "SUBATOMIC PARTICLES"
+        ]
+    },
+    {
+        "gloss": "ATTRACT",
+        "category": "CORE",
+        "anchor": [
+            "MAGNETISM",
+            "GRAVITY",
+            "PULL"
+        ]
+    },
+    {
+        "gloss": "CHARACTERISTIC",
+        "category": "CORE",
+        "anchor": [
+            "TRAIT",
+            "PROPERTY",
+            "ATTRIBUTE"
+        ]
+    },
+    {
+        "gloss": "AUDIOLOGIST",
+        "category": "CORE",
+        "anchor": [
+            "HEARING SPECIALIST"
+        ]
+    },
+    {
+        "gloss": "AUDIOLOGY",
+        "category": "CORE",
+        "anchor": [
+            "STUDY of HEARING"
+        ]
+    },
+    {
+        "gloss": "AUTHORITY",
+        "category": "CORE",
+        "anchor": [
+            "POWER",
+            "GOVERNANCE"
+        ]
+    },
+    {
+        "gloss": "AUTOBIOGRAPHY",
+        "category": "CORE",
+        "anchor": [
+            "SELF-LIFE STORY",
+            "MEMOIR"
+        ]
+    },
+    {
+        "gloss": "AUTOMATIC",
+        "category": "COMPOUND",
+        "anchor": [
+            "AUTOMATIC STABILIZER",
+            "AUTOMATIC FILM PROCESSOR"
+        ]
+    },
+    {
+        "gloss": "AUTONOMOUS",
+        "category": "COMPOUND",
+        "anchor": [
+            "INDEPENDENT",
+            "AUTONOMOUS VEHICLE",
+            "AUTONOMOUS DEGREE-GRANTING COLLEGE"
+        ]
+    },
+    {
+        "gloss": "AVERAGE",
+        "category": "COMPOUND",
+        "anchor": [
+            "MEAN",
+            "AVERAGE MEASURES",
+            "AVERAGE TAX RATE"
+        ]
+    },
+    {
+        "gloss": "ABANDONMENT",
+        "category": "COMPOUND",
+        "anchor": [
+            "ABANDONMENT OF CHILD",
+            "ABANDONMENT OF COPYRIGHT",
+            "DESERTION",
+            "RELINQUISHMENT"
+        ]
+    },
+    {
+        "gloss": "RESIGN",
+        "category": "CORE",
+        "anchor": [
+            "ABDICATE",
+            "RENOUNCE",
+            "GIVE UP"
+        ]
+    },
+    {
+        "gloss": "SUSPENSION",
+        "category": "CORE",
+        "anchor": [
+            "ABEYANCE",
+            "DORMANCY",
+            "LATENCY",
+            "PENDING"
+        ]
+    },
+    {
+        "gloss": "ABSORB",
+        "category": "COMPOUND",
+        "anchor": [
+            "INTAKE"
+        ]
+    },
+    {
+        "gloss": "ACTUAL",
+        "category": "COMPOUND",
+        "anchor": [
+            "ACTUAL LOSS",
+            "REAL",
+            "TANGIBLE",
+            "GENUINE"
+        ]
+    },
+    {
+        "gloss": "AEROPLANE",
+        "category": "COMPOUND",
+        "anchor": [
+            "AEROPLANE DUSTER",
+            "AEROPLANE SPRAYER",
+            "AIRCRAFT",
+            "AIRPLANE"
+        ]
+    },
+    {
+        "gloss": "AFRICA",
+        "category": "CORE",
+        "anchor": [
+            "CONTINENT",
+            "SOUTH AFRICA",
+            "ALGERIA"
+        ]
+    },
+    {
+        "gloss": "AGRO",
+        "category": "COMPOUND",
+        "anchor": [
+            "AGRO BASED INDUSTRY",
+            "AGRICULTURE",
+            "FARMING"
+        ]
+    },
+    {
+        "gloss": "AIR",
+        "category": "COMPOUND",
+        "anchor": [
+            "AIR SPACE OF EGG",
+            "AIR QUALITY",
+            "AIR COOLER",
+            "AIR CONDITIONER",
+            "ATMOSPHERE"
+        ]
+    },
+    {
+        "gloss": "ALBUMIN",
+        "category": "CORE",
+        "anchor": [
+            "PROTEIN",
+            "EGG WHITE",
+            "SERUM"
+        ]
+    },
+    {
+        "gloss": "ALTERNATE",
+        "category": "COMPOUND",
+        "anchor": [
+            "SUBSTITUTE"
+        ]
+    },
+    {
+        "gloss": "BEEKEEPING",
+        "category": "COMPOUND",
+        "anchor": [
+            "APICULTURIST",
+            "APICULTURE"
+        ]
+    },
+    {
+        "gloss": "ARTIFICIAL",
+        "category": "COMPOUND",
+        "anchor": [
+            "ARTIFICIAL INSEMINATION",
+            "ARTIFICIAL INTELLIGENCE",
+            "ARTIFICIAL SILK",
+            "MAN-MADE"
+        ]
+    },
+    {
+        "gloss": "ASCENT",
+        "category": "COMPOUND",
+        "anchor": [
+            "ASCENT OF SAP",
+            "RISE",
+            "UPWARD MOVE"
+        ]
+    },
+    {
+        "gloss": "ASSET",
+        "category": "COMPOUND",
+        "anchor": [
+            "ASSET FLOWS",
+            "ASSET MANAGEMENT COMPANY",
+            "PROPERTY",
+            "RESOURCES"
+        ]
+    },
+    {
+        "gloss": "AT",
+        "category": "COMPOUND",
+        "anchor": []
+    },
+    {
+        "gloss": "AVERAGE",
+        "category": "COMPOUND",
+        "anchor": [
+            "AVERAGE TAX RATE",
+            "AVERAGE PROPENSITY TO CONSUME",
+            "AVERAGE MEASURES",
+            "MEAN",
+            "MEDIUM",
+            "NORMAL"
+        ]
+    },
+    {
+        "gloss": "AXIS",
+        "category": "CORE",
+        "anchor": [
+            "AXES",
+            "CENTER",
+            "PIVOT"
+        ]
+    },
+    {
+        "gloss": "AYURVEDA",
+        "category": "COMPOUND",
+        "anchor": [
+            "YOGA",
+            "NATUROPATHY",
+            "UNANI",
+            "SIDDHA",
+            "HOMEOPATHY",
+            "AYUSH"
+        ]
+    },
+    {
+        "gloss": "ABSTRACT",
+        "category": "COMPOUND",
+        "anchor": [
+            "SUMMARY",
+            "SYNOPSIS"
+        ]
+    },
+    {
+        "gloss": "ABUSE",
+        "category": "COMPOUND",
+        "anchor": [
+            "ABUSIVE LANGUAGE",
+            "VERBAL ABUSE",
+            "MISTREATMENT",
+            "INSULT"
+        ]
+    },
+    {
+        "gloss": "ACCOMMODATE",
+        "category": "COMPOUND",
+        "anchor": [
+            "ADJUST"
+        ]
+    },
+    {
+        "gloss": "ACCOMPLICE",
+        "category": "COMPOUND",
+        "anchor": [
+            "ACCESSORY",
+            "CO-CONSPIRATOR",
+            "ABETTOR",
+            "PARTNER IN CRIME"
+        ]
+    },
+    {
+        "gloss": "ACKNOWLEDGE",
+        "category": "CORE",
+        "anchor": [
+            "CONFIRM"
+        ]
+    },
+    {
+        "gloss": "ADMONISH",
+        "category": "CORE",
+        "anchor": [
+            "REPRIMAND",
+            "REPROVE",
+            "WARN",
+            "CHIDE"
+        ]
+    },
+    {
+        "gloss": "ADOPT",
+        "category": "CORE",
+        "anchor": [
+            "ADOPTIVE CHILD",
+            "ADOPTIVE PARENT"
+        ]
+    },
+    {
+        "gloss": "ADVERSARY",
+        "category": "COMPOUND",
+        "anchor": [
+            "OPPONENT",
+            "RIVAL",
+            "ENEMY",
+            "FOE"
+        ]
+    },
+    {
+        "gloss": "UNFAVORABLE",
+        "category": "COMPOUND",
+        "anchor": [
+            "ADVERSE POSSESSION",
+            "ADVERSE WITNESS",
+            "ADVERSE",
+            "HOSTILE"
+        ]
+    },
+    {
+        "gloss": "ADVOCATE",
+        "category": "COMPOUND",
+        "anchor": [
+            "ADVOCATE GENERAL",
+            "LAWYER",
+            "COUNSEL",
+            "BARRISTER"
+        ]
+    },
+    {
+        "gloss": "AFFIANT",
+        "category": "COMPOUND",
+        "anchor": [
+            "DEPONENT",
+            "WITNESS",
+            "DECLARANT"
+        ]
+    },
+    {
+        "gloss": "AFFIDAVIT",
+        "category": "CORE",
+        "anchor": [
+            "SWORN STATEMENT",
+            "DEPOSITION",
+            "OATH"
+        ]
+    },
+    {
+        "gloss": "AFFIRM",
+        "category": "CORE",
+        "anchor": [
+            "VALIDATE",
+            "RATIFY",
+            "UPHOLD",
+            "DECLARE"
+        ]
+    },
+    {
+        "gloss": "AFFRAY",
+        "category": "CORE",
+        "anchor": [
+            "BRAWL",
+            "FRACAS",
+            "MELEE",
+            "PUBLIC FIGHT"
+        ]
+    },
+    {
+        "gloss": "AGE",
+        "category": "COMPOUND",
+        "anchor": [
+            "AGE OF CONSENT",
+            "AGE REGRESSION",
+            "AGE OLD",
+            "MATURITY"
+        ]
+    },
+    {
+        "gloss": "AGENDA",
+        "category": "CORE",
+        "anchor": [
+            "PROGRAM",
+            "SCHEDULE",
+            "DOCKET",
+            "PLAN"
+        ]
+    },
+    {
+        "gloss": "AID",
+        "category": "COMPOUND",
+        "anchor": [
+            "AID AND ABET",
+            "ABETTOR",
+            "ASSISTANCE",
+            "SUPPORT",
+            "CHILD SUPPORT"
+        ]
+    },
+    {
+        "gloss": "ALCOHOL",
+        "category": "COMPOUND",
+        "anchor": [
+            "ALCOHOL EDUCATION PROGRAM",
+            "ALCOHOL DEPENDENCE",
+            "DRUG DEPENDENCE",
+            "LIQUOR"
+        ]
+    },
+    {
+        "gloss": "ALIAS",
+        "category": "COMPOUND",
+        "anchor": [
+            "FALSE NAME"
+        ]
+    },
+    {
+        "gloss": "ALLEGATION",
+        "category": "COMPOUND",
+        "anchor": [
+            "ACCUSATION",
+            "ACCUSED",
+            "CHARGE",
+            "ASSERTION"
+        ]
+    },
+    {
+        "gloss": "ALLOCATION",
+        "category": "COMPOUND",
+        "anchor": [
+            "ALLOCATION OF WORK",
+            "ALLOCATION OF RESOURCES",
+            "ALLOTMENT",
+            "DISTRIBUTION"
+        ]
+    },
+    {
+        "gloss": "ANNUAL",
+        "category": "COMPOUND",
+        "anchor": [
+            "YEARLY",
+            "PER ANNUM"
+        ]
+    },
+    {
+        "gloss": "UNKNOWN",
+        "category": "COMPOUND",
+        "anchor": [
+            "ANONYMOUS COMPLAINT",
+            "UNNAMED",
+            "ANONYMOUS",
+            "NAMELESS"
+        ]
+    },
+    {
+        "gloss": "ANTI",
+        "category": "COMPOUND",
+        "anchor": [
+            "OPPOSITION",
+            "CONTRA"
+        ]
+    },
+    {
+        "gloss": "APEX",
+        "category": "COMPOUND",
+        "anchor": [
+            "APEX COURT",
+            "SUPREME COURT",
+            "PEAK",
+            "ZENITH",
+            "SUMMIT"
+        ]
+    },
+    {
+        "gloss": "BELONGING",
+        "category": "CORE",
+        "anchor": [
+            "EQUIPMENT",
+            "PARAPHERNALIA"
+        ]
+    },
+    {
+        "gloss": "ATTACKER",
+        "category": "CORE",
+        "anchor": [
+            "ASSAILANT",
+            "AGVENTOR",
+            "ASSAULT"
+        ]
+    },
+    {
+        "gloss": "MURDER",
+        "category": "CORE",
+        "anchor": [
+            "ASSASSINATE",
+            "EXECUTION",
+            "POLITICAL KILLING"
+        ]
+    },
+    {
+        "gloss": "AUDIT",
+        "category": "COMPOUND",
+        "anchor": [
+            "INSPECT",
+            "EXAMINE"
+        ]
+    },
+    {
+        "gloss": "PERMISSION",
+        "category": "COMPOUND",
+        "anchor": [
+            "AUTHORIZED PERSON",
+            "SIGNATORY",
+            "AUTHORIZATION",
+            "USER ACCESS"
+        ]
+    },
+    {
+        "gloss": "DICTATOR",
+        "category": "COMPOUND",
+        "anchor": [
+            "AUTOCRAT",
+            "DICTATORSHIP",
+            "AUTOCRACY",
+            "MONOCRACY"
+        ]
+    },
+    {
+        "gloss": "ABORTION",
+        "category": "CORE",
+        "anchor": [
+            "TERMINATION",
+            "MISCARRIAGE"
+        ]
+    },
+    {
+        "gloss": "ABSCESS",
+        "category": "CORE",
+        "anchor": [
+            "INFECTION",
+            "ULCER",
+            "BOIL",
+            "PUSTULE"
+        ]
+    },
+    {
+        "gloss": "ACID",
+        "category": "COMPOUND",
+        "anchor": [
+            "ACID REFLEX",
+            "ACIDITY",
+            "ACIDOSIS",
+            "ACID RAIN",
+            "PH LEVEL"
+        ]
+    },
+    {
+        "gloss": "ACNE",
+        "category": "CORE",
+        "anchor": [
+            "PIMPLE",
+            "BREAKOUT",
+            "SKIN CONDITION"
+        ]
+    },
+    {
+        "gloss": "ACUTE",
+        "category": "COMPOUND",
+        "anchor": [
+            "ACUTE CORONARY SYNDROME",
+            "SEVERE",
+            "SUDDEN",
+            "SHARP"
+        ]
+    },
+    {
+        "gloss": "ADAM",
+        "category": "COMPOUND",
+        "anchor": [
+            "ADAM'S APPLE",
+            "LARYNGEAL PROMINENCE"
+        ]
+    },
+    {
+        "gloss": "ADRENAL",
+        "category": "CORE",
+        "anchor": [
+            "SUPRARENAL",
+            "ADRENAL GLANDS",
+            "EPINEPHRINE"
+        ]
+    },
+    {
+        "gloss": "AMALGAM",
+        "category": "CORE",
+        "anchor": [
+            "AMALGAMATOR",
+            "DENTAL FILLING",
+            "MIXTURE"
+        ]
+    },
+    {
+        "gloss": "ANKLE",
+        "category": "CORE",
+        "anchor": [
+            "TALUS",
+            "JOINT"
+        ]
+    },
+    {
+        "gloss": "ANOREXIA",
+        "category": "CORE",
+        "anchor": [
+            "ANOREXIA NERVOSA",
+            "EATING DISORDER",
+            "APPETITE LOSS"
+        ]
+    },
+    {
+        "gloss": "ANTIBIOTIC",
+        "category": "CORE",
+        "anchor": [
+            "ANTIBACTERIAL",
+            "ANTIMICROBIAL"
+        ]
+    },
+    {
+        "gloss": "CURE",
+        "category": "CORE",
+        "anchor": [
+            "REMEDY",
+            "ANTIDOTE",
+            "COUNTER-AGENT"
+        ]
+    },
+    {
+        "gloss": "ASPIRATION",
+        "category": "CORE",
+        "anchor": [
+            "INHALATION",
+            "SUCTION",
+            "AMBITION"
+        ]
+    },
+    {
+        "gloss": "ASPIRIN",
+        "category": "CORE",
+        "anchor": [
+            "PAINKILLER",
+            "ACETYLSALICYLIC ACID"
+        ]
+    },
+    {
+        "gloss": "ASTHMA",
+        "category": "CORE",
+        "anchor": [
+            "WHEEZING",
+            "BRONCHIAL ASTHMA"
+        ]
+    },
+    {
+        "gloss": "ATHLETES",
+        "category": "COMPOUND",
+        "anchor": [
+            "ATHLETES' FOOT",
+            "TINEA PEDIS",
+            "FUNGAL INFECTION"
+        ]
+    },
+    {
+        "gloss": "AGRA",
+        "category": "CORE",
+        "anchor": [
+            "TAJ MAHAL CITY",
+            "UTTAR PRADESH"
+        ]
+    },
+    {
+        "gloss": "AHMEDABAD",
+        "category": "CORE",
+        "anchor": [
+            "GUJARAT CITY",
+            "MANCHESTER OF INDIA"
+        ]
+    },
+    {
+        "gloss": "AMRITSAR",
+        "category": "CORE",
+        "anchor": [
+            "GOLDEN TEMPLE CITY",
+            "PUNJAB"
+        ]
+    },
+    {
+        "gloss": "ANDHRA",
+        "category": "COMPOUND",
+        "anchor": [
+            "ANDHRA PRADESH",
+            "TELUGU STATE"
+        ]
+    },
+    {
+        "gloss": "ARUNACHAL",
+        "category": "COMPOUND",
+        "anchor": [
+            "ARUNACHAL PRADESH",
+            "LAND OF RISING SUN"
+        ]
+    },
+    {
+        "gloss": "ASSAM",
+        "category": "CORE",
+        "anchor": [
+            "ASSAM TEA GARDENS",
+            "DISPUR"
+        ]
+    },
+    {
+        "gloss": "AC",
+        "category": "COMPOUND",
+        "anchor": [
+            "AC ADAPTER",
+            "AC EXPRESS TRAIN",
+            "ALTERNATING CURRENT"
+        ]
+    },
+    {
+        "gloss": "ACCESS",
+        "category": "COMPOUND",
+        "anchor": [
+            "ACCESS TIME",
+            "ENTRY",
+            "ADMISSION"
+        ]
+    },
+    {
+        "gloss": "ACTIVE",
+        "category": "COMPOUND",
+        "anchor": [
+            "ACTIVE WINDOW",
+            "ACTIVE WEAR",
+            "ACTIVE ABSORPTION",
+            "ACTIVE TOURISM"
+        ]
+    },
+    {
+        "gloss": "ADD",
+        "category": "COMPOUND",
+        "anchor": [
+            "ADD ON",
+            "ADDITION",
+            "PLUS"
+        ]
+    },
+    {
+        "gloss": "ADOBE",
+        "category": "COMPOUND",
+        "anchor": [
+            "ADOBE ACROBAT READER",
+            "ADOBE AFTER EFFECTS",
+            "ADOBE CREATIVE SUITE"
+        ]
+    },
+    {
+        "gloss": "ADVANCE",
+        "category": "COMPOUND",
+        "anchor": [
+            "HIGHER LEVEL"
+        ]
+    },
+    {
+        "gloss": "AIR",
+        "category": "COMPOUND",
+        "anchor": [
+            "AIR COMPRESSOR",
+            "AIR FLOW",
+            "AIR MATRESS",
+            "AIR HOSTESS",
+            "AIR CONDITIONER"
+        ]
+    }
+]

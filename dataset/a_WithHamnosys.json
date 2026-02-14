@@ -1,0 +1,3603 @@
+{
+  "MANY": {
+    "hamnosys": "hamsymmlr,hamfinger2345,hamthumboutmod,hamextfingerul,hampalmdl,hamparbegin,hammiddlefinger,hamfingertip,hamplus,hammiddlefinger,hamfingertip,hamparend,hamtouch,hamshoulders,hamparbegin,hammover,hamsmallmod,hamfingerplay,hamparend",
+    "non_manual": {},
+    "anchors": [
+      "numerous",
+      "multiple"
+    ],
+    "category": "adjective"
+  },
+  "AAM AADMI PARTY": {
+    "hamnosys": "hamfinger23,hamextfingerul,hampalmdl,hamforehead,hamlrat,hammoved,hamzigzag,hamlargemod,hamchest,hamlrat",
+    "non_manual": {},
+    "anchors": [],
+    "category": ""
+  },
+  "AAMIR KHAN": {
+    "hamnosys": "hamparbegin,hamfinger2,hamextfingeru,hampalml,hamchest,hamplus,hamfinger23,hamparend",
+    "non_manual": {},
+    "anchors": [],
+    "category": ""
+  },
+  "ABACUS": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [],
+    "category": "CORE"
+  },
+  "ABATE": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "SUBSIDE"
+    ],
+    "category": "CORE"
+  },
+  "HATE": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "LOATHE",
+      "ABHOR",
+      "DETEST",
+      "DESPISE"
+    ],
+    "category": "CORE"
+  },
+  "FOLLOW": {
+    "hamnosys": "",
+    "non_manual": {},
+    "anchors": [
+      "ADHERE TO",
+      "ABIDE BY",
+      "COMPLY WITH",
+      "OBEY",
+      "ELBOW CONFORMER"
+    ],
+    "category": "COMPOUND"
+  },
+  "ABLE": {
+    "hamnosys": "hamparbegin,hamfinger23,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingeru,hampalml,hambetween,hampalmul,hamplus,hamextfingeru,hampalmdr,hamparend",
+    "non_manual": {},
+    "anchors": [
+      "CAN"
+    ],
+    "category": "CORE"
+  },
+  "APARTMENT": {
+    "hamnosys": "hamfinger23,hamextfingerul,hampalmdl,hamforehead,hamlrat,hammoved,hamzigzag,hamlargemod,hamchest,hamlrat",
+    "non_manual": {},
+    "anchors": [
+      "ABODE",
+      "HOME",
+      "BUNGALOW"
+    ],
+    "category": "CORE"
+  },
+  "ABOLISH": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [],
+    "category": "CORE"
+  },
+  "CANCEL": {
+    "hamnosys": "hamparbegin,hamfinger23,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingeru,hampalml,hambetween,hampalmul,hamplus,hamextfingeru,hampalmdr,hamparend",
+    "non_manual": {},
+    "anchors": [
+      "call off",
+      "abort"
+    ],
+    "category": "verb"
+  },
+  "ABOVE": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamfingerstraightmod,hamextfingerl,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamtouch,hamchest,hamtouch,hammoveu",
+    "non_manual": {},
+    "anchors": [
+      "over",
+      "higher than"
+    ],
+    "category": "preposition"
+  },
+  "ABROAD": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "OVERSEAS"
+    ],
+    "category": "CORE"
+  },
+  "ABSENT": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "MISSING"
+    ],
+    "category": "CORE"
+  },
+  "ABSTRACT": {
+    "hamnosys": "",
+    "non_manual": {},
+    "anchors": [
+      "SUMMARY",
+      "SYNOPSIS"
+    ],
+    "category": "COMPOUND"
+  },
+  "ACCEPT": {
+    "hamnosys": "hamsymmlr,hamfinger2345,hamthumboutmod,hamextfingero,hampalmd,hamshoulders,hamparbegin,hammovei,hamreplace,hampinchall,hamextfingerl,hampalml,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "agree",
+      "receive",
+      "approve"
+    ],
+    "category": "verb"
+  },
+  "ACCESS": {
+    "hamnosys": "hamparbegin,hamflathand,hamthumboutmod,hamplus,hamfinger2345,hamthumboutmod,hamparend,hamparbegin,hamextfingero,hampalml,hamplus,hamextfingeru,hampalmu,hamparend,hamparbegin,hamfingerpad,hamringfinger,hampinky,hamplus,hamfingerside,hampinky,hamparend,hamtouch,hammoveo,hamrepeatfromstart",
+    "non_manual": {},
+    "anchors": [],
+    "category": ""
+  },
+  "ACCESSORY": {
+    "hamnosys": "hamparbegin,hamflathand,hamthumboutmod,hamplus,hamfinger2345,hamthumboutmod,hamparend,hamparbegin,hamextfingero,hampalml,hamplus,hamextfingeru,hampalmu,hamparend,hamparbegin,hamfingerpad,hamringfinger,hampinky,hamplus,hamfingerside,hampinky,hamparend,hamtouch,hammoveo,hamrepeatfromstart",
+    "non_manual": {},
+    "anchors": [],
+    "category": "CORE"
+  },
+  "ACCOMPANY": {
+    "hamnosys": "hamsymmlr,hamflathand,hamfingerstraightmod,hambetween,hamflathand,hamextfingerl,hampalmu,hamshoulders,hamlrat,hamclose,hamparbegin,hammoveo,hamarcd,hamreplace,hamfinger2345,hamthumboutmod,hambetween,hamflathand,hamextfingeru,hambetween,hamextfingeror,hampalmd,hamparend,hamchest,hamlrat",
+    "non_manual": {},
+    "anchors": [
+      "TOGETHER",
+      "WITH",
+      "ALONG WITH"
+    ],
+    "category": "CORE"
+  },
+  "ACCOMPLISH": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ACHIEVE",
+      "ATTAIN",
+      "REALIZE",
+      "SUCCESS"
+    ],
+    "category": "COMPOUND"
+  },
+  "ACCORDION": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ACCORDION PLEATS",
+      "HARMONIUM"
+    ],
+    "category": "CORE"
+  },
+  "ACCOUNT": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [],
+    "category": "CORE"
+  },
+  "ACCOUNTABLE": {
+    "hamnosys": "hamsymmlr,hamparbegin,hamfist,hamthumboutmod,hamplus,hamfist,hamthumboutmod,hamparend,hamparbegin,hamextfingeru,hampalmd,hambetween,hampalml,hamplus,hamextfingeru,hampalmd,hambetween,hampalmr,hamparend,hamparbegin,hamthumb,hamfingertip,hamplus,hamthumb,hamfingertip,hamparend,hamtouch,hamshoulders,hammoveo",
+    "non_manual": {},
+    "anchors": [
+      "ANSWERABLE",
+      "LIABLE",
+      "RESPONSIBLE"
+    ],
+    "category": "COMPOUND"
+  },
+  "GATHER": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "COLLECT",
+      "ACCUMULATE",
+      "AMASS",
+      "PILE UP"
+    ],
+    "category": "CORE"
+  },
+  "ACCURATE": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "EXACT",
+      "PRECISE",
+      "CORRECT",
+      "PERFECT"
+    ],
+    "category": "CORE"
+  },
+  "ACCUSE": {
+    "hamnosys": "hamfinger2,hampinky,hamextfingeru,hampalml,hamshouldertop,hamlrat,hammovedl,hamlargemod,hamlrat,hambelowstomach",
+    "non_manual": {},
+    "anchors": [
+      "blame",
+      "charge",
+      "allege"
+    ],
+    "category": "verb"
+  },
+  "ACHE": {
+    "hamnosys": "",
+    "non_manual": {},
+    "anchors": [
+      "PAIN"
+    ],
+    "category": "COMPOUND"
+  },
+  "ACQUAINTANCE": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ACQUAINTANCE RAPE",
+      "DATE RAPE",
+      "MARITAL RAPE",
+      "CUSTODIAL RAPE"
+    ],
+    "category": "CORE"
+  },
+  "GET": {
+    "hamnosys": "hamfinger2345,hamthumboutmod,hamextfingero,hambetween,hamextfingerul,hampalmu,hambetween,hampalml,hamshoulders,hamlrat,hamparbegin,hammoveil,hamreplace,hamfist,hamthumbacrossmod,hamparend",
+    "non_manual": {},
+    "anchors": [
+      "obtain",
+      "receive",
+      "acquire"
+    ],
+    "category": "verb"
+  },
+  "ACROSS": {
+    "hamnosys": "hamparbegin,hamflathand,hamthumboutmod,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerol,hamplus,hamextfingeror,hamparend,hamparbegin,hampalml,hamplus,hampalmd,hamparend,hammoveol,hamarcu,hamparbegin,hampinkyside,hamplus,hamwristback,hamparend,hamclose",
+    "non_manual": {},
+    "anchors": [
+      "over",
+      "through",
+      "beyond"
+    ],
+    "category": "preposition"
+  },
+  "ACTION": {
+    "hamnosys": "hamsymmlr,hamparbegin,hamfist,hamplus,hamfist,hamparend,hamparbegin,hamextfingeru,hampalmd,hamplus,hamextfingeru,hampalmd,hamparend,hamshoulders,hamclose,hamparbegin,hamcirclei,hamplus,hamcircleo,hamparend,hamrepeatfromstart",
+    "non_manual": {},
+    "anchors": [
+      "DO",
+      "ACT",
+      "ACTIVITY",
+      "PROCESS",
+      "ACTION PLAN",
+      "ACTION TAKEN REPORT",
+      "ACTION RESEARCH"
+    ],
+    "category": "CORE"
+  },
+  "REPLAY": {
+    "hamnosys": "hampinchopen,hammiddlefinger,hamringfinger,hamfingerhookmod,hampinky,hamfingerhookmod,hamextfingeru,hampalmd,hammovel,hamarcu,hamrepeatfromstartseveral",
+    "non_manual": {},
+    "anchors": [
+      "ACTION REPLAY",
+      "REPEAT",
+      "PLAY AGAIN"
+    ],
+    "category": "COMPOUND"
+  },
+  "ACTIVE": {
+    "hamnosys": "hamsymmlr,hamparbegin,hamfist,hamplus,hamfist,hamparend,hamparbegin,hamextfingeru,hampalmd,hamplus,hamextfingeru,hampalmd,hamparend,hamshoulders,hamclose,hamparbegin,hamcirclei,hamplus,hamcircleo,hamparend,hamrepeatfromstart",
+    "non_manual": {},
+    "anchors": [
+      "energetic",
+      "dynamic",
+      "lively"
+    ],
+    "category": "adjective"
+  },
+  "ADVOCATE": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ADVOCATE GENERAL",
+      "LAWYER",
+      "COUNSEL",
+      "BARRISTER"
+    ],
+    "category": "COMPOUND"
+  },
+  "ACTOR": {
+    "hamnosys": "hamfinger2,hamthumboutmod,hamfingerbendmod,hamextfingerul,hampalmdl,hamnose,hamfingerplay,hamtouch,hamreplace,hamfinger2345,hamthumboutmod,hamextfingero,hampalmd,hamchest,hammovei,hamwavy,hamreplace,hamfinger2,hamthumboutmod,hamfingerbendmod,hamextfingeruo,hampalmdl,hamchest,hammoved,hamstomach",
+    "non_manual": {},
+    "anchors": [
+      "performer",
+      "artist"
+    ],
+    "category": "noun"
+  },
+  "ACTRESS": {
+    "hamnosys": "hamfinger2,hamthumboutmod,hamextfingerul,hampalmdl,hamnose,hamtouch,hamreplace,hamfinger2345,hamthumboutmod,hamextfingero,hampalmd,hamchest,hammovei,hamwavy,hamreplace,hamfinger2,hamthumboutmod,hamfingerbendmod,hamextfingeruo,hampalmdl,hamchest,hammoved,hamstomach",
+    "non_manual": {},
+    "anchors": [
+      "female actor",
+      "performer"
+    ],
+    "category": "noun"
+  },
+  "SHARP": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ACUITY",
+      "KEENNESS",
+      "CLARITY"
+    ],
+    "category": "CORE"
+  },
+  "INTELLIGENCE": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ACUMEN",
+      "AWARENESS",
+      "SHREWDNESS",
+      "WIT"
+    ],
+    "category": "CORE"
+  },
+  "STUBBORN": {
+    "hamnosys": "hamfist,hamthumbacrossmod,hamextfingerl,hampalml,hamchest,hamclose,hammoved",
+    "non_manual": {},
+    "anchors": [],
+    "category": ""
+  },
+  "ADD": {
+    "hamnosys": "hamparbegin,hamfinger2,hamthumbacrossmod,hamplus,hamfinger2,hamthumbacrossmod,hamparend,hamparbegin,hamextfingeru,hamplus,hamextfingerr,hamparend,hamparbegin,hampalmd,hamplus,hampalmr,hamparend,hamparbegin,hamindexfinger,hamfingermidjoint,hamplus,hamindexfinger,hamfingermidjoint,hamparend,hamtouch,hamswinging,hamchest",
+    "non_manual": {},
+    "anchors": [
+      "include",
+      "append",
+      "sum"
+    ],
+    "category": "verb"
+  },
+  "MORE": {
+    "hamnosys": "hamflathand,hamextfingero,hampalmu,hamchest,hamlrat,hammoveu,hamlargemod,hamshouldertop",
+    "non_manual": {},
+    "anchors": [
+      "additional",
+      "extra"
+    ],
+    "category": "adverb"
+  },
+  "ADDICT": {
+    "hamnosys": "hamparbegin,hamfinger2,hamthumbacrossmod,hamplus,hamfinger2,hamthumbacrossmod,hamparend,hamparbegin,hamextfingeru,hamplus,hamextfingerr,hamparend,hamparbegin,hampalmd,hamplus,hampalmr,hamparend,hamparbegin,hamindexfinger,hamfingermidjoint,hamplus,hamindexfinger,hamfingermidjoint,hamparend,hamtouch,hamswinging,hamchest",
+    "non_manual": {},
+    "anchors": [
+      "DEPEND",
+      "HABIT"
+    ],
+    "category": "COMPOUND"
+  },
+  "ADDRESS": {
+    "hamnosys": "hamparbegin,hamfinger2,hamthumbacrossmod,hamplus,hamfinger2,hamthumbacrossmod,hamparend,hamparbegin,hamextfingeru,hamplus,hamextfingerr,hamparend,hamparbegin,hampalmd,hamplus,hampalmr,hamparend,hamparbegin,hamindexfinger,hamfingermidjoint,hamplus,hamindexfinger,hamfingermidjoint,hamparend,hamtouch,hamswinging,hamchest",
+    "non_manual": {},
+    "anchors": [
+      "ADDRESS \u2018RISK FACTORS\u2019",
+      "LOCATION",
+      "RESIDENCE"
+    ],
+    "category": "CORE"
+  },
+  "ENOUGH": {
+    "hamnosys": "hamfinger2,hamthumboutmod,hamfingerbendmod,hamextfingerul,hampalmdl,hamnose,hamfingerplay,hamtouch,hamreplace,hamfinger2345,hamthumboutmod,hamextfingero,hampalmd,hamchest,hammovei,hamwavy,hamreplace,hamfinger2,hamthumboutmod,hamfingerbendmod,hamextfingeruo,hampalmdl,hamchest,hammoved,hamstomach",
+    "non_manual": {},
+    "anchors": [
+      "ADEQUATE",
+      "SUFFICIENT",
+      "SATISFACTORY"
+    ],
+    "category": "COMPOUND"
+  },
+  "PRAISE": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ACCOLADE",
+      "AWARD",
+      "HONOUR",
+      "REWARD"
+    ],
+    "category": "CORE"
+  },
+  "ADOPT": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ADOPTIVE CHILD",
+      "ADOPTIVE PARENT"
+    ],
+    "category": "CORE"
+  },
+  "LOST": {
+    "hamnosys": "hamsymmpar,hamfist,hamthumboutmod,hamextfingeru,hampalmd,hamtouch,hamchest,hamnomotion,hamplus,hamflathand,hamextfingero,hampalmd,hamchest,hamcircled",
+    "non_manual": {},
+    "anchors": [
+      "ADRIFT",
+      "AIMLESS",
+      "DIRECTIONLESS",
+      "GOALLESS",
+      "PURPOSELESS",
+      "UNMOORED",
+      "UNANCHORED"
+    ],
+    "category": "COMPOUND"
+  },
+  "ADULT": {
+    "hamnosys": "hamfist,hamthumbacrossmod,hamextfingerl,hambetween,hamextfingerol,hampalml,hambetween,hampalmul,hamunderchin,hamreplace,hamextfingerl,hampalml,hamunderchin",
+    "non_manual": {},
+    "anchors": [
+      "GROWN-UP",
+      "MATURE",
+      "MAJOR",
+      "TEENAGE",
+      "PUBERTY",
+      "YOUTH"
+    ],
+    "category": "CORE"
+  },
+  "ADVANTAGE": {
+    "hamnosys": "hamfist,hamthumbacrossmod,hamextfingerl,hambetween,hamextfingerol,hampalml,hambetween,hampalmul,hamunderchin,hamreplace,hamextfingerl,hampalml,hamunderchin",
+    "non_manual": {},
+    "anchors": [
+      "BENEFIT",
+      "PROFIT",
+      "ADVANTAGE OF KITCHEN GARDENING",
+      "ADVANTAGE OF DISTANT MARKETS"
+    ],
+    "category": "CORE"
+  },
+  "HARMFUL": {
+    "hamnosys": "hamfinger2,hampinky,hamextfingeru,hampalmdl,hambetween,hampalml,hamshouldertop,hamlrat,hambetween,hamshoulders,hammovedo",
+    "non_manual": {},
+    "anchors": [
+      "ADVERSE",
+      "DETRIMENTAL",
+      "BAD",
+      "NEGATIVE"
+    ],
+    "category": "COMPOUND"
+  },
+  "ADVERTISEMENT": {
+    "hamnosys": "hamparbegin,hamfinger2,hamthumbacrossmod,hamplus,hamfinger2,hamthumbacrossmod,hamparend,hamparbegin,hamextfingeru,hamplus,hamextfingerr,hamparend,hamparbegin,hampalmd,hamplus,hampalmr,hamparend,hamparbegin,hamindexfinger,hamfingermidjoint,hamplus,hamindexfinger,hamfingermidjoint,hamparend,hamtouch,hamswinging,hamchest",
+    "non_manual": {},
+    "anchors": [
+      "AD",
+      "PROMOTION",
+      "PUBLICITY",
+      "COMMERCIAL"
+    ],
+    "category": "CORE"
+  },
+  "ADVISE": {
+    "hamnosys": "hamsymmlr,hamalternatingmotion,hamflathand,hamthumboutmod,hamextfingerl,hampalmul,hamchest,hammoveu,hamwavy",
+    "non_manual": {},
+    "anchors": [
+      "counsel",
+      "recommend",
+      "suggest"
+    ],
+    "category": "verb"
+  },
+  "AEROPLANE": {
+    "hamnosys": "hamfinger2,hamthumboutmod,hampinky,hamextfingeru,hambetween,hamextfingerol,hampalmd,hamneck,hamlrat,hamclose,hamnomotion,hammoveul,hamlargemod",
+    "non_manual": {},
+    "anchors": [
+      "airplane",
+      "plane",
+      "aircraft",
+      "jet"
+    ],
+    "category": "noun"
+  },
+  "INFLUENCE": {
+    "hamnosys": "",
+    "non_manual": {},
+    "anchors": [
+      "AFFECT",
+      "IMPACT",
+      "EFFECT",
+      "CONTROL"
+    ],
+    "category": "COMPOUND"
+  },
+  "JOIN": {
+    "hamnosys": "hamparbegin,hamfinger2,hamfingerhookmod,hamthumbacrossmod,hamplus,hampinch12,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalmd,hamplus,hampalmr,hamparend,hammovel,hamarcu,hamsmallmod,hamparbegin,hamthumb,hamfingertip,hamplus,hamindexfinger,hamfingernail,hamparend,hamclose",
+    "non_manual": {},
+    "anchors": [
+      "connect",
+      "unite",
+      "combine"
+    ],
+    "category": "verb"
+  },
+  "WEALTHY": {
+    "hamnosys": "",
+    "non_manual": {},
+    "anchors": [
+      "AFFLUENT",
+      "RICH",
+      "PROSPEROUS",
+      "MONEYED"
+    ],
+    "category": "COMPOUND"
+  },
+  "AFFORD": {
+    "hamnosys": "hamfist,hamthumbacrossmod,hamextfingerl,hambetween,hamextfingerol,hampalml,hambetween,hampalmul,hamunderchin,hamreplace,hamextfingerl,hampalml,hamunderchin",
+    "non_manual": {},
+    "anchors": [
+      "CAN BUY",
+      "MANAGE",
+      "SPARE",
+      "COST"
+    ],
+    "category": "CORE"
+  },
+  "AFRAID": {
+    "hamnosys": "hamsymmlr,hamfinger2345,hamthumboutmod,hamextfingeru,hampalmd,hamclose,hamchest,hammovei",
+    "non_manual": {},
+    "anchors": [
+      "scared",
+      "frightened",
+      "fearful",
+      "terrified"
+    ],
+    "category": "adjective"
+  },
+  "AFTER": {
+    "hamnosys": "hamflathand,hamextfingerl,hampalmd,hamchest,hamparbegin,hammoveo,hamarcu,hamreplace,hampalmu,hamparend",
+    "non_manual": {},
+    "anchors": [
+      "following",
+      "later",
+      "subsequent"
+    ],
+    "category": "preposition"
+  },
+  "RESULT": {
+    "hamnosys": "hamsymmlr,hamfist,hamthumboutmod,hamextfingerl,hampalml,hamshoulders,hamnomotion,hamstomach",
+    "non_manual": {},
+    "anchors": [],
+    "category": ""
+  },
+  "AFTERNOON": {
+    "hamnosys": "hamfinger2345,hamthumboutmod,hamextfingeru,hampalml,hamshouldertop,hamlrbeside,hambetween,hamear,hamlrat,hamclose,hamseqbegin,hammoveur,hammovedl,hamseqend,hamrepeatfromstart",
+    "non_manual": {},
+    "anchors": [
+      "pm",
+      "midday"
+    ],
+    "category": "noun"
+  },
+  "AFTERSHAVE": {
+    "hamnosys": "hamflathand,hamextfingerl,hampalmd,hamchest,hamparbegin,hammoveo,hamarcu,hamreplace,hampalmu,hamparend",
+    "non_manual": {},
+    "anchors": [
+      "AFTERSHAVE LOTION",
+      "SHAVE CREAM",
+      "LOTION"
+    ],
+    "category": "COMPOUND"
+  },
+  "REPEAT": {
+    "hamnosys": "hampinchopen,hammiddlefinger,hamringfinger,hamfingerhookmod,hampinky,hamfingerhookmod,hamextfingeru,hampalmd,hammovel,hamarcu,hamrepeatfromstartseveral",
+    "non_manual": {},
+    "anchors": [
+      "do again",
+      "replicate"
+    ],
+    "category": "verb"
+  },
+  "AGE": {
+    "hamnosys": "hamfist,hamthumbacrossmod,hamextfingerl,hambetween,hamextfingerol,hampalml,hambetween,hampalmul,hamunderchin,hamreplace,hamextfingerl,hampalml,hamunderchin",
+    "non_manual": {},
+    "anchors": [
+      "years old",
+      "lifetime"
+    ],
+    "category": "noun"
+  },
+  "BIAS": {
+    "hamnosys": "hamfist,hamthumbacrossmod,hamextfingerl,hambetween,hamextfingerol,hampalml,hambetween,hampalmul,hamunderchin,hamreplace,hamextfingerl,hampalml,hamunderchin",
+    "non_manual": {},
+    "anchors": [
+      "AGEISM",
+      "AGE BIAS",
+      "DISCRIMINATION",
+      "PARTIALITY"
+    ],
+    "category": "COMPOUND"
+  },
+  "DOUBT": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "AGNOSTIC",
+      "UNSURE",
+      "SKEPTIC"
+    ],
+    "category": "CORE"
+  },
+  "SUFFERING": {
+    "hamnosys": "",
+    "non_manual": {},
+    "anchors": [
+      "AGONY",
+      "PAIN",
+      "HURT",
+      "DISTRESS"
+    ],
+    "category": "COMPOUND"
+  },
+  "HELP": {
+    "hamnosys": "hamfinger2,hamthumbacrossmod,hamextfingerl,hampalmd,hamparbegin,hammovel,hamsmallmod,hamreplace,hamfinger2,hamfingerbendmod,hamthumbacrossmod,hamextfingerl,hampalmd,hamparend,hamrepeatcontinueseveral",
+    "non_manual": {},
+    "anchors": [
+      "ASSISTANT",
+      "HELPER",
+      "ASSIST"
+    ],
+    "category": "CORE"
+  },
+  "GOAL": {
+    "hamnosys": "",
+    "non_manual": {},
+    "anchors": [
+      "ASPIRE",
+      "AIM",
+      "PURSUE",
+      "DREAM"
+    ],
+    "category": "COMPOUND"
+  },
+  "AIR": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "AIR COMPRESSOR",
+      "AIR FLOW",
+      "AIR MATRESS",
+      "AIR HOSTESS",
+      "AIR CONDITIONER"
+    ],
+    "category": "COMPOUND"
+  },
+  "AIR CONDITIONER": {
+    "hamnosys": "hamsymmlr,hamfinger2345,hamthumboutmod,hamextfingero,hampalmd,hamshoulders,hamparbegin,hammovei,hamreplace,hampinchall,hamextfingerl,hampalml,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "AC",
+      "AIR COOLER",
+      "COOLING"
+    ],
+    "category": "COMPOUND"
+  },
+  "FLIGHT ATTENDANT": {
+    "hamnosys": "hamfinger2,hamthumbacrossmod,hamextfingerl,hampalmd,hamparbegin,hammovel,hamsmallmod,hamreplace,hamfinger2,hamfingerbendmod,hamthumbacrossmod,hamextfingerl,hampalmd,hamparend,hamrepeatcontinueseveral",
+    "non_manual": {},
+    "anchors": [
+      "AIR HOSTESS",
+      "CABIN CREW",
+      "STEWARD"
+    ],
+    "category": "COMPOUND"
+  },
+  "AIRLINE": {
+    "hamnosys": "hamsymmlr,hamfinger2,hampinky,hamextfingerl,hampalml,hamtouch,hammover",
+    "non_manual": {},
+    "anchors": [
+      "FLIGHT COMPANY",
+      "PLANE SERVICE",
+      "AVIATION"
+    ],
+    "category": "CORE"
+  },
+  "POLLUTION": {
+    "hamnosys": "",
+    "non_manual": {},
+    "anchors": [
+      "AIR QUALITY INDEX",
+      "AQI",
+      "ENVIRONMENT",
+      "SMOG",
+      "AIR CONDITION"
+    ],
+    "category": "COMPOUND"
+  },
+  "GUN": {
+    "hamnosys": "",
+    "non_manual": {},
+    "anchors": [
+      "AIR RIFLE",
+      "WEAPON",
+      "SHOOTING"
+    ],
+    "category": "COMPOUND"
+  },
+  "AIRPORT": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "TERMINAL",
+      "AERODROME",
+      "AIRFIELD"
+    ],
+    "category": "CORE"
+  },
+  "TELECOM": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "AIRTEL",
+      "AIRCEL",
+      "MOBILE NETWORK",
+      "SIM CARD"
+    ],
+    "category": "CORE"
+  },
+  "AISHWARYA RAI": {
+    "hamnosys": "hamfinger2,hamthumboutmod,hamextfingerul,hampalmdl,hamnose,hamtouch,hamreplace,hamfinger2345,hamthumboutmod,hamextfingero,hampalmd,hamchest,hammovei,hamwavy,hamreplace,hamfinger2,hamthumboutmod,hamfingerbendmod,hamextfingeruo,hampalmdl,hamchest,hammoved,hamstomach",
+    "non_manual": {},
+    "anchors": [
+      "AISHWARYA RAI BACHCHAN",
+      "ACTRESS",
+      "MISS WORLD"
+    ],
+    "category": "COMPOUND"
+  },
+  "AKSHAY KUMAR": {
+    "hamnosys": "hamfinger2,hamthumboutmod,hamfingerbendmod,hamextfingerul,hampalmdl,hamnose,hamfingerplay,hamtouch,hamreplace,hamfinger2345,hamthumboutmod,hamextfingero,hampalmd,hamchest,hammovei,hamwavy,hamreplace,hamfinger2,hamthumboutmod,hamfingerbendmod,hamextfingeruo,hampalmdl,hamchest,hammoved,hamstomach",
+    "non_manual": {},
+    "anchors": [
+      "ACTOR",
+      "KHILADI"
+    ],
+    "category": "COMPOUND"
+  },
+  "PATH": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "AISLE",
+      "PASSAGE",
+      "CORRIDOR",
+      "WAY",
+      "WALKWAY"
+    ],
+    "category": "COMPOUND"
+  },
+  "AJMER SHARIF": {
+    "hamnosys": "hamparbegin,hamfinger2,hamextfingeru,hampalml,hamchest,hamplus,hamfinger23,hamparend",
+    "non_manual": {},
+    "anchors": [
+      "AJMER SHARIF DARGAH",
+      "DARGAH",
+      "SHRINE",
+      "HOLY PLACE"
+    ],
+    "category": "COMPOUND"
+  },
+  "ALARM": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "WAKE UP",
+      "BELL",
+      "WARNING",
+      "DANGER SIGN",
+      "ALERT"
+    ],
+    "category": "CORE"
+  },
+  "ALCOHOL": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ALCOHOL EDUCATION PROGRAM",
+      "ALCOHOL DEPENDENCE",
+      "DRUG DEPENDENCE",
+      "LIQUOR"
+    ],
+    "category": "COMPOUND"
+  },
+  "WARNING": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ALERT",
+      "WATCH OUT",
+      "DANGER"
+    ],
+    "category": "CORE"
+  },
+  "ALIEN": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "EXTRATERRESTRIAL",
+      "OUTER SPACE",
+      "UFO",
+      "STRANGER"
+    ],
+    "category": "COMPOUND"
+  },
+  "SAME": {
+    "hamnosys": "hamsymmlr,hamfinger2,hamextfingero,hampalmd,hamchest,hamlrat,hammovel,hamtouch,hammover,hamrepeatfromstart",
+    "non_manual": {},
+    "anchors": [
+      "identical",
+      "equal"
+    ],
+    "category": "adjective"
+  },
+  "ALIVE": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingerul,hampalmdl,hamchin,hamlrbeside,hamcircleur,hamclose",
+    "non_manual": {},
+    "anchors": [
+      "living",
+      "breathing"
+    ],
+    "category": "adjective"
+  },
+  "ALL": {
+    "hamnosys": "hamsymmpar,hamfist,hamthumboutmod,hamextfingeru,hampalmd,hamtouch,hamchest,hamnomotion,hamplus,hamflathand,hamextfingero,hampalmd,hamchest,hamcircled",
+    "non_manual": {},
+    "anchors": [
+      "every",
+      "entire"
+    ],
+    "category": "determiner"
+  },
+  "ALONE": {
+    "hamnosys": "hamfinger2,hamthumbacrossmod,hamextfingeru,hampalmu,hamshouldertop,hamlrat,hamcircleu,hammoveo,hamsmallmod",
+    "non_manual": {},
+    "anchors": [
+      "solo",
+      "isolated",
+      "solitary"
+    ],
+    "category": "adjective"
+  },
+  "ALL INDIA FEDERATION OF THE DEAF": {
+    "hamnosys": "hamsymmpar,hamfist,hamthumboutmod,hamextfingeru,hampalmd,hamtouch,hamchest,hamnomotion,hamplus,hamflathand,hamextfingero,hampalmd,hamchest,hamcircled",
+    "non_manual": {},
+    "anchors": [
+      "AIFD"
+    ],
+    "category": "COMPOUND"
+  },
+  "ALL INDIA FOUNDATION OF DEAF WOMEN": {
+    "hamnosys": "hamsymmpar,hamfist,hamthumboutmod,hamextfingeru,hampalmd,hamtouch,hamchest,hamnomotion,hamplus,hamflathand,hamextfingero,hampalmd,hamchest,hamcircled",
+    "non_manual": {},
+    "anchors": [
+      "AIFDW"
+    ],
+    "category": "COMPOUND"
+  },
+  "ALL THE BEST": {
+    "hamnosys": "hamsymmpar,hamfist,hamthumboutmod,hamextfingeru,hampalmd,hamtouch,hamchest,hamnomotion,hamplus,hamflathand,hamextfingero,hampalmd,hamchest,hamcircled",
+    "non_manual": {},
+    "anchors": [
+      "GOOD LUCK"
+    ],
+    "category": "COMPOUND"
+  },
+  "ALL INDIA TRINAMOOL CONGRESS": {
+    "hamnosys": "hamsymmpar,hamfist,hamthumboutmod,hamextfingeru,hampalmd,hamtouch,hamchest,hamnomotion,hamplus,hamflathand,hamextfingero,hampalmd,hamchest,hamcircled",
+    "non_manual": {},
+    "anchors": [],
+    "category": "COMPOUND"
+  },
+  "ALLERGY": {
+    "hamnosys": "hamsymmpar,hamfist,hamthumboutmod,hamextfingeru,hampalmd,hamtouch,hamchest,hamnomotion,hamplus,hamflathand,hamextfingero,hampalmd,hamchest,hamcircled",
+    "non_manual": {},
+    "anchors": [
+      "REACTION",
+      "INFECTION",
+      "SENSITIVITY"
+    ],
+    "category": "CORE"
+  },
+  "DISTRIBUTE": {
+    "hamnosys": "hamsymmpar,hamfist,hamthumboutmod,hamextfingeru,hampalmd,hamtouch,hamchest,hamnomotion,hamplus,hamflathand,hamextfingero,hampalmd,hamchest,hamcircled",
+    "non_manual": {},
+    "anchors": [
+      "ALLOCATE",
+      "ALLOT",
+      "APPORTION",
+      "GIVE OUT",
+      "SHARE"
+    ],
+    "category": "COMPOUND"
+  },
+  "PERMIT": {
+    "hamnosys": "hamsymmpar,hamfist,hamthumboutmod,hamextfingeru,hampalmd,hamtouch,hamchest,hamnomotion,hamplus,hamflathand,hamextfingero,hampalmd,hamchest,hamcircled",
+    "non_manual": {},
+    "anchors": [
+      "ALLOW",
+      "PERMISSION",
+      "LET",
+      "APPROVE"
+    ],
+    "category": "CORE"
+  },
+  "ALLY": {
+    "hamnosys": "hamsymmpar,hamfist,hamthumboutmod,hamextfingeru,hampalmd,hamtouch,hamchest,hamnomotion,hamplus,hamflathand,hamextfingero,hampalmd,hamchest,hamcircled",
+    "non_manual": {},
+    "anchors": [
+      "ALLIANCE",
+      "ALLIED",
+      "PARTNERSHIP",
+      "FRIEND",
+      "UNION"
+    ],
+    "category": "COMPOUND"
+  },
+  "ALMOND": {
+    "hamnosys": "hamfinger2,hampinky,hamextfingeru,hampalmdl,hambetween,hampalml,hamshouldertop,hamlrat,hambetween,hamshoulders,hammovedo",
+    "non_manual": {},
+    "anchors": [
+      "NUT",
+      "BADAM"
+    ],
+    "category": "CORE"
+  },
+  "ALMOST": {
+    "hamnosys": "hamsymmlr,hamalternatingmotion,hamfinger2,hamextfingerl,hampalml,hamparbegin,hamfingerside,hamindexfinger,hamplus,hamfingerside,hamindexfinger,hamparend,hamtouch,hamchest,hamcircleo,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "NEARLY",
+      "CLOSE TO",
+      "ABOUT"
+    ],
+    "category": "COMPOUND"
+  },
+  "ALPHABET": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "LETTERS",
+      "A-Z",
+      "ABC"
+    ],
+    "category": "CORE"
+  },
+  "ALREADY": {
+    "hamnosys": "hamsymmlr,hamfinger2345,hamthumboutmod,hamextfingerul,hampalmd,hamchest,hamlrat,hamtouch,hammovedo,hamrepeatfromstart",
+    "non_manual": {},
+    "anchors": [
+      "DONE",
+      "FINISH",
+      "BEFORE"
+    ],
+    "category": "CORE"
+  },
+  "OPTION": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ALTERNATIVE",
+      "CHOICE",
+      "OTHER",
+      "ALTERNATIVE FUELS",
+      "ALTERNATIVE TOURISM",
+      "ALTERNATIVE CURRENT",
+      "ALTERNATIVE DISPUTE RESOLUTION"
+    ],
+    "category": "CORE"
+  },
+  "KINDNESS": {
+    "hamnosys": "",
+    "non_manual": {},
+    "anchors": [
+      "KIND"
+    ],
+    "category": "COMPOUND"
+  },
+  "ALWAYS": {
+    "hamnosys": "hamfinger2,hamthumbacrossmod,hamextfingerl,hampalml,hamchest,hamcircleo,hamsmallmod,hamfast,hamrepeatcontinueseveral",
+    "non_manual": {},
+    "anchors": [
+      "forever",
+      "constantly",
+      "ever"
+    ],
+    "category": "adverb"
+  },
+  "BEGINNER": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "NON-PROFESSIONAL",
+      "AMATEUR",
+      "LEARNER"
+    ],
+    "category": "COMPOUND"
+  },
+  "SURPRISE": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "AMAZE",
+      "SHOCK",
+      "WONDER"
+    ],
+    "category": "CORE"
+  },
+  "AMAZON": {
+    "hamnosys": "hamsymmlr,hamfinger2,hampinky,hamextfingerl,hampalml,hamtouch,hammover",
+    "non_manual": {},
+    "anchors": [
+      "ONLINE SHOPPING",
+      "AMAZON RIVER"
+    ],
+    "category": "CORE"
+  },
+  "AMBITIOUS": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ASPIRATION",
+      "DETERMINED",
+      "GOAL-ORIENTED",
+      "HARD WORKING"
+    ],
+    "category": "CORE"
+  },
+  "AMBULANCE": {
+    "hamnosys": "hamparbegin,hamflathand,hamplus,hamfist,hamparend,hamparbegin,hamextfingerol,hamplus,hamextfingeror,hamparend,hampalmd,hamparbegin,hamwristback,hamplus,hampalm,hamparend,hamtouch,hamparbegin,hamreplace,hamfist,hamextfingero,hampalmul,hamparend,hammoveo,hamwavy,hamsmallmod,hamparbegin,hamreplace,hamfinger2345,hamextfingeru,hampalml,hamcheek,hamlrbeside,hamparend,hamparbegin,hamreplace,hampinch12,hamparend,hamparbegin,hamreplace,hamfinger2345,hamparend,hamparbegin,hamreplace,hampinch12,hamparend",
+    "non_manual": {},
+    "anchors": [
+      "emergency vehicle",
+      "medical transport"
+    ],
+    "category": "noun"
+  },
+  "AMITABH BACHCHAN": {
+    "hamnosys": "hamfinger2,hamthumboutmod,hamfingerbendmod,hamextfingerul,hampalmdl,hamnose,hamfingerplay,hamtouch,hamreplace,hamfinger2345,hamthumboutmod,hamextfingero,hampalmd,hamchest,hammovei,hamwavy,hamreplace,hamfinger2,hamthumboutmod,hamfingerbendmod,hamextfingeruo,hampalmdl,hamchest,hammoved,hamstomach",
+    "non_manual": {},
+    "anchors": [
+      "BIG B",
+      "BOLLYWOOD ACTOR"
+    ],
+    "category": "COMPOUND"
+  },
+  "BETWEEN": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "AMONG",
+      "MIDDLE",
+      "MIDST"
+    ],
+    "category": "CORE"
+  },
+  "TOTAL": {
+    "hamnosys": "hamfinger2,hamthumbacrossmod,hamextfingerl,hampalmd,hamparbegin,hammovel,hamsmallmod,hamreplace,hamfinger2,hamfingerbendmod,hamthumbacrossmod,hamextfingerl,hampalmd,hamparend,hamrepeatcontinueseveral",
+    "non_manual": {},
+    "anchors": [
+      "AMOUNT",
+      "QUANTITY",
+      "SUM",
+      "VALUE"
+    ],
+    "category": "NUMBERS & TIME"
+  },
+  "RESEARCH": {
+    "hamnosys": "hamsymmlr,hamflathand,hamfingerbendmod,hamextfingerul,hampalmd,hamchest,hamlrat,hamtouch,hammoved,hamlargemod,hamarcl,hamstomach,hamlrat,hamclose,hamrepeatfromstartseveral",
+    "non_manual": {},
+    "anchors": [],
+    "category": ""
+  },
+  "ANCESTOR": {
+    "hamnosys": "hamfist,hamthumbacrossmod,hamextfingerl,hambetween,hamextfingerol,hampalml,hambetween,hampalmul,hamunderchin,hamreplace,hamextfingerl,hampalml,hamunderchin",
+    "non_manual": {},
+    "anchors": [
+      "FOREFATHER",
+      "HERITAGE",
+      "PAST FAMILY"
+    ],
+    "category": "CORE"
+  },
+  "ANGEL": {
+    "hamnosys": "hamsymmlr,hamflathand,hamthumboutmod,hamfingerstraightmod,hamextfingeru,hampalml,hamshouldertop,hammover",
+    "non_manual": {},
+    "anchors": [
+      "heavenly being",
+      "celestial"
+    ],
+    "category": "noun"
+  },
+  "ANGRY": {
+    "hamnosys": "hamfinger2345,hamfingerbendmod,hamthumboutmod,hamextfingeru,hampalml,hamear,hamtouch,hammover,hamreplace,hamfinger23,hamthumbacrossmod,hampalml,hammover,hamreplace,hamfinger2345,hamthumb,hamfingerbendmod,hampinky,hamfingerbendmod,hampalml",
+    "non_manual": {},
+    "anchors": [
+      "mad",
+      "furious",
+      "upset",
+      "irritated"
+    ],
+    "category": "adjective"
+  },
+  "ANIMAL": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ANIMALS",
+      "CREATURE",
+      "FAUNA"
+    ],
+    "category": "CORE"
+  },
+  "ANNIVERSARY": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "CELEBRATION",
+      "ANNUAL EVENT",
+      "MILESTONE"
+    ],
+    "category": "CORE"
+  },
+  "ANNOUNCE": {
+    "hamnosys": "hamsymmpar,hampinchall,hamextfingeru,hampalml,hamparbegin,hamfingertip,hamthumb,hamindexfinger,hamplus,hamfingertip,hamthumb,hamindexfinger,hamparend,hamtouch,hamchin,hamparbegin,hamreplace,hamfinger2345,hamextfingeruo,hampalmd,hamclose,hamshoulders,hamparend",
+    "non_manual": {},
+    "anchors": [
+      "declare",
+      "proclaim",
+      "state"
+    ],
+    "category": "verb"
+  },
+  "YEARLY": {
+    "hamnosys": "",
+    "non_manual": {},
+    "anchors": [
+      "ANNUAL",
+      "PER YEAR",
+      "EVERY YEAR"
+    ],
+    "category": "COMPOUND"
+  },
+  "HIDDEN": {
+    "hamnosys": "hamflathand,hamfingerstraightmod,hamextfingeru,hampalml,hamforehead,hamlrbeside,hamseqbegin,hammoveor,hammoveil,hamseqend,hamrepeatfromstartseveral",
+    "non_manual": {},
+    "anchors": [
+      "ANONYMOUS",
+      "UNKNOWN",
+      "SECRET"
+    ],
+    "category": "CORE"
+  },
+  "ANSWER": {
+    "hamnosys": "hamsymmlr,hamparbegin,hamfist,hamthumboutmod,hamplus,hamfist,hamthumboutmod,hamparend,hamparbegin,hamextfingeru,hampalmd,hambetween,hampalml,hamplus,hamextfingeru,hampalmd,hambetween,hampalmr,hamparend,hamparbegin,hamthumb,hamfingertip,hamplus,hamthumb,hamfingertip,hamparend,hamtouch,hamshoulders,hammoveo",
+    "non_manual": {},
+    "anchors": [
+      "reply",
+      "respond"
+    ],
+    "category": "verb"
+  },
+  "ANT": {
+    "hamnosys": "hamfinger2,hamthumbacrossmod,hamextfingerl,hampalmd,hamparbegin,hammovel,hamsmallmod,hamreplace,hamfinger2,hamfingerbendmod,hamthumbacrossmod,hamextfingerl,hampalmd,hamparend,hamrepeatcontinueseveral",
+    "non_manual": {},
+    "anchors": [
+      "insect"
+    ],
+    "category": "noun"
+  },
+  "WORRIED": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ANXIOUS",
+      "TENSION",
+      "NERVOUS",
+      "UNEASY"
+    ],
+    "category": "CORE"
+  },
+  "ANY": {
+    "hamnosys": "hamsymmlr,hamflathand,hamfingerstraightmod,hambetween,hamflathand,hamextfingerl,hampalmu,hamshoulders,hamlrat,hamclose,hamparbegin,hammoveo,hamarcd,hamreplace,hamfinger2345,hamthumboutmod,hambetween,hamflathand,hamextfingeru,hambetween,hamextfingeror,hampalmd,hamparend,hamchest,hamlrat",
+    "non_manual": {},
+    "anchors": [
+      "some",
+      "whatever"
+    ],
+    "category": "determiner"
+  },
+  "FLAT": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "APARTMENT",
+      "BUILDING",
+      "RESIDENCE",
+      "QUARTERS"
+    ],
+    "category": "CORE"
+  },
+  "TOP": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "APEX",
+      "PEAK",
+      "SUPREME",
+      "APEX COURT",
+      "HIGHEST"
+    ],
+    "category": "CORE"
+  },
+  "APP": {
+    "hamnosys": "hamfinger2345,hamthumboutmod,hambetween,hampinchall,hamextfingero,hampalmu,hamchin,hamclose,hammoveu,hamsmallmod,hamrepeatfromstart",
+    "non_manual": {},
+    "anchors": [
+      "APPLICATION",
+      "MOBILE APP",
+      "SOFTWARE"
+    ],
+    "category": "CORE"
+  },
+  "CLOTHES": {
+    "hamnosys": "",
+    "non_manual": {},
+    "anchors": [
+      "APPAREL",
+      "GARMENT",
+      "DRESS",
+      "WEAR"
+    ],
+    "category": "COMPOUND"
+  },
+  "CLAP": {
+    "hamnosys": "hamsymmlr,hamfinger2345,hamthumboutmod,hamfingerbendmod,hamextfingeru,hamparbegin,hampalmul,hamplus,hampalmdr,hamparend,hamparbegin,hampalm,hamplus,hamindexfinger,hammiddlefinger,hamringfinger,hampinky,hamfingertip,hamparend,hamtouch,hamnodding,hamsmallmod,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "applaud"
+    ],
+    "category": "verb"
+  },
+  "APPLE": {
+    "hamnosys": "hamfinger2345,hamthumboutmod,hambetween,hampinchall,hamextfingero,hampalmu,hamchin,hamclose,hammoveu,hamsmallmod,hamrepeatfromstart",
+    "non_manual": {},
+    "anchors": [
+      "fruit"
+    ],
+    "category": "noun"
+  },
+  "APPLY": {
+    "hamnosys": "hamfinger2,hamthumbacrossmod,hamextfingerl,hampalmd,hamparbegin,hammovel,hamsmallmod,hamreplace,hamfinger2,hamfingerbendmod,hamthumbacrossmod,hamextfingerl,hampalmd,hamparend,hamrepeatcontinueseveral",
+    "non_manual": {},
+    "anchors": [
+      "APPLICATION",
+      "APPLICANT",
+      "REQUEST",
+      "FORM",
+      "APPLICATION EFFICIENCY"
+    ],
+    "category": "CORE"
+  },
+  "APPOINTMENT": {
+    "hamnosys": "hamparbegin,hamfinger23,hamthumbacrossmod,hamfingerbendmod,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerol,hampalmd,hamplus,hamextfingeror,hampalmu,hamparend,hamparbegin,hampalm,hamplus,hamindexfinger,hammiddlefinger,hamfingertip,hamparend,hammovedo,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "meeting",
+      "arrangement"
+    ],
+    "category": "noun"
+  },
+  "CHECK": {
+    "hamnosys": "hamsymmlr,hamfinger2345,hamthumboutmod,hamextfingeru,hampalml,hamcheek,hamtouch,hamparbegin,hammovedo,hamreplace,hamfinger2,hampinky,hamparend",
+    "non_manual": {},
+    "anchors": [
+      "examine",
+      "verify",
+      "inspect"
+    ],
+    "category": "verb"
+  },
+  "TRAINEE": {
+    "hamnosys": "",
+    "non_manual": {},
+    "anchors": [
+      "APPRENTICE",
+      "NOVICE",
+      "LEARNER",
+      "STUDENT"
+    ],
+    "category": "COMPOUND"
+  },
+  "APPROACH": {
+    "hamnosys": "hamfinger2,hamthumbacrossmod,hamextfingerl,hampalml,hamchest,hamcircleo,hamsmallmod,hamfast,hamrepeatcontinueseveral",
+    "non_manual": {},
+    "anchors": [
+      "COME NEAR",
+      "METHOD",
+      "WAY"
+    ],
+    "category": "CORE"
+  },
+  "PROPER": {
+    "hamnosys": "hamfinger2,hamthumbacrossmod,hamextfingerl,hampalmd,hamparbegin,hammovel,hamsmallmod,hamreplace,hamfinger2,hamfingerbendmod,hamthumbacrossmod,hamextfingerl,hampalmd,hamparend,hamrepeatcontinueseveral",
+    "non_manual": {},
+    "anchors": [
+      "APPROPRIATE",
+      "RELEVANT",
+      "SUITABLE",
+      "FIT"
+    ],
+    "category": "COMPOUND"
+  },
+  "ABOUT": {
+    "hamnosys": "hamsymmlr,hamalternatingmotion,hamfinger2,hamextfingerl,hampalml,hamparbegin,hamfingerside,hamindexfinger,hamplus,hamfingerside,hamindexfinger,hamparend,hamtouch,hamchest,hamcircleo,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "regarding",
+      "concerning"
+    ],
+    "category": "preposition"
+  },
+  "APRIL": {
+    "hamnosys": "hamfinger2,hamthumbacrossmod,hamextfingerul,hampalmdl,hamstomach,hamclose,hamparbegin,hamreplace,hampinchopen,hamextfingeru,hampalml,hamparend,hamparbegin,hamreplace,hamfinger2,hamthumbacrossmod,hamextfingerol,hampalmd,hamparend",
+    "non_manual": {},
+    "anchors": [
+      "month"
+    ],
+    "category": "noun"
+  },
+  "APRON": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "KITCHEN CLOTH",
+      "PROTECTIVE GEAR"
+    ],
+    "category": "CORE"
+  },
+  "AQUARIUM": {
+    "hamnosys": "",
+    "non_manual": {},
+    "anchors": [
+      "FISH TANK",
+      "FISH BOWL",
+      "FISH HOME"
+    ],
+    "category": "COMPOUND"
+  },
+  "ARCH": {
+    "hamnosys": "hamsymmlr,hamflathand,hamfingerbendmod,hamextfingerul,hampalmd,hamchest,hamlrat,hamtouch,hammoved,hamlargemod,hamarcl,hamstomach,hamlrat,hamclose,hamrepeatfromstartseveral",
+    "non_manual": {},
+    "anchors": [
+      "CURVE",
+      "BEND",
+      "GATEWAY"
+    ],
+    "category": "CORE"
+  },
+  "ARCHAEOLOGIST": {
+    "hamnosys": "hamfinger2345,hamthumbacrossmod,hamthumb,hamfingerhookmod,hamringfinger,hamfingerhookmod,hampinky,hamfingerhookmod,hamextfingeru,hampalmu,hamlips,hamtouch,hamparbegin,hammoved,hamsmallmod,hamreplace,hamfinger23,hambetween,hamfinger23,hamfingerhookmod,hamparend",
+    "non_manual": {},
+    "anchors": [
+      "HISTORY EXPERT",
+      "DIGGING EXPERT",
+      "OLD OBJECT STUDY"
+    ],
+    "category": "CORE"
+  },
+  "OLD": {
+    "hamnosys": "hamfinger2345,hamthumbacrossmod,hamthumb,hamfingerhookmod,hamringfinger,hamfingerhookmod,hampinky,hamfingerhookmod,hamextfingeru,hampalmu,hamlips,hamtouch,hamparbegin,hammoved,hamsmallmod,hamreplace,hamfinger23,hambetween,hamfinger23,hamfingerhookmod,hamparend",
+    "non_manual": {
+      "mouth": "@_U"
+    },
+    "anchors": [
+      "aged",
+      "ancient",
+      "elderly"
+    ],
+    "category": "adjective"
+  },
+  "ARCHERY": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "BOW AND ARROW",
+      "SHOOTING"
+    ],
+    "category": "CORE"
+  },
+  "ARCHIVE": {
+    "hamnosys": "hamfinger2345,hamthumbacrossmod,hamthumb,hamfingerhookmod,hamringfinger,hamfingerhookmod,hampinky,hamfingerhookmod,hamextfingeru,hampalmu,hamlips,hamtouch,hamparbegin,hammoved,hamsmallmod,hamreplace,hamfinger23,hambetween,hamfinger23,hamfingerhookmod,hamparend",
+    "non_manual": {},
+    "anchors": [
+      "RECORD ROOM",
+      "STORED DATA",
+      "OLD FILES"
+    ],
+    "category": "CORE"
+  },
+  "AREA": {
+    "hamnosys": "hamfinger2345,hampinky,hamextfingerol,hampalmd,hamchest,hamcircleu,hamrepeatfromstart",
+    "non_manual": {},
+    "anchors": [
+      "region",
+      "zone",
+      "space"
+    ],
+    "category": "noun"
+  },
+  "DRY": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ARID",
+      "ARID REGIONS",
+      "DESERT",
+      "THIRSTY LAND"
+    ],
+    "category": "CORE"
+  },
+  "ARM": {
+    "hamnosys": "hamfinger23,hamextfingerul,hampalmdl,hamforehead,hamlrat,hammoved,hamzigzag,hamlargemod,hamchest,hamlrat",
+    "non_manual": {},
+    "anchors": [
+      "BODY PART",
+      "UPPER ARM"
+    ],
+    "category": "CORE"
+  },
+  "WEAPON": {
+    "hamnosys": "",
+    "non_manual": {},
+    "anchors": [
+      "ARMOUR",
+      "GUN",
+      "DEFENSE"
+    ],
+    "category": "COMPOUND"
+  },
+  "ARMY": {
+    "hamnosys": "hamfinger2345,hamthumbacrossmod,hamthumb,hamfingerhookmod,hamringfinger,hamfingerhookmod,hampinky,hamfingerhookmod,hamextfingeru,hampalmu,hamlips,hamtouch,hamparbegin,hammoved,hamsmallmod,hamreplace,hamfinger23,hambetween,hamfinger23,hamfingerhookmod,hamparend",
+    "non_manual": {},
+    "anchors": [
+      "SOLDIER",
+      "MILITARY",
+      "ARMY BOOTS",
+      "COMBAT BOOTS",
+      "FORCE"
+    ],
+    "category": "CORE"
+  },
+  "SMELL": {
+    "hamnosys": "",
+    "non_manual": {},
+    "anchors": [
+      "AROMA",
+      "FRAGRANCE",
+      "SCENT",
+      "ODOR"
+    ],
+    "category": "COMPOUND"
+  },
+  "AROUND": {
+    "hamnosys": "hamfinger2345,hamthumboutmod,hamextfingeru,hampalmd,hamchest,hamclose,hamcirclei,hamsmallmod",
+    "non_manual": {},
+    "anchors": [
+      "surrounding",
+      "about"
+    ],
+    "category": "preposition"
+  },
+  "ARRANGED MARRIAGE": {
+    "hamnosys": "hamfist,hamthumbacrossmod,hamextfingerl,hambetween,hamextfingerol,hampalml,hambetween,hampalmul,hamunderchin,hamreplace,hamextfingerl,hampalml,hamunderchin",
+    "non_manual": {},
+    "anchors": [
+      "TRADITIONAL MARRIAGE",
+      "FAMILY MATCH"
+    ],
+    "category": "COMPOUND"
+  },
+  "ARREST": {
+    "hamnosys": "hamsymmlr,hamparbegin,hamfist,hamplus,hamfist,hamparend,hamparbegin,hamextfingerol,hambetween,hamextfingeru,hampalmu,hamplus,hamextfingeror,hambetween,hamextfingeru,hampalmu,hamparend,hamparbegin,hamwristback,hampalm,hamplus,hamwristback,hamhandback,hamparend,hamtouch,hamshoulders,hammoveo,hamlargemod",
+    "non_manual": {},
+    "anchors": [
+      "detain",
+      "capture",
+      "apprehend"
+    ],
+    "category": "verb"
+  },
+  "ARRIVE": {
+    "hamnosys": "hamfinger2,hamthumbacrossmod,hamextfingerui,hampalmur,hamshouldertop,hamlrbeside,hamreplace,hamfinger2,hamthumbacrossmod,hambetween,hamfinger2,hamthumbacrossmod,hamfingerstraightmod,hamextfingerol,hampalmd,hamchest",
+    "non_manual": {},
+    "anchors": [
+      "reach",
+      "come",
+      "get to"
+    ],
+    "category": "verb"
+  },
+  "PROUD": {
+    "hamnosys": "hamfinger2,hamthumbacrossmod,hamextfingerl,hampalmd,hamparbegin,hammovel,hamsmallmod,hamreplace,hamfinger2,hamfingerbendmod,hamthumbacrossmod,hamextfingerl,hampalmd,hamparend,hamrepeatcontinueseveral",
+    "non_manual": {},
+    "anchors": [
+      "ARROGANT",
+      "EGO",
+      "HAUGHTY"
+    ],
+    "category": "CORE"
+  },
+  "ARROW": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "POINTER",
+      "ARCHERY SYMBOL"
+    ],
+    "category": "CORE"
+  },
+  "WEAPON STORE": {
+    "hamnosys": "hamfist,hamthumbacrossmod,hamextfingerl,hambetween,hamextfingerol,hampalml,hambetween,hampalmul,hamunderchin,hamreplace,hamextfingerl,hampalml,hamunderchin",
+    "non_manual": {},
+    "anchors": [
+      "ARSENAL",
+      "ARMOURY",
+      "ARMS STORAGE"
+    ],
+    "category": "COMPOUND"
+  },
+  "ART": {
+    "hamnosys": "hamfinger23,hamextfingerul,hampalmdl,hamforehead,hamlrat,hammoved,hamzigzag,hamlargemod,hamchest,hamlrat",
+    "non_manual": {},
+    "anchors": [
+      "artwork",
+      "creativity"
+    ],
+    "category": "noun"
+  },
+  "FAKE": {
+    "hamnosys": "hamfinger23,hamextfingerul,hampalmdl,hamforehead,hamlrat,hammoved,hamzigzag,hamlargemod,hamchest,hamlrat",
+    "non_manual": {},
+    "anchors": [
+      "ARTIFICIAL",
+      "IMITATION",
+      "NOT REAL",
+      "DUPLICATE"
+    ],
+    "category": "COMPOUND"
+  },
+  "ARTISAN": {
+    "hamnosys": "hamfinger23,hamextfingerul,hampalmdl,hamforehead,hamlrat,hammoved,hamzigzag,hamlargemod,hamchest,hamlrat",
+    "non_manual": {},
+    "anchors": [
+      "CRAFTSMAN",
+      "SKILLED WORKER",
+      "MAKER"
+    ],
+    "category": "COMPOUND"
+  },
+  "CLIMB": {
+    "hamnosys": "hamsymmlr,hamfingerstraightmod,hamalternatingmotion,hamfist,hamextfingero,hampalmd,hamstomach,hammoveu,hamwavy,hammoveu,hamwavy,hamneck",
+    "non_manual": {},
+    "anchors": [
+      "ascend",
+      "scale"
+    ],
+    "category": "verb"
+  },
+  "ASH": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ASHES",
+      "DUST",
+      "BURNT REMAINS"
+    ],
+    "category": "CORE"
+  },
+  "SHAME": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ASHAMED",
+      "GUILTY",
+      "EMBARRASSED"
+    ],
+    "category": "CORE"
+  },
+  "ASK": {
+    "hamnosys": "",
+    "non_manual": {},
+    "anchors": [
+      "QUESTION",
+      "INQUIRE",
+      "QUERY"
+    ],
+    "category": "COMPOUND"
+  },
+  "ASSAM": {
+    "hamnosys": "hamparbegin,hamfinger2345,hamplus,hamfinger2345,hamparend,hamextfingeru,hampalmd,hamshouldertop,hamparbegin,hamreplace,hampinchall,hamreplace,hamfinger2345,hamparend,hamparbegin,hamreplace,hamfinger2,hamear,hamlrat,hamclose,hamparend",
+    "non_manual": {},
+    "anchors": [
+      "indian state"
+    ],
+    "category": "noun"
+  },
+  "TASK": {
+    "hamnosys": "",
+    "non_manual": {},
+    "anchors": [
+      "ASSIGNMENT",
+      "WORK",
+      "PROJECT",
+      "HOMEWORK"
+    ],
+    "category": "COMPOUND"
+  },
+  "PROFESSOR": {
+    "hamnosys": "hamfinger2,hamthumbacrossmod,hamextfingerl,hampalmd,hamparbegin,hammovel,hamsmallmod,hamreplace,hamfinger2,hamfingerbendmod,hamthumbacrossmod,hamextfingerl,hampalmd,hamparend,hamrepeatcontinueseveral",
+    "non_manual": {},
+    "anchors": [
+      "ASSISTANT PROFESSOR",
+      "ASSOCIATE PROFESSOR",
+      "LECTURER",
+      "TEACHER"
+    ],
+    "category": "COMPOUND"
+  },
+  "ASSOCIATION": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ORGANIZATION",
+      "SOCIETY",
+      "GROUP",
+      "ASSOCIATION OF SIGN LANGUAGE INTERPRETERS",
+      "ASLI"
+    ],
+    "category": "CORE"
+  },
+  "PROMISE": {
+    "hamnosys": "hamfinger2,hamthumbacrossmod,hamextfingerl,hampalmd,hamparbegin,hammovel,hamsmallmod,hamreplace,hamfinger2,hamfingerbendmod,hamthumbacrossmod,hamextfingerl,hampalmd,hamparend,hamrepeatcontinueseveral",
+    "non_manual": {},
+    "anchors": [
+      "ASSURE",
+      "REASSURE",
+      "GUARANTEE",
+      "RELIEVE DOUBT"
+    ],
+    "category": "CORE"
+  },
+  "ASTRONAUT": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "SPACE TRAVELER",
+      "COSMONAUT"
+    ],
+    "category": "CORE"
+  },
+  "SPORTSMAN": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ATHLETE",
+      "SPORTSPERSON",
+      "PLAYER"
+    ],
+    "category": "COMPOUND"
+  },
+  "FIT": {
+    "hamnosys": "hamsymmlr,hamparbegin,hamfist,hamplus,hamfist,hamparend,hamparbegin,hamextfingeru,hampalmd,hamplus,hamextfingeru,hampalmd,hamparend,hamshoulders,hamclose,hamparbegin,hamcirclei,hamplus,hamcircleo,hamparend,hamrepeatfromstart",
+    "non_manual": {},
+    "anchors": [
+      "ATHLETIC",
+      "ACTIVE",
+      "HEALTHY",
+      "STRONG"
+    ],
+    "category": "COMPOUND"
+  },
+  "RUNNING": {
+    "hamnosys": "hamsymmpar,hamfist,hamextfingero,hampalml,hamchest,hamlrat,hamclose,hammoveo,hamcirclel,hamrepeatfromstartseveral",
+    "non_manual": {},
+    "anchors": [],
+    "category": ""
+  },
+  "ATM": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "CASH MACHINE",
+      "MONEY MACHINE",
+      "BANK"
+    ],
+    "category": "CORE"
+  },
+  "APOLOGIZE": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ATONE",
+      "MAKE AMENDS",
+      "REPARATION",
+      "SORRY"
+    ],
+    "category": "COMPOUND"
+  },
+  "AUDIENCE": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "SPECTATORS",
+      "PUBLIC",
+      "CROWD"
+    ],
+    "category": "CORE"
+  },
+  "AUGUST": {
+    "hamnosys": "",
+    "non_manual": {},
+    "anchors": [
+      "MONTH 8"
+    ],
+    "category": "NUMBERS & TIME"
+  },
+  "REAL": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ACTUAL",
+      "TRUE",
+      "FACT"
+    ],
+    "category": "CORE"
+  },
+  "AUTOMATIC": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "AUTOMATIC STABILIZER",
+      "AUTOMATIC FILM PROCESSOR"
+    ],
+    "category": "COMPOUND"
+  },
+  "RICKSHAW": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "AUTORICKSHAW",
+      "AUTO",
+      "TUK TUK"
+    ],
+    "category": "CORE"
+  },
+  "READY": {
+    "hamnosys": "hamsymmlr,hamfinger2345,hamthumboutmod,hamextfingerul,hampalmd,hamchest,hamlrat,hamtouch,hammovedo,hamrepeatfromstart",
+    "non_manual": {},
+    "anchors": [
+      "prepared",
+      "set"
+    ],
+    "category": "adjective"
+  },
+  "AVERAGE": {
+    "hamnosys": "hamfist,hamthumbacrossmod,hamextfingerl,hambetween,hamextfingerol,hampalml,hambetween,hampalmul,hamunderchin,hamreplace,hamextfingerl,hampalml,hamunderchin",
+    "non_manual": {},
+    "anchors": [
+      "AVERAGE TAX RATE",
+      "AVERAGE PROPENSITY TO CONSUME",
+      "AVERAGE MEASURES",
+      "MEAN",
+      "MEDIUM",
+      "NORMAL"
+    ],
+    "category": "COMPOUND"
+  },
+  "AWARD": {
+    "hamnosys": "",
+    "non_manual": {},
+    "anchors": [
+      "PRIZE",
+      "TROPHY",
+      "MEDAL",
+      "REWARD"
+    ],
+    "category": "COMPOUND"
+  },
+  "SKILL": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ABILITIY",
+      "TALENT",
+      "CAPABILITY"
+    ],
+    "category": "CORE"
+  },
+  "FAST": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ACCELERATION",
+      "ACCELERATOR",
+      "SPEED UP"
+    ],
+    "category": "CORE"
+  },
+  "ACID": {
+    "hamnosys": "",
+    "non_manual": {},
+    "anchors": [
+      "ACID REFLEX",
+      "ACIDITY",
+      "ACIDOSIS",
+      "ACID RAIN",
+      "PH LEVEL"
+    ],
+    "category": "COMPOUND"
+  },
+  "ADJECTIVE": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [],
+    "category": "CORE"
+  },
+  "ADOLF HITLER": {
+    "hamnosys": "hamparbegin,hamfinger2,hamextfingeru,hampalml,hamchest,hamplus,hamfinger23,hamparend",
+    "non_manual": {},
+    "anchors": [],
+    "category": "COMPOUND"
+  },
+  "CHARGER": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ALTERNATOR",
+      "BATTERY CHARGE",
+      "GENERATOR"
+    ],
+    "category": "CORE"
+  },
+  "ANDROID": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "PHONE SYSTEM",
+      "GOOGLE OS",
+      "ANDROID AUTO",
+      "ANDROID TV"
+    ],
+    "category": "CORE"
+  },
+  "MACHINE CONTROL": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "APPLIANCES CONTROL",
+      "REMOTE",
+      "SWITCH",
+      "HOME AUTOMATION"
+    ],
+    "category": "COMPOUND"
+  },
+  "WELD": {
+    "hamnosys": "hamparbegin,hamfinger2,hamfingerhookmod,hamthumbacrossmod,hamplus,hampinch12,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalmd,hamplus,hampalmr,hamparend,hammovel,hamarcu,hamsmallmod,hamparbegin,hamthumb,hamfingertip,hamplus,hamindexfinger,hamfingernail,hamparend,hamclose",
+    "non_manual": {},
+    "anchors": [
+      "ARC WELDING",
+      "IRON JOIN",
+      "SPARK",
+      "METAL WORK"
+    ],
+    "category": "COMPOUND"
+  },
+  "BUILDING PLANNER": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ARCHITECT",
+      "MAP MAKER",
+      "DESIGNER"
+    ],
+    "category": "CORE"
+  },
+  "FIGHT": {
+    "hamnosys": "hamsymmlr,hamfist,hamextfingerul,hampalmdl,hamshoulders,hammover,hammovel,hamtouch,hammover,hammovel,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "battle",
+      "combat",
+      "struggle"
+    ],
+    "category": "verb"
+  },
+  "MATH UNIT": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ARITHMETIC AND LOGIC UNIT",
+      "ALU",
+      "COMPUTER BRAIN",
+      "ARITHMETIC MEAN",
+      "ARITHMETIC SEQUENCE"
+    ],
+    "category": "COMPOUND"
+  },
+  "DRILL": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "AUGER",
+      "HOLE MAKER",
+      "TWIST"
+    ],
+    "category": "CORE"
+  },
+  "MACHINE WORK": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "AUTOMATION",
+      "AUTOMATIC",
+      "SELF OPERATE",
+      "ROBOT WORK"
+    ],
+    "category": "CORE"
+  },
+  "AUTO TOTAL": {
+    "hamnosys": "hamparbegin,hamfinger2,hamthumbacrossmod,hamplus,hamfinger2,hamthumbacrossmod,hamparend,hamparbegin,hamextfingeru,hamplus,hamextfingerr,hamparend,hamparbegin,hampalmd,hamplus,hampalmr,hamparend,hamparbegin,hamindexfinger,hamfingermidjoint,hamplus,hamindexfinger,hamfingermidjoint,hamparend,hamtouch,hamswinging,hamchest",
+    "non_manual": {},
+    "anchors": [
+      "AUTOSUM",
+      "TOTAL",
+      "ADD ALL"
+    ],
+    "category": "CORE"
+  },
+  "SPACE ROCK": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ASTEROID",
+      "METEOR",
+      "STAR ROCK"
+    ],
+    "category": "CORE"
+  },
+  "ACCIDENT": {
+    "hamnosys": "hamsymmlr,hamfist,hamthumbacrossmod,hamparbegin,hamextfingerol,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamchest,hamparbegin,hammoveol,hamplus,hammoveir,hamlargemod,hamparend",
+    "non_manual": {},
+    "anchors": [],
+    "category": ""
+  },
+  "EXPERT": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ACE",
+      "BEST",
+      "TOP",
+      "SKILL"
+    ],
+    "category": "CORE"
+  },
+  "ADJUST": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ADJUSTMENT",
+      "CHANGE"
+    ],
+    "category": "CORE"
+  },
+  "BEAUTY": {
+    "hamnosys": "hampinchopen,hamextfingeru,hampalml,hamchest,hamlrat",
+    "non_manual": {},
+    "anchors": [
+      "AESTHETIC",
+      "LOOK GOOD"
+    ],
+    "category": "CORE"
+  },
+  "LIFE AFTER DIE": {
+    "hamnosys": "hamflathand,hamextfingerl,hampalmd,hamchest,hamparbegin,hammoveo,hamarcu,hamreplace,hampalmu,hamparend",
+    "non_manual": {},
+    "anchors": [
+      "AFTERLIFE",
+      "HEAVEN",
+      "SPIRIT WORLD"
+    ],
+    "category": "CORE"
+  },
+  "OFFICE": {
+    "hamnosys": "hampinch12,hamextfingeru,hampalml,hamhead,hamcirclei,hamcirclei,hamsmallmod",
+    "non_manual": {},
+    "anchors": [
+      "workplace"
+    ],
+    "category": "noun"
+  },
+  "AIRBAG": {
+    "hamnosys": "hamsymmpar,hamfist,hamthumboutmod,hamextfingeru,hampalmd,hamtouch,hamchest,hamnomotion,hamplus,hamflathand,hamextfingero,hampalmd,hamchest,hamcircled",
+    "non_manual": {},
+    "anchors": [
+      "CAR SAFETY",
+      "BALLOON",
+      "PROTECTION"
+    ],
+    "category": "CORE"
+  },
+  "STEP": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ALGORITHM",
+      "PROCESS",
+      "FORMULA",
+      "COMPUTER RULE"
+    ],
+    "category": "CORE"
+  },
+  "STORY": {
+    "hamnosys": "hamfinger23,hamparbegin,hamextfingerul,hampalmdl,hamplus,hamextfingerur,hampalmdr,hamparend,hamparbegin,hamindexfinger,hamfingerpad,hamplus,hamindexfinger,hamfingernail,hamparend,hamclose,hamshoulders,hammoved,hamlargemod",
+    "non_manual": {},
+    "anchors": [
+      "tale",
+      "narrative"
+    ],
+    "category": "noun"
+  },
+  "HINT": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "REFER"
+    ],
+    "category": "CORE"
+  },
+  "CONFUSE": {
+    "hamnosys": "hamsymmpar,hamfingerstraightmod,hamalternatingmotion,hamcee12,hamextfingeru,hampalml,hamclose,hamshoulders,hammoveol,hamarcu,hamsmallmod,hamrepeatfromstartseveral",
+    "non_manual": {},
+    "anchors": [
+      "bewilder",
+      "perplex"
+    ],
+    "category": "verb"
+  },
+  "LOUD": {
+    "hamnosys": "hamfinger2,hamthumbacrossmod,hamextfingerul,hambetween,hamextfingerl,hampalmd,hamearlobe,hamlrbeside,hamcirclel,hamrepeatcontinue,hamincreasing",
+    "non_manual": {
+      "mouth": "la_Ud"
+    },
+    "anchors": [
+      "noisy"
+    ],
+    "category": "adjective"
+  },
+  "SPREAD": {
+    "hamnosys": "",
+    "non_manual": {},
+    "anchors": [],
+    "category": "COMPOUND"
+  },
+  "OPPOSITE": {
+    "hamnosys": "hamfinger2,hamthumbacrossmod,hamextfingerl,hampalmd,hamparbegin,hammovel,hamsmallmod,hamreplace,hamfinger2,hamfingerbendmod,hamthumbacrossmod,hamextfingerl,hampalmd,hamparend,hamrepeatcontinueseveral",
+    "non_manual": {},
+    "anchors": [
+      "ANTITHESIS",
+      "AGAINST",
+      "CONTRAST",
+      "REVERSE"
+    ],
+    "category": "CORE"
+  },
+  "SEPARATE": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "APART",
+      "AWAY",
+      "DISTANCE",
+      "SPLIT"
+    ],
+    "category": "CORE"
+  },
+  "SHOW": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamparend,hamparbegin,hamextfingeru,hampalml,hamplus,hamextfingeru,hampalmr,hambetween,hampalmd,hamparend,hamparbegin,hampalm,hamplus,hamindexfinger,hamfingertip,hamparend,hamclose,hamchest",
+    "non_manual": {},
+    "anchors": [
+      "display",
+      "demonstrate",
+      "reveal"
+    ],
+    "category": "verb"
+  },
+  "HEALTHY": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "NORMAL"
+    ],
+    "category": "CORE"
+  },
+  "GOOD": {
+    "hamnosys": "hampinchopen,hamextfingeru,hampalml,hamchest,hamlrat",
+    "non_manual": {},
+    "anchors": [
+      "fine",
+      "great",
+      "excellent"
+    ],
+    "category": "adjective"
+  },
+  "FREEDOM": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "AUTONOMY",
+      "INDEPENDENT",
+      "FREE"
+    ],
+    "category": "CORE"
+  },
+  "FLY": {
+    "hamnosys": "hamsymmlr,hamflathand,hamextfingerr,hampalmd,hamshoulders,hamlrbeside,hamnodding",
+    "non_manual": {},
+    "anchors": [
+      "soar",
+      "glide"
+    ],
+    "category": "verb"
+  },
+  "WAIT": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingerul,hampalmdl,hamhead,hamlrat,hamswinging",
+    "non_manual": {},
+    "anchors": [
+      "stay",
+      "remain",
+      "pause"
+    ],
+    "category": "verb"
+  },
+  "ROD": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "AXLE",
+      "WHEEL SHAFT",
+      "BAR",
+      "CENTRE"
+    ],
+    "category": "CORE"
+  },
+  "AADHAR": {
+    "hamnosys": "",
+    "non_manual": {},
+    "anchors": [
+      "AADHAR CARD",
+      "IDENTITY CARD",
+      "GOVERNMENT ID",
+      "BIOMETRIC"
+    ],
+    "category": "COMPOUND"
+  },
+  "DIFFERENT": {
+    "hamnosys": "hamsymmlr,hamfinger2,hamthumbacrossmod,hamextfingerul,hampalmdr,hamstomach,hamlrat,hamclose,hammoveu,hamarcl,hamlargemod",
+    "non_manual": {},
+    "anchors": [
+      "distinct",
+      "unlike",
+      "diverse"
+    ],
+    "category": "adjective"
+  },
+  "STUPID": {
+    "hamnosys": "hampinchopen,hamextfingeru,hampalml,hamforehead,hamswinging,hamrepeatfromstartseveral",
+    "non_manual": {},
+    "anchors": [
+      "foolish",
+      "dumb"
+    ],
+    "category": "adjective"
+  },
+  "PLANE": {
+    "hamnosys": "hamfinger2,hamthumboutmod,hampinky,hamextfingeru,hambetween,hamextfingerol,hampalmd,hamneck,hamlrat,hamclose,hamnomotion,hammoveul,hamlargemod",
+    "non_manual": {},
+    "anchors": [
+      "AIRCRAFT",
+      "AIRPLANE",
+      "JET",
+      "FLIGHT"
+    ],
+    "category": "CORE"
+  },
+  "AIR FORCE": {
+    "hamnosys": "hamfinger2345,hamthumbacrossmod,hamthumb,hamfingerhookmod,hamringfinger,hamfingerhookmod,hampinky,hamfingerhookmod,hamextfingeru,hampalmu,hamlips,hamtouch,hamparbegin,hammoved,hamsmallmod,hamreplace,hamfinger23,hambetween,hamfinger23,hamfingerhookmod,hamparend",
+    "non_manual": {},
+    "anchors": [
+      "MILITARY",
+      "SOLDIER",
+      "DEFENSE",
+      "AIR WING"
+    ],
+    "category": "COMPOUND"
+  },
+  "PLANE MODE": {
+    "hamnosys": "hamsymmlr,hamfinger2,hampinky,hamextfingerl,hampalml,hamtouch,hammover",
+    "non_manual": {},
+    "anchors": [
+      "AIRPLANE MODE",
+      "FLIGHT MODE",
+      "OFFLINE",
+      "PHONE SETTING"
+    ],
+    "category": "COMPOUND"
+  },
+  "DRINK": {
+    "hamnosys": "hamfist,hamthumboutmod,hamextfingeru,hampalmd,hambetween,hampalml,hamlips,hamlrat,hamclose",
+    "non_manual": {},
+    "anchors": [
+      "consume liquid",
+      "sip"
+    ],
+    "category": "verb"
+  },
+  "MEDICINE": {
+    "hamnosys": "hamcee12,hamfingerstraightmod,hamextfingerul,hampalml,hamlips,hamclose,hammovei,hamsmallmod,hamrepeatfromstart",
+    "non_manual": {},
+    "anchors": [
+      "drug",
+      "medication"
+    ],
+    "category": "noun"
+  },
+  "FACILITY": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "AMENITY",
+      "SERVICE",
+      "COMFORT",
+      "BENEFIT"
+    ],
+    "category": "CORE"
+  },
+  "CHARM": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "AMULET",
+      "LUCKY SYMBOL"
+    ],
+    "category": "CORE"
+  },
+  "STUCK": {
+    "hamnosys": "hamfinger2345,hamthumbacrossmod,hamthumb,hamfingerhookmod,hamringfinger,hamfingerhookmod,hampinky,hamfingerhookmod,hamextfingeru,hampalmu,hamlips,hamtouch,hamparbegin,hammoved,hamsmallmod,hamreplace,hamfinger23,hambetween,hamfinger23,hamfingerhookmod,hamparend",
+    "non_manual": {},
+    "anchors": [
+      "ANCHOR",
+      "STAY",
+      "HOLD",
+      "ANCHOR BOLT"
+    ],
+    "category": "CORE"
+  },
+  "ANKLET": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "FOOT ORNAMENT",
+      "PAYAL"
+    ],
+    "category": "CORE"
+  },
+  "SATISFY": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "APPEASE",
+      "CALM",
+      "PEACE",
+      "MAKE HAPPY"
+    ],
+    "category": "CORE"
+  },
+  "APPETITE": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [],
+    "category": "CORE"
+  },
+  "ASTROLOGY": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [],
+    "category": "CORE"
+  },
+  "ATTENTION": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ATTENTION SEEKING",
+      "SHOW OFF",
+      "NOTICE ME"
+    ],
+    "category": "CORE"
+  },
+  "AVOCADO": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [],
+    "category": "CORE"
+  },
+  "ENTER": {
+    "hamnosys": "hamparbegin,hampinchall,hamplus,hamflathand,hamparend,hamparbegin,hamextfingeri,hambetween,hamextfingeril,hampalmd,hamplus,hamextfingerr,hampalmd,hamparend,hamparbegin,hamchest,hamarmextended,hamplus,hamchest,hamparend,hamparbegin,hammovei,hamarcd,hamreplace,hamflathand,hamparend",
+    "non_manual": {},
+    "anchors": [
+      "go in",
+      "come in"
+    ],
+    "category": "verb"
+  },
+  "MEET": {
+    "hamnosys": "hamsymmlr,hamflathand,hamfingerstraightmod,hamextfingero,hampalml,hamchest,hamlrat,hammovel,hamparbegin,hammiddlefinger,hamfingertip,hamplus,hammiddlefinger,hamfingertip,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "encounter",
+      "greet"
+    ],
+    "category": "verb"
+  },
+  "VEHICLE": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "AUTOMOBILE",
+      "CAR",
+      "MOTOR",
+      "TRANSPORT"
+    ],
+    "category": "CORE"
+  },
+  "KNOW": {
+    "hamnosys": "hamflathand,hamfingerstraightmod,hamextfingeru,hampalml,hamforehead,hamlrbeside,hamseqbegin,hammoveor,hammoveil,hamseqend,hamrepeatfromstartseveral",
+    "non_manual": {},
+    "anchors": [
+      "understand",
+      "recognize"
+    ],
+    "category": "verb"
+  },
+  "LISTEN": {
+    "hamnosys": "hamsymmlr,hamflathand,hamfingerbendmod,hamextfingerul,hampalmd,hamchest,hamlrat,hamtouch,hammoved,hamlargemod,hamarcl,hamstomach,hamlrat,hamclose,hamrepeatfromstartseveral",
+    "non_manual": {},
+    "anchors": [
+      "HEAR",
+      "AUDITORY",
+      "SOUND",
+      "EAR",
+      "AUDITORY PHONETICS"
+    ],
+    "category": "CORE"
+  },
+  "UPSET": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "AGITATE",
+      "RESTLESS",
+      "DISTURB",
+      "SHAKY"
+    ],
+    "category": "CORE"
+  },
+  "IRRITATE": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ANNOY",
+      "BOTHER",
+      "FRUSTRATE"
+    ],
+    "category": "CORE"
+  },
+  "BORE": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "APATHY",
+      "NO INTEREST",
+      "LAZY FEEL"
+    ],
+    "category": "CORE"
+  },
+  "ART THERAPY": {
+    "hamnosys": "hamfinger23,hamextfingerul,hampalmdl,hamforehead,hamlrat,hammoved,hamzigzag,hamlargemod,hamchest,hamlrat",
+    "non_manual": {},
+    "anchors": [
+      "ARTS BASED THERAPY",
+      "PAINTING TREATMENT",
+      "DRAWING HELP"
+    ],
+    "category": "COMPOUND"
+  },
+  "TEST": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ASSESSMENT TOOL",
+      "ASSESSMENT",
+      "EVALUATE",
+      "EXAM"
+    ],
+    "category": "COMPOUND"
+  },
+  "CONNECT": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ASSOCIAT",
+      "LINK",
+      "RELAT",
+      "ATTACH"
+    ],
+    "category": "CORE"
+  },
+  "REAL SELF": {
+    "hamnosys": "hamparbegin,hamfinger2,hamextfingeru,hampalml,hamchest,hamplus,hamfinger23,hamparend",
+    "non_manual": {},
+    "anchors": [
+      "AUTHENTIC SELF",
+      "GENUINE",
+      "TRUE IDENTITY"
+    ],
+    "category": "COMPOUND"
+  },
+  "AUTISM": {
+    "hamnosys": "",
+    "non_manual": {},
+    "anchors": [
+      "AUTISM SPECTRUM DISORDERS",
+      "ASD",
+      "NEURODIVERGENT"
+    ],
+    "category": "COMPOUND"
+  },
+  "AVOID": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingero,hampalmdr,hamchest,hammover,hamarcd,hamsmallmod,hamparbegin,hamreplace,hampalmd,hamparend",
+    "non_manual": {},
+    "anchors": [
+      "evade",
+      "dodge",
+      "escape"
+    ],
+    "category": "verb"
+  },
+  "AWARE": {
+    "hamnosys": "hamflathand,hamfingerstraightmod,hamextfingeru,hampalml,hamforehead,hamlrbeside,hamseqbegin,hammoveor,hammoveil,hamseqend,hamrepeatfromstartseveral",
+    "non_manual": {},
+    "anchors": [
+      "KNOW",
+      "AWARENESS",
+      "KNOWLEDGE",
+      "CONSCIOUS"
+    ],
+    "category": "CORE"
+  },
+  "BAD": {
+    "hamnosys": "hamfinger2,hampinky,hamextfingeru,hampalmdl,hambetween,hampalml,hamshouldertop,hamlrat,hambetween,hamshoulders,hammovedo",
+    "non_manual": {
+      "mouth": "b{d"
+    },
+    "anchors": [
+      "poor",
+      "terrible",
+      "awful",
+      "negative"
+    ],
+    "category": "adjective"
+  },
+  "SHY": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "AWKWARD",
+      "CLUMSY",
+      "UNCOMFORTABLE"
+    ],
+    "category": "CORE"
+  },
+  "CHANGE": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ADAPT",
+      "ADJUST",
+      "MODIFY"
+    ],
+    "category": "CORE"
+  },
+  "LINE": {
+    "hamnosys": "hamsymmlr,hamfinger2,hampinky,hamextfingerl,hampalml,hamtouch,hammover",
+    "non_manual": {},
+    "anchors": [],
+    "category": ""
+  },
+  "ATMOSPHERE": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "AIR",
+      "ENVIRONMENT"
+    ],
+    "category": "CORE"
+  },
+  "FUN": {
+    "hamnosys": "hamparbegin,hampinchall,hamplus,hamflathand,hamparend,hamparbegin,hamextfingeri,hambetween,hamextfingeril,hampalmd,hamplus,hamextfingerr,hampalmd,hamparend,hamparbegin,hamchest,hamarmextended,hamplus,hamchest,hamparend,hamparbegin,hammovei,hamarcd,hamreplace,hamflathand,hamparend",
+    "non_manual": {},
+    "anchors": [
+      "AMUSE",
+      "ENTERTAIN",
+      "ENJOY"
+    ],
+    "category": "CORE"
+  },
+  "PAINTER": {
+    "hamnosys": "hamfinger23,hamextfingerul,hampalmdl,hamforehead,hamlrat,hammoved,hamzigzag,hamlargemod,hamchest,hamlrat",
+    "non_manual": {},
+    "anchors": [
+      "ARTIST",
+      "CREATOR",
+      "DRAWER"
+    ],
+    "category": "CORE"
+  },
+  "PRESENT": {
+    "hamnosys": "hamsymmpar,hamfist,hamthumboutmod,hamextfingeru,hampalmd,hamtouch,hamchest,hamnomotion,hamplus,hamflathand,hamextfingero,hampalmd,hamchest,hamcircled",
+    "non_manual": {},
+    "anchors": [
+      "ATTENDANCE",
+      "PARTICIPATION",
+      "ROLL CALL",
+      "ATTENDANCE RECORD"
+    ],
+    "category": "CORE"
+  },
+  "ELECTRONICS": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "AVIONICS",
+      "AIRCRAFT INSTRUMENTS",
+      "AVIATION ELECTRONICS"
+    ],
+    "category": "CORE"
+  },
+  "AIRFORCE": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "MILITARY PILOT",
+      "AIR DEFENSE",
+      "ARMED FORCES (AIR)"
+    ],
+    "category": "CORE"
+  },
+  "ADVANCE": {
+    "hamnosys": "",
+    "non_manual": {},
+    "anchors": [
+      "HIGHER LEVEL"
+    ],
+    "category": "COMPOUND"
+  },
+  "ADVENTURE": {
+    "hamnosys": "",
+    "non_manual": {},
+    "anchors": [
+      "ADVENTURE TOURISM",
+      "EXPEDITION",
+      "TREKKING"
+    ],
+    "category": "COMPOUND"
+  },
+  "ADVERB": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "MODIFIER",
+      "QUALIFIER"
+    ],
+    "category": "CORE"
+  },
+  "ADVERTISE": {
+    "hamnosys": "",
+    "non_manual": {},
+    "anchors": [
+      "MARKETING",
+      "PROMOTE"
+    ],
+    "category": "COMPOUND"
+  },
+  "AGRICULTURE": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "FARM",
+      "CULTIVATE",
+      "AGRO"
+    ],
+    "category": "CORE"
+  },
+  "ALGAE": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "SEAWEED",
+      "PHYTOPLANKTON"
+    ],
+    "category": "CORE"
+  },
+  "ALGEBRA": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "EQUATIONS",
+      "VARIABLES",
+      "MATHEMATICS"
+    ],
+    "category": "CORE"
+  },
+  "ALLIANCE": {
+    "hamnosys": "hamsymmpar,hamfist,hamthumboutmod,hamextfingeru,hampalmd,hamtouch,hamchest,hamnomotion,hamplus,hamflathand,hamextfingero,hampalmd,hamchest,hamcircled",
+    "non_manual": {},
+    "anchors": [
+      "COALITION",
+      "PARTNERSHIP",
+      "PACT"
+    ],
+    "category": "CORE"
+  },
+  "ALLOY": {
+    "hamnosys": "hamsymmpar,hamfist,hamthumboutmod,hamextfingeru,hampalmd,hamtouch,hamchest,hamnomotion,hamplus,hamflathand,hamextfingero,hampalmd,hamchest,hamcircled",
+    "non_manual": {},
+    "anchors": [
+      "METAL BLEND",
+      "COMPOSITE",
+      "ALLOY WHEEL"
+    ],
+    "category": "CORE"
+  },
+  "HEIGHT": {
+    "hamnosys": "hamfinger2345,hamthumboutmod,hamringfinger,hamfingerhookmod,hampinky,hamfingerhookmod,hamextfingeru,hampalmd,hamchest,hamlrat,hamclose,hammoveo,hamsmallmod",
+    "non_manual": {},
+    "anchors": [],
+    "category": ""
+  },
+  "ALUMINIUM": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "LIGHT METAL"
+    ],
+    "category": "CORE"
+  },
+  "AMBASSADOR": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "DIPLOMAT",
+      "ENVOY",
+      "REPRESENTATIVE"
+    ],
+    "category": "CORE"
+  },
+  "AMMONIA": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "NH3",
+      "CHEMICAL"
+    ],
+    "category": "CORE"
+  },
+  "AMOEBA": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "PROTOZOAN"
+    ],
+    "category": "CORE"
+  },
+  "AMPLITUDE": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "MAGNITUDE",
+      "SIGNAL STRENGTH",
+      "OSCILLATION"
+    ],
+    "category": "CORE"
+  },
+  "ANAEMIA": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ANEMIA",
+      "IRON DEFICIENCY"
+    ],
+    "category": "CORE"
+  },
+  "ANATOMY": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "STRUCTURE",
+      "MORPHOLOGY"
+    ],
+    "category": "CORE"
+  },
+  "ANIMATION": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "MOTION GRAPHICS"
+    ],
+    "category": "CORE"
+  },
+  "APPROXIMATE": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ESTIMATE"
+    ],
+    "category": "CORE"
+  },
+  "AQUA": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "WATER-BASED",
+      "AQUATIC HABITAT",
+      "AQUATIC ANIMALS"
+    ],
+    "category": "CORE"
+  },
+  "ARC": {
+    "hamnosys": "hamsymmlr,hamflathand,hamfingerbendmod,hamextfingerul,hampalmd,hamchest,hamlrat,hamtouch,hammoved,hamlargemod,hamarcl,hamstomach,hamlrat,hamclose,hamrepeatfromstartseveral",
+    "non_manual": {},
+    "anchors": [
+      "CURVE",
+      "SEGMENT",
+      "ARC WELDING"
+    ],
+    "category": "CORE"
+  },
+  "ARCHAEOLOGY": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ARCHEOLOGY",
+      "EXCAVATION"
+    ],
+    "category": "CORE"
+  },
+  "ARITHMETIC": {
+    "hamnosys": "hamfist,hamthumbacrossmod,hamextfingerl,hambetween,hamextfingerol,hampalml,hambetween,hampalmul,hamunderchin,hamreplace,hamextfingerl,hampalml,hamunderchin",
+    "non_manual": {},
+    "anchors": [
+      "ARITHMETIC MEAN",
+      "AVERAGE",
+      "ARITHMETIC SEQUENCE"
+    ],
+    "category": "COMPOUND"
+  },
+  "ARTERY": {
+    "hamnosys": "hamfinger23,hamextfingerul,hampalmdl,hamforehead,hamlrat,hammoved,hamzigzag,hamlargemod,hamchest,hamlrat",
+    "non_manual": {},
+    "anchors": [
+      "BLOOD VESSEL",
+      "CHANNEL"
+    ],
+    "category": "CORE"
+  },
+  "ESSAY": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamringfinger,hamdoublehooked,hampinky,hamdoublehooked,hamparbegin,hamextfingerul,hampalmdl,hamplus,hamextfingerur,hampalmdr,hamparend,hamparbegin,hamindexfinger,hamfingerpad,hamplus,hamindexfinger,hamfingernail,hamparend,hamclose,hamshouldertop,hamseqbegin,hammoved,hammoveu,hamseqend,hamrepeatfromstart,hamplus,hamparbegin,hampinch12,hamplus,hamflathand,hamparend,hamparbegin,hamextfingerol,hampalmdl,hamplus,hamextfingeru,hampalmr,hamparend,hamparbegin,hamindexfinger,hamfingertip,hamplus,hamindexfinger,hamfingertip,hamparend,hamclose,hamchest,hamparbegin,hammoved,hamlargemod,hamwavy,hamsmallmod,hamparend",
+    "non_manual": {},
+    "anchors": [],
+    "category": ""
+  },
+  "ARTIFACT": {
+    "hamnosys": "hamfinger23,hamextfingerul,hampalmdl,hamforehead,hamlrat,hammoved,hamzigzag,hamlargemod,hamchest,hamlrat",
+    "non_manual": {},
+    "anchors": [
+      "RELIC",
+      "ANTIQUITY"
+    ],
+    "category": "CORE"
+  },
+  "ARTIFICIAL": {
+    "hamnosys": "hamfinger23,hamextfingerul,hampalmdl,hamforehead,hamlrat,hammoved,hamzigzag,hamlargemod,hamchest,hamlrat",
+    "non_manual": {},
+    "anchors": [
+      "ARTIFICIAL INSEMINATION",
+      "ARTIFICIAL INTELLIGENCE",
+      "ARTIFICIAL SILK",
+      "MAN-MADE"
+    ],
+    "category": "COMPOUND"
+  },
+  "ASCENDING": {
+    "hamnosys": "",
+    "non_manual": {},
+    "anchors": [
+      "ASCENDING ORDER",
+      "INCREASING"
+    ],
+    "category": "COMPOUND"
+  },
+  "ASHOKA": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "MAURYAN EMPEROR",
+      "ASHOKA THE GREAT"
+    ],
+    "category": "CORE"
+  },
+  "ASHRAMA": {
+    "hamnosys": "hamfist,hamthumbacrossmod,hamextfingerl,hambetween,hamextfingerol,hampalml,hambetween,hampalmul,hamunderchin,hamreplace,hamextfingerl,hampalml,hamunderchin",
+    "non_manual": {},
+    "anchors": [
+      "STAGES OF LIFE",
+      "HERMITAGE"
+    ],
+    "category": "CORE"
+  },
+  "ASHVAMEDHA": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "HORSE SACRIFICE",
+      "VEDIC RITUAL"
+    ],
+    "category": "CORE"
+  },
+  "ASSUME": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "PREMISE",
+      "SUPPOSITION",
+      "HYPOTHESIS"
+    ],
+    "category": "CORE"
+  },
+  "ASTERISK": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "STAR SYMBOL",
+      "MARKER"
+    ],
+    "category": "CORE"
+  },
+  "ATLAS": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "MAP BOOK",
+      "GAZETTEER"
+    ],
+    "category": "CORE"
+  },
+  "ATOM": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ATOMIC STRUCTURE",
+      "SUBATOMIC PARTICLES"
+    ],
+    "category": "CORE"
+  },
+  "ATTRACT": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "MAGNETISM",
+      "GRAVITY",
+      "PULL"
+    ],
+    "category": "CORE"
+  },
+  "CHARACTERISTIC": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "TRAIT",
+      "PROPERTY",
+      "ATTRIBUTE"
+    ],
+    "category": "CORE"
+  },
+  "AUDIOLOGIST": {
+    "hamnosys": "hamparbegin,hamflathand,hamfingerbendmod,hamthumboutmod,hamplus,hamflathand,hamfingerbendmod,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingerr,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamear,hamtouch,hamparbegin,hamreplace,hamfinger2,hamextfingerl,hampalml,hamneck,hamlrat,hamcircleo,hamsmallmod,hamparend,hamparbegin,hamreplace,hamfinger2,hamthumboutmod,hamfingerbendmod,hamextfingeru,hampalmdl,hammoved,hamparend,hamstomach",
+    "non_manual": {},
+    "anchors": [
+      "hearing specialist"
+    ],
+    "category": "noun"
+  },
+  "AUDIOLOGY": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "STUDY of HEARING"
+    ],
+    "category": "CORE"
+  },
+  "AUTHORITY": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "POWER",
+      "GOVERNANCE"
+    ],
+    "category": "CORE"
+  },
+  "AUTOBIOGRAPHY": {
+    "hamnosys": "hamfinger23,hamparbegin,hamextfingerul,hampalmdl,hamplus,hamextfingerur,hampalmdr,hamparend,hamparbegin,hamindexfinger,hamfingerpad,hamplus,hamindexfinger,hamfingernail,hamparend,hamclose,hamshoulders,hammoved,hamlargemod",
+    "non_manual": {},
+    "anchors": [
+      "SELF-LIFE STORY",
+      "MEMOIR"
+    ],
+    "category": "CORE"
+  },
+  "AUTONOMOUS": {
+    "hamnosys": "hamfinger2,hamthumbacrossmod,hamextfingerl,hampalmd,hamparbegin,hammovel,hamsmallmod,hamreplace,hamfinger2,hamfingerbendmod,hamthumbacrossmod,hamextfingerl,hampalmd,hamparend,hamrepeatcontinueseveral",
+    "non_manual": {},
+    "anchors": [
+      "INDEPENDENT",
+      "AUTONOMOUS VEHICLE",
+      "AUTONOMOUS DEGREE-GRANTING COLLEGE"
+    ],
+    "category": "COMPOUND"
+  },
+  "ABANDONMENT": {
+    "hamnosys": "",
+    "non_manual": {},
+    "anchors": [
+      "ABANDONMENT OF CHILD",
+      "ABANDONMENT OF COPYRIGHT",
+      "DESERTION",
+      "RELINQUISHMENT"
+    ],
+    "category": "COMPOUND"
+  },
+  "RESIGN": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ABDICATE",
+      "RENOUNCE",
+      "GIVE UP"
+    ],
+    "category": "CORE"
+  },
+  "SUSPENSION": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ABEYANCE",
+      "DORMANCY",
+      "LATENCY",
+      "PENDING"
+    ],
+    "category": "CORE"
+  },
+  "ABSORB": {
+    "hamnosys": "hamsymmpar,hamfinger2345,hamthumboutmod,hamextfingerir,hampalmd,hamchest,hammoveol,hamparbegin,hamreplace,hamfinger2345,hamfingerbendmod,hamextfingero,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [],
+    "category": ""
+  },
+  "ACTUAL": {
+    "hamnosys": "",
+    "non_manual": {},
+    "anchors": [
+      "ACTUAL LOSS",
+      "REAL",
+      "TANGIBLE",
+      "GENUINE"
+    ],
+    "category": "COMPOUND"
+  },
+  "AFRICA": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalmd,hamcheek,hamlrbeside,hammoved,hamarcr,hamlargemod,hamreplace,hamfist,hamextfingero,hampalml,hamchest",
+    "non_manual": {},
+    "anchors": [
+      "african continent"
+    ],
+    "category": "noun"
+  },
+  "AGRO": {
+    "hamnosys": "",
+    "non_manual": {},
+    "anchors": [
+      "AGRO BASED INDUSTRY",
+      "AGRICULTURE",
+      "FARMING"
+    ],
+    "category": "COMPOUND"
+  },
+  "ALBUMIN": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "PROTEIN",
+      "EGG WHITE",
+      "SERUM"
+    ],
+    "category": "CORE"
+  },
+  "ALTERNATE": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "SUBSTITUTE"
+    ],
+    "category": "COMPOUND"
+  },
+  "BEEKEEPING": {
+    "hamnosys": "",
+    "non_manual": {},
+    "anchors": [
+      "APICULTURIST",
+      "APICULTURE"
+    ],
+    "category": "COMPOUND"
+  },
+  "ASCENT": {
+    "hamnosys": "",
+    "non_manual": {},
+    "anchors": [
+      "ASCENT OF SAP",
+      "RISE",
+      "UPWARD MOVE"
+    ],
+    "category": "COMPOUND"
+  },
+  "ASSET": {
+    "hamnosys": "hamfist,hamthumbacrossmod,hamextfingerl,hambetween,hamextfingerol,hampalml,hambetween,hampalmul,hamunderchin,hamreplace,hamextfingerl,hampalml,hamunderchin",
+    "non_manual": {},
+    "anchors": [
+      "ASSET FLOWS",
+      "ASSET MANAGEMENT COMPANY",
+      "PROPERTY",
+      "RESOURCES"
+    ],
+    "category": "COMPOUND"
+  },
+  "AT": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "in",
+      "on"
+    ],
+    "category": "preposition"
+  },
+  "AXIS": {
+    "hamnosys": "hamparbegin,hamflathand,hamplus,hamflathand,hamparend,hamparbegin,hamextfingerl,hampalmd,hamplus,hamextfingeru,hampalmr,hamparend,hamparbegin,hamthumbball,hamplus,hammiddlefinger,hamfingertip,hamparend,hamtouch,hamshoulders",
+    "non_manual": {},
+    "anchors": [],
+    "category": ""
+  },
+  "AYURVEDA": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "YOGA",
+      "NATUROPATHY",
+      "UNANI",
+      "SIDDHA",
+      "HOMEOPATHY",
+      "AYUSH"
+    ],
+    "category": "COMPOUND"
+  },
+  "ABUSE": {
+    "hamnosys": "hamfist,hamthumbacrossmod,hamextfingerl,hambetween,hamextfingerol,hampalml,hambetween,hampalmul,hamunderchin,hamreplace,hamextfingerl,hampalml,hamunderchin",
+    "non_manual": {},
+    "anchors": [
+      "ABUSIVE LANGUAGE",
+      "VERBAL ABUSE",
+      "MISTREATMENT",
+      "INSULT"
+    ],
+    "category": "COMPOUND"
+  },
+  "ACCOMMODATE": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ADJUST"
+    ],
+    "category": "COMPOUND"
+  },
+  "ACCOMPLICE": {
+    "hamnosys": "hamparbegin,hamflathand,hamthumboutmod,hamplus,hamfinger2345,hamthumboutmod,hamparend,hamparbegin,hamextfingero,hampalml,hamplus,hamextfingeru,hampalmu,hamparend,hamparbegin,hamfingerpad,hamringfinger,hampinky,hamplus,hamfingerside,hampinky,hamparend,hamtouch,hammoveo,hamrepeatfromstart",
+    "non_manual": {},
+    "anchors": [
+      "ACCESSORY",
+      "CO-CONSPIRATOR",
+      "ABETTOR",
+      "PARTNER IN CRIME"
+    ],
+    "category": "COMPOUND"
+  },
+  "ACKNOWLEDGE": {
+    "hamnosys": "hamflathand,hamfingerstraightmod,hamextfingeru,hampalml,hamforehead,hamlrbeside,hamseqbegin,hammoveor,hammoveil,hamseqend,hamrepeatfromstartseveral",
+    "non_manual": {},
+    "anchors": [
+      "CONFIRM"
+    ],
+    "category": "CORE"
+  },
+  "ADMONISH": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "REPRIMAND",
+      "REPROVE",
+      "WARN",
+      "CHIDE"
+    ],
+    "category": "CORE"
+  },
+  "ADVERSARY": {
+    "hamnosys": "",
+    "non_manual": {},
+    "anchors": [
+      "OPPONENT",
+      "RIVAL",
+      "ENEMY",
+      "FOE"
+    ],
+    "category": "COMPOUND"
+  },
+  "UNFAVORABLE": {
+    "hamnosys": "",
+    "non_manual": {},
+    "anchors": [
+      "ADVERSE POSSESSION",
+      "ADVERSE WITNESS",
+      "ADVERSE",
+      "HOSTILE"
+    ],
+    "category": "COMPOUND"
+  },
+  "AFFIANT": {
+    "hamnosys": "hamfinger2,hamthumbacrossmod,hamextfingerl,hampalmd,hamparbegin,hammovel,hamsmallmod,hamreplace,hamfinger2,hamfingerbendmod,hamthumbacrossmod,hamextfingerl,hampalmd,hamparend,hamrepeatcontinueseveral",
+    "non_manual": {},
+    "anchors": [
+      "DEPONENT",
+      "WITNESS",
+      "DECLARANT"
+    ],
+    "category": "COMPOUND"
+  },
+  "AFFIDAVIT": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "SWORN STATEMENT",
+      "DEPOSITION",
+      "OATH"
+    ],
+    "category": "CORE"
+  },
+  "AFFIRM": {
+    "hamnosys": "hamfinger2345,hamthumbacrossmod,hamthumb,hamfingerhookmod,hamringfinger,hamfingerhookmod,hampinky,hamfingerhookmod,hamextfingeru,hampalmu,hamlips,hamtouch,hamparbegin,hammoved,hamsmallmod,hamreplace,hamfinger23,hambetween,hamfinger23,hamfingerhookmod,hamparend",
+    "non_manual": {},
+    "anchors": [
+      "VALIDATE",
+      "RATIFY",
+      "UPHOLD",
+      "DECLARE"
+    ],
+    "category": "CORE"
+  },
+  "AFFRAY": {
+    "hamnosys": "hamsymmlr,hamfist,hamextfingerul,hampalmdl,hamshoulders,hammover,hammovel,hamtouch,hammover,hammovel,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "BRAWL",
+      "FRACAS",
+      "MELEE",
+      "PUBLIC FIGHT"
+    ],
+    "category": "CORE"
+  },
+  "AGENDA": {
+    "hamnosys": "hamfist,hamthumbacrossmod,hamextfingerl,hambetween,hamextfingerol,hampalml,hambetween,hampalmul,hamunderchin,hamreplace,hamextfingerl,hampalml,hamunderchin",
+    "non_manual": {},
+    "anchors": [
+      "PROGRAM",
+      "SCHEDULE",
+      "DOCKET",
+      "PLAN"
+    ],
+    "category": "CORE"
+  },
+  "AID": {
+    "hamnosys": "hamsymmlr,hamfinger2345,hamthumboutmod,hamextfingeru,hampalmd,hamclose,hamchest,hammovei",
+    "non_manual": {},
+    "anchors": [
+      "AID AND ABET",
+      "ABETTOR",
+      "ASSISTANCE",
+      "SUPPORT",
+      "CHILD SUPPORT"
+    ],
+    "category": "COMPOUND"
+  },
+  "ALIAS": {
+    "hamnosys": "",
+    "non_manual": {},
+    "anchors": [
+      "FALSE NAME"
+    ],
+    "category": "COMPOUND"
+  },
+  "ALLEGATION": {
+    "hamnosys": "hamsymmpar,hamfist,hamthumboutmod,hamextfingeru,hampalmd,hamtouch,hamchest,hamnomotion,hamplus,hamflathand,hamextfingero,hampalmd,hamchest,hamcircled",
+    "non_manual": {},
+    "anchors": [
+      "ACCUSATION",
+      "ACCUSED",
+      "CHARGE",
+      "ASSERTION"
+    ],
+    "category": "COMPOUND"
+  },
+  "ALLOCATION": {
+    "hamnosys": "hamsymmpar,hamfist,hamthumboutmod,hamextfingeru,hampalmd,hamtouch,hamchest,hamnomotion,hamplus,hamflathand,hamextfingero,hampalmd,hamchest,hamcircled",
+    "non_manual": {},
+    "anchors": [
+      "ALLOCATION OF WORK",
+      "ALLOCATION OF RESOURCES",
+      "ALLOTMENT",
+      "DISTRIBUTION"
+    ],
+    "category": "COMPOUND"
+  },
+  "ANNUAL": {
+    "hamnosys": "",
+    "non_manual": {},
+    "anchors": [
+      "YEARLY",
+      "PER ANNUM"
+    ],
+    "category": "COMPOUND"
+  },
+  "UNKNOWN": {
+    "hamnosys": "hamflathand,hamfingerstraightmod,hamextfingeru,hampalml,hamforehead,hamlrbeside,hamseqbegin,hammoveor,hammoveil,hamseqend,hamrepeatfromstartseveral",
+    "non_manual": {},
+    "anchors": [
+      "ANONYMOUS COMPLAINT",
+      "UNNAMED",
+      "ANONYMOUS",
+      "NAMELESS"
+    ],
+    "category": "COMPOUND"
+  },
+  "ANTI": {
+    "hamnosys": "hamfinger2,hamthumbacrossmod,hamextfingerl,hampalmd,hamparbegin,hammovel,hamsmallmod,hamreplace,hamfinger2,hamfingerbendmod,hamthumbacrossmod,hamextfingerl,hampalmd,hamparend,hamrepeatcontinueseveral",
+    "non_manual": {},
+    "anchors": [
+      "OPPOSITION",
+      "CONTRA"
+    ],
+    "category": "COMPOUND"
+  },
+  "APEX": {
+    "hamnosys": "",
+    "non_manual": {},
+    "anchors": [
+      "APEX COURT",
+      "SUPREME COURT",
+      "PEAK",
+      "ZENITH",
+      "SUMMIT"
+    ],
+    "category": "COMPOUND"
+  },
+  "BELONGING": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "EQUIPMENT",
+      "PARAPHERNALIA"
+    ],
+    "category": "CORE"
+  },
+  "ATTACKER": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ASSAILANT",
+      "AGVENTOR",
+      "ASSAULT"
+    ],
+    "category": "CORE"
+  },
+  "MURDER": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ASSASSINATE",
+      "EXECUTION",
+      "POLITICAL KILLING"
+    ],
+    "category": "CORE"
+  },
+  "AUDIT": {
+    "hamnosys": "",
+    "non_manual": {},
+    "anchors": [
+      "INSPECT",
+      "EXAMINE"
+    ],
+    "category": "COMPOUND"
+  },
+  "PERMISSION": {
+    "hamnosys": "hamparbegin,hamflathand,hamthumboutmod,hamplus,hamfinger2345,hamthumboutmod,hamparend,hamparbegin,hamextfingero,hampalml,hamplus,hamextfingeru,hampalmu,hamparend,hamparbegin,hamfingerpad,hamringfinger,hampinky,hamplus,hamfingerside,hampinky,hamparend,hamtouch,hammoveo,hamrepeatfromstart",
+    "non_manual": {},
+    "anchors": [
+      "AUTHORIZED PERSON",
+      "SIGNATORY",
+      "AUTHORIZATION",
+      "USER ACCESS"
+    ],
+    "category": "COMPOUND"
+  },
+  "DICTATOR": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "AUTOCRAT",
+      "DICTATORSHIP",
+      "AUTOCRACY",
+      "MONOCRACY"
+    ],
+    "category": "COMPOUND"
+  },
+  "ABORTION": {
+    "hamnosys": "hamfist,hamthumbacrossmod,hamextfingerl,hambetween,hamextfingerol,hampalml,hambetween,hampalmul,hamunderchin,hamreplace,hamextfingerl,hampalml,hamunderchin",
+    "non_manual": {},
+    "anchors": [
+      "TERMINATION",
+      "MISCARRIAGE"
+    ],
+    "category": "CORE"
+  },
+  "ABSCESS": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "INFECTION",
+      "ULCER",
+      "BOIL",
+      "PUSTULE"
+    ],
+    "category": "CORE"
+  },
+  "ACNE": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "PIMPLE",
+      "BREAKOUT",
+      "SKIN CONDITION"
+    ],
+    "category": "CORE"
+  },
+  "ACUTE": {
+    "hamnosys": "",
+    "non_manual": {},
+    "anchors": [
+      "ACUTE CORONARY SYNDROME",
+      "SEVERE",
+      "SUDDEN",
+      "SHARP"
+    ],
+    "category": "COMPOUND"
+  },
+  "ADAM": {
+    "hamnosys": "hamfinger2345,hamthumboutmod,hambetween,hampinchall,hamextfingero,hampalmu,hamchin,hamclose,hammoveu,hamsmallmod,hamrepeatfromstart",
+    "non_manual": {},
+    "anchors": [
+      "ADAM'S APPLE",
+      "LARYNGEAL PROMINENCE"
+    ],
+    "category": "COMPOUND"
+  },
+  "ADRENAL": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "SUPRARENAL",
+      "ADRENAL GLANDS",
+      "EPINEPHRINE"
+    ],
+    "category": "CORE"
+  },
+  "AMALGAM": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "AMALGAMATOR",
+      "DENTAL FILLING",
+      "MIXTURE"
+    ],
+    "category": "CORE"
+  },
+  "ANKLE": {
+    "hamnosys": "hamparbegin,hamfinger2,hamfingerhookmod,hamthumbacrossmod,hamplus,hampinch12,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalmd,hamplus,hampalmr,hamparend,hammovel,hamarcu,hamsmallmod,hamparbegin,hamthumb,hamfingertip,hamplus,hamindexfinger,hamfingernail,hamparend,hamclose",
+    "non_manual": {},
+    "anchors": [
+      "TALUS",
+      "JOINT"
+    ],
+    "category": "CORE"
+  },
+  "ANOREXIA": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ANOREXIA NERVOSA",
+      "EATING DISORDER",
+      "APPETITE LOSS"
+    ],
+    "category": "CORE"
+  },
+  "ANTIBIOTIC": {
+    "hamnosys": "hamfinger2,hamthumbacrossmod,hamextfingerl,hampalmd,hamparbegin,hammovel,hamsmallmod,hamreplace,hamfinger2,hamfingerbendmod,hamthumbacrossmod,hamextfingerl,hampalmd,hamparend,hamrepeatcontinueseveral",
+    "non_manual": {},
+    "anchors": [
+      "ANTIBACTERIAL",
+      "ANTIMICROBIAL"
+    ],
+    "category": "CORE"
+  },
+  "CURE": {
+    "hamnosys": "hamfist,hamthumbacrossmod,hamextfingerl,hambetween,hamextfingerol,hampalml,hambetween,hampalmul,hamunderchin,hamreplace,hamextfingerl,hampalml,hamunderchin",
+    "non_manual": {},
+    "anchors": [
+      "REMEDY",
+      "ANTIDOTE",
+      "COUNTER-AGENT"
+    ],
+    "category": "CORE"
+  },
+  "ASPIRATION": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "INHALATION",
+      "SUCTION",
+      "AMBITION"
+    ],
+    "category": "CORE"
+  },
+  "ASPIRIN": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "PAINKILLER",
+      "ACETYLSALICYLIC ACID"
+    ],
+    "category": "CORE"
+  },
+  "ASTHMA": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "WHEEZING",
+      "BRONCHIAL ASTHMA"
+    ],
+    "category": "CORE"
+  },
+  "ATHLETES": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ATHLETES' FOOT",
+      "TINEA PEDIS",
+      "FUNGAL INFECTION"
+    ],
+    "category": "COMPOUND"
+  },
+
+  "AGRA": {
+    "hamnosys": "hamflathand,hamthumboutmod,hamextfingeru,hampalml,hamchest,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "TAJ MAHAL CITY",
+      "UTTAR PRADESH"
+    ],
+    "category": "CORE"
+  },
+
+  "AHMEDABAD": {
+    "hamnosys": "hamfinger2,hampinky,hamextfingeru,hampalmdl,hambetween,hampalml,hamshouldertop,hamlrat,hambetween,hamshoulders,hammovedo",
+    "non_manual": {},
+    "anchors": [
+      "GUJARAT CITY",
+      "MANCHESTER OF INDIA"
+    ],
+    "category": "CORE"
+  },
+  "AMRITSAR": {
+    "hamnosys": "hamfinger2345,hamthumbacrossmod,hamthumb,hamfingerhookmod,hamringfinger,hamfingerhookmod,hampinky,hamfingerhookmod,hamextfingeru,hampalmu,hamlips,hamtouch,hamparbegin,hammoved,hamsmallmod,hamreplace,hamfinger23,hambetween,hamfinger23,hamfingerhookmod,hamparend",
+    "non_manual": {},
+    "anchors": [
+      "GOLDEN TEMPLE CITY",
+      "PUNJAB"
+    ],
+    "category": "CORE"
+  },
+  "ANDHRA": {
+    "hamnosys": "hamparbegin,hamfinger2,hamplus,hamflathand,hamthumboutmod,hamparend,hamparbegin,hamextfingerl,hamplus,hamextfingero,hamparend,hamparbegin,hampalml,hamplus,hampalmr,hamparend,hamparbegin,hampalm,hamplus,hamfingertip,hamindexfinger,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "ANDHRA PRADESH",
+      "TELUGU STATE"
+    ],
+    "category": "COMPOUND"
+  },
+  "ARUNACHAL": {
+    "hamnosys": "",
+    "non_manual": {},
+    "anchors": [
+      "ARUNACHAL PRADESH",
+      "LAND OF RISING SUN"
+    ],
+    "category": "COMPOUND"
+  },
+  "AC": {
+    "hamnosys": "hamsymmlr,hamfinger2345,hamthumboutmod,hamextfingero,hampalmd,hamshoulders,hamparbegin,hammovei,hamreplace,hampinchall,hamextfingerl,hampalml,hamparend,hamtouch",
+    "non_manual": {},
+    "anchors": [
+      "AC ADAPTER",
+      "AC EXPRESS TRAIN",
+      "ALTERNATING CURRENT"
+    ],
+    "category": "COMPOUND"
+  },
+  "ADOBE": {
+    "hamnosys": "hamflathand,hamextfingerl,hampalmd,hamchest,hamparbegin,hammoveo,hamarcu,hamreplace,hampalmu,hamparend",
+    "non_manual": {},
+    "anchors": [
+      "ADOBE ACROBAT READER",
+      "ADOBE AFTER EFFECTS",
+      "ADOBE CREATIVE SUITE"
+    ],
+    "category": "COMPOUND"
+  }
+}

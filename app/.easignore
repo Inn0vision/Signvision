@@ -1,0 +1,13 @@
+# Ignore parent directory contents (EAS builds from git root)
+../feats/
+../data/
+../dataset/
+../docs/
+../.ruff_cache/
+
+# Standard ignores
+node_modules/
+.expo/
+dist/
+*.log
+.DS_Store

@@ -1,0 +1,50 @@
+{
+  "expo": {
+    "name": "SignVision",
+    "slug": "signvision",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0f0f1e",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0f0f1e"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.signvision.app"
+    },
+    "android": {
+      "package": "com.signvision.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#0f0f1e",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "hardwareAccelerated": true,
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-asset",
+        {
+          "assets": [
+            "./src/assets"
+          ]
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "eaa83f99-436a-413b-ba1b-c238d6abec5e"
+      }
+    },
+    "owner": "onkarpppp"
+  }
+}

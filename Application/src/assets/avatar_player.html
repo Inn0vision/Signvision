@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SignVision Avatar Player</title>
+    
+    <!-- CWASA Styles and Scripts from JASigning -->
+    <link rel="stylesheet" href="https://vhg.cmp.uea.ac.uk/tech/jas/vhg2020/cwa/cwasa.css" />
+    <script type="text/javascript" src="https://vhg.cmp.uea.ac.uk/tech/jas/vhg2020/cwa/allcsa.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #1a1a2e;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            padding: 10px;
+        }
+        
+        .avatar-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        /* Override CWASA styles for mobile */
+        .CWASAAvatar {
+            width: 100% !important;
+            height: 100% !important;
+            max-width: 400px;
+            max-height: 500px;
+        }
+        
+        .CWASAAvatar canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+        
+        .status-overlay {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            z-index: 100;
+            transition: opacity 0.3s;
+        }
+        
+        .status-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .loading-spinner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-top-color: #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            z-index: 99;
+        }
+        
+        .loading-spinner.hidden {
+            display: none;
+        }
+        
+        @keyframes spin {
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        
+        .error-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(244, 67, 54, 0.9);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 80%;
+            z-index: 101;
+        }
+        
+        .error-message.hidden {
+            display: none;
+        }
+        
+        /* Hidden controls for CWASA binding */
+        .hidden-controls {
+            display: none;
+        }
+    </style>
+</head>
+<body onload="initApp()">
+    <div class="container">
+        <div class="avatar-container">
+            <!-- CWASA Avatar Element - bound via class name -->
+            <div class="CWASAAvatar av0" id="avatarDiv"></div>
+            
+            <!-- Loading Spinner -->
+            <div class="loading-spinner" id="loadingSpinner"></div>
+            
+            <!-- Status Overlay -->
+            <div class="status-overlay hidden" id="statusOverlay">Initializing...</div>
+            
+            <!-- Error Message -->
+            <div class="error-message hidden" id="errorMessage">
+                <p id="errorText">Error loading animation</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Hidden CWASA Controls - used for API binding -->
+    <div class="hidden-controls">
+        <input type="text" class="txtSiGMLURL av0" id="sigmlUrlInput" value="" />
+        <button class="bttnPlaySiGMLURL av0" id="playButton">Play</button>
+        <button class="bttnStop av0" id="stopButton">Stop</button>
+        <input type="text" class="txtGloss av0" id="glossText" value="" />
+        <input type="text" class="statusExtra av0" id="statusText" value="" />
+        <select class="menuAv av0" id="avatarMenu">
+            <option value="anna">anna</option>
+            <option value="marc">marc</option>
+            <option value="francoise">francoise</option>
+            <option value="luna" selected>luna</option>
+        </select>
+    </div>
+    
+    <!-- Hidden SToCA applet element panel (required by CWASA) -->
+    <div class="SToCA" align="center"></div>
+
+    <script>
+        // State management
+        let isInitialized = false;
+        let currentWord = '';
+        let statusTimeout = null;
+        
+        // DOM elements
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const statusOverlay = document.getElementById('statusOverlay');
+        const errorMessage = document.getElementById('errorMessage');
+        const errorText = document.getElementById('errorText');
+        const sigmlUrlInput = document.getElementById('sigmlUrlInput');
+        const playButton = document.getElementById('playButton');
+        const stopButton = document.getElementById('stopButton');
+        const statusText = document.getElementById('statusText');
+        const glossText = document.getElementById('glossText');
+        
+        // Initialize the application
+        function initApp() {
+            showStatus('Initializing avatar...');
+            
+            // Initialize CWASA
+            try {
+                CWASA.init();
+                
+                // Wait for avatar to be ready
+                setTimeout(() => {
+                    isInitialized = true;
+                    hideLoading();
+                    showStatus('Ready');
+                    sendMessageToRN({ type: 'ready' });
+                    
+                    // Set up status monitoring
+                    setupStatusMonitor();
+                }, 2000);
+            } catch (error) {
+                showError('Failed to initialize CWASA: ' + error.message);
+                sendMessageToRN({ type: 'error', message: 'CWASA initialization failed' });
+            }
+        }
+        
+        // Set up monitoring for status changes
+        function setupStatusMonitor() {
+            // Monitor status text changes
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.type === 'attributes' && mutation.attributeName === 'value') {
+                        const status = statusText.value;
+                        if (status) {
+                            handleStatusChange(status);
+                        }
+                    }
+                });
+            });
+            
+            observer.observe(statusText, { attributes: true });
+            
+            // Also poll for status changes (backup)
+            setInterval(() => {
+                const status = statusText.value;
+                const gloss = glossText.value;
+                if (status || gloss) {
+                    sendMessageToRN({ 
+                        type: 'status', 
+                        status: status,
+                        gloss: gloss 
+                    });
+                }
+            }, 500);
+        }
+        
+        // Handle status changes from CWASA
+        function handleStatusChange(status) {
+            if (status.includes('Playing')) {
+                showStatus('Playing: ' + currentWord);
+                sendMessageToRN({ type: 'playing', word: currentWord });
+            } else if (status.includes('Finished') || status.includes('Done')) {
+                showStatus('Finished');
+                sendMessageToRN({ type: 'finished', word: currentWord });
+                hideStatusAfterDelay();
+            } else if (status.includes('Error') || status.includes('Failed')) {
+                showError(status);
+                sendMessageToRN({ type: 'error', message: status });
+            }
+        }
+        
+        // Play SiGML from URL
+        function playSiGML(url, word) {
+            if (!isInitialized) {
+                showError('Avatar not ready yet');
+                sendMessageToRN({ type: 'error', message: 'Avatar not initialized' });
+                return;
+            }
+            
+            currentWord = word || 'sign';
+            hideError();
+            showLoading();
+            showStatus('Loading: ' + currentWord);
+            
+            try {
+                // Set the URL and trigger play
+                sigmlUrlInput.value = url;
+                
+                // Trigger change event for CWASA binding
+                const event = new Event('change', { bubbles: true });
+                sigmlUrlInput.dispatchEvent(event);
+                
+                // Click play button
+                setTimeout(() => {
+                    playButton.click();
+                    hideLoading();
+                    showStatus('Playing: ' + currentWord);
+                }, 100);
+                
+            } catch (error) {
+                hideLoading();
+                showError('Failed to play: ' + error.message);
+                sendMessageToRN({ type: 'error', message: error.message });
+            }
+        }
+        
+        // Stop current animation
+        function stopAnimation() {
+            try {
+                stopButton.click();
+                showStatus('Stopped');
+                sendMessageToRN({ type: 'stopped' });
+                hideStatusAfterDelay();
+            } catch (error) {
+                console.error('Stop error:', error);
+            }
+        }
+        
+        // Change avatar character
+        function changeAvatar(avatarName) {
+            const avatarMenu = document.getElementById('avatarMenu');
+            if (avatarMenu) {
+                avatarMenu.value = avatarName;
+                const event = new Event('change', { bubbles: true });
+                avatarMenu.dispatchEvent(event);
+                sendMessageToRN({ type: 'avatarChanged', avatar: avatarName });
+            }
+        }
+        
+        // UI Helper Functions
+        function showLoading() {
+            loadingSpinner.classList.remove('hidden');
+        }
+        
+        function hideLoading() {
+            loadingSpinner.classList.add('hidden');
+        }
+        
+        function showStatus(message) {
+            statusOverlay.textContent = message;
+            statusOverlay.classList.remove('hidden');
+            clearTimeout(statusTimeout);
+        }
+        
+        function hideStatusAfterDelay(delay = 3000) {
+            statusTimeout = setTimeout(() => {
+                statusOverlay.classList.add('hidden');
+            }, delay);
+        }
+        
+        function showError(message) {
+            errorText.textContent = message;
+            errorMessage.classList.remove('hidden');
+            hideLoading();
+        }
+        
+        function hideError() {
+            errorMessage.classList.add('hidden');
+        }
+        
+        // Communication with React Native
+        function sendMessageToRN(message) {
+            if (window.ReactNativeWebView) {
+                window.ReactNativeWebView.postMessage(JSON.stringify(message));
+            }
+        }
+        
+        // Listen for messages from React Native
+        window.addEventListener('message', function(event) {
+            try {
+                const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+                
+                switch (data.type) {
+                    case 'play':
+                        playSiGML(data.url, data.word);
+                        break;
+                    case 'stop':
+                        stopAnimation();
+                        break;
+                    case 'changeAvatar':
+                        changeAvatar(data.avatar);
+                        break;
+                    case 'ping':
+                        sendMessageToRN({ type: 'pong', initialized: isInitialized });
+                        break;
+                    default:
+                        console.log('Unknown message type:', data.type);
+                }
+            } catch (error) {
+                console.error('Message parse error:', error);
+            }
+        });
+        
+        // Also listen for document message events (for Android)
+        document.addEventListener('message', function(event) {
+            window.dispatchEvent(new MessageEvent('message', { data: event.data }));
+        });
+    </script>
+</body>
+</html>

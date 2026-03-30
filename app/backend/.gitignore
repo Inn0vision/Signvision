@@ -1,0 +1,98 @@
+
+# ==========================================
+# Python
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ==========================================
+# Virtual Environments
+# ==========================================
+.venv
+venv/
+ENV/
+env/
+.env
+.env.local
+.env.*.local
+
+# ==========================================
+# IDE & Editors
+# ==========================================
+.vscode/
+.idea/
+*.vscode
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# ==========================================
+# Testing
+# ==========================================
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+*.cover
+
+# ==========================================
+# Logs
+# ==========================================
+*.log
+logs/
+
+# ==========================================
+# os-specific files
+# ==========================================
+.AppleDouble
+.LSOverride
+
+# ==========================================
+# Generated/Temporary Files
+# ==========================================
+*.tmp
+*.bak
+*.orig
+*.swp
+.DS_Store
+
+# ==========================================
+# Media Files (if generated locally)
+# ==========================================
+recordings/
+*.mp3
+*.wav
+*.m4a
+
+# ==========================================
+# Database Files (if applicable)
+# ==========================================
+*.db
+*.sqlite
+*.sqlite3

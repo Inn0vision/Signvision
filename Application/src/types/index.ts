@@ -56,3 +56,45 @@ export interface HistoryItem {
 // Avatar options
 export const AVATAR_OPTIONS = ['anna', 'marc', 'francoise', 'luna'] as const;
 export type AvatarName = typeof AVATAR_OPTIONS[number];
+
+// API Response types (from backend)
+export interface GlossResult {
+  subject: string | null;
+  object: string | null;
+  verb: string | null;
+  tense: string;
+  negation: boolean;
+  question: boolean;
+  gloss: string[];
+}
+
+export interface SignLookup {
+  word: string;
+  original_query: string;
+  found: boolean;
+  s3_url: string | null;
+  match_type: 'exact' | 'anchor' | 'partial' | 'semantic' | 'none';
+  similar_words: string[];
+}
+
+export interface ProcessingResult {
+  gloss: GlossResult;
+  signs: SignLookup[];
+}
+
+export interface ProcessResponse {
+  success: boolean;
+  text: string;
+  results: ProcessingResult[];
+  error?: string;
+}
+
+// Sign playback queue item
+export interface SignQueueItem {
+  word: string;
+  url: string;
+  matchType: SignLookup['match_type'];
+}
+
+// Processing mode for the app
+export type ProcessingMode = 'word' | 'sentence';

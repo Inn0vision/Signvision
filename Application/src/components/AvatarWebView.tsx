@@ -149,23 +149,34 @@ const AVATAR_HTML_CONTENT = `
             }
         }
 
+        var lastStatus = '';
+        var isPlaying = false;
+
         function watchStatus() {
-            var lastStatus = '';
             setInterval(function() {
                 if (!inpStatus) return;
                 var s = inpStatus.value || '';
                 if (s === lastStatus) return;
+                
+                console.log('CWASA Status:', JSON.stringify(s));
+                msg({ type: 'status', status: s });
                 lastStatus = s;
                 
-                if (s.indexOf('Playing') >= 0) { 
+                var sLower = s.toLowerCase();
+                
+                if (sLower.indexOf('complete') >= 0 || sLower.indexOf('done') >= 0 || sLower.indexOf('finished') >= 0) {
+                    if (isPlaying) {
+                        isPlaying = false;
+                        showStatus('Done'); 
+                        msg({ type: 'finished', word: word });
+                        setTimeout(function() { hideStatus(); hideWord(); }, 1000);
+                    }
+                } else if (sLower.indexOf('playing') >= 0 && sLower.indexOf('complete') < 0) { 
+                    isPlaying = true;
                     showStatus('Playing: ' + word); 
                     msg({ type: 'playing', word: word }); 
-                } else if (s.indexOf('Done') >= 0 || s.indexOf('Finished') >= 0) {
-                    showStatus('Done'); 
-                    msg({ type: 'finished', word: word });
-                    setTimeout(function() { hideStatus(); hideWord(); }, 2000);
                 }
-            }, 400);
+            }, 200);
         }
 
         function play(url, w) {
@@ -179,6 +190,8 @@ const AVATAR_HTML_CONTENT = `
             }
             console.log('Playing:', url, w);
             word = w || '';
+            lastStatus = '';
+            isPlaying = false;
             showWord(word);
             showSpinner();
             showStatus('Loading...');

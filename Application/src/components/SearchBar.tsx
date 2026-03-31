@@ -12,7 +12,11 @@ import {
   Alert,
 } from 'react-native';
 import { autocomplete } from '../services/s3Service';
-import { ExpoSpeechRecognitionModule } from 'expo-speech-recognition';
+import {
+  ExpoSpeechRecognitionModule,
+  type ExpoSpeechRecognitionErrorEvent,
+  type ExpoSpeechRecognitionResultEvent,
+} from 'expo-speech-recognition';
 
 interface SearchBarProps {
   value: string;
@@ -94,6 +98,26 @@ const SearchBar: React.FC<SearchBarProps> = ({
     }
   }, [value]);
 
+  const resolveSpeechLocale = useCallback(async () => {
+    const fallbackLocale = 'en-US';
+
+    try {
+      const localesResult = await ExpoSpeechRecognitionModule.getSupportedLocales({});
+      const availableLocales = [
+        ...(localesResult.installedLocales || []),
+        ...(localesResult.locales || []),
+      ];
+
+      const preferredLocales = ['en-US', 'en-IN', 'en-GB'];
+      const preferredMatch = preferredLocales.find((locale) => availableLocales.includes(locale));
+
+      return preferredMatch || availableLocales[0] || fallbackLocale;
+    } catch (error) {
+      console.warn('Failed to fetch supported locales. Falling back to en-US.', error);
+      return fallbackLocale;
+    }
+  }, []);
+
   const handleSpeechRecognition = useCallback(async () => {
     if (isListening) {
       // Stop listening
@@ -107,6 +131,14 @@ const SearchBar: React.FC<SearchBarProps> = ({
     }
 
     try {
+      if (!ExpoSpeechRecognitionModule.isRecognitionAvailable()) {
+        Alert.alert(
+          'Speech Recognition Unavailable',
+          'Speech recognition is not available on this device right now.'
+        );
+        return;
+      }
+
       // Check and request permissions
       const permission = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
       if (!permission.granted) {
@@ -118,9 +150,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
         return;
       }
 
-      // Get available locale
-      const localesResult = await ExpoSpeechRecognitionModule.getSupportedLocales({});
-      const locale = localesResult.locales?.[0] || 'en-US';
+      const locale = await resolveSpeechLocale();
       console.log('Using locale:', locale);
 
       // Start listening
@@ -140,30 +170,23 @@ const SearchBar: React.FC<SearchBarProps> = ({
       setIsListening(false);
       Alert.alert('Error', 'Failed to start speech recognition. Please try again.');
     }
-  }, [isListening]);
+  }, [isListening, resolveSpeechLocale]);
 
   // Handle speech recognition results
   useEffect(() => {
-    const subscription = ExpoSpeechRecognitionModule.addListener('result', (event: any) => {
-      if (event.results && event.results.length > 0) {
-        const result = event.results[0];
-        const transcript = result[0]?.transcript;
+    const subscription = ExpoSpeechRecognitionModule.addListener('result', (event: ExpoSpeechRecognitionResultEvent) => {
+      const transcript = event.results?.[0]?.transcript?.trim();
+      if (!transcript) {
+        return;
+      }
 
-        if (transcript) {
-          // Update input with transcribed text
-          onChangeText(transcript);
+      // Update input with transcribed text
+      onChangeText(transcript);
 
-          // If final result, submit automatically
-          if (result[0]?.isFinal) {
-            setIsListening(false);
-            // Small delay to ensure text is updated before submission
-            setTimeout(() => {
-              if (transcript.trim()) {
-                onSubmit(transcript.trim());
-              }
-            }, 100);
-          }
-        }
+      // If final result, submit automatically
+      if (event.isFinal) {
+        setIsListening(false);
+        onSubmit(transcript);
       }
     });
 
@@ -174,22 +197,27 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
   // Handle speech recognition end
   useEffect(() => {
+    const startSubscription = ExpoSpeechRecognitionModule.addListener('start', () => {
+      setIsListening(true);
+    });
+
     const endSubscription = ExpoSpeechRecognitionModule.addListener('end', () => {
       setIsListening(false);
     });
 
     return () => {
+      startSubscription.remove();
       endSubscription.remove();
     };
   }, []);
 
   // Handle errors
   useEffect(() => {
-    const errorSubscription = ExpoSpeechRecognitionModule.addListener('error', (event: any) => {
-      console.error('Speech error:', event.error);
+    const errorSubscription = ExpoSpeechRecognitionModule.addListener('error', (event: ExpoSpeechRecognitionErrorEvent) => {
+      console.error('Speech error:', event.error, event.message);
       setIsListening(false);
       if (event.error !== 'no-speech' && event.error !== 'aborted') {
-        Alert.alert('Speech Error', `Error: ${event.error}`);
+        Alert.alert('Speech Error', event.message || `Error: ${event.error}`);
       }
     });
 

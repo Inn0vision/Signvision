@@ -14,10 +14,16 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.signvision.app"
+      "bundleIdentifier": "com.signvision.app",
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "SignVision needs microphone access to convert your speech to text for sign language translation."
+      }
     },
     "android": {
       "package": "com.signvision.app",
+      "permissions": [
+        "RECORD_AUDIO"
+      ],
       "adaptiveIcon": {
         "backgroundColor": "#0f0f1e",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -38,7 +44,8 @@
             "./src/assets"
           ]
         }
-      ]
+      ],
+      "expo-speech-recognition"
     ],
     "extra": {
       "eas": {

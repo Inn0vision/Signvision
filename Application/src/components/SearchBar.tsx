@@ -9,8 +9,10 @@ import {
   Keyboard,
   FlatList,
   Platform,
+  Alert,
 } from 'react-native';
 import { autocomplete } from '../services/s3Service';
+import { ExpoSpeechRecognitionModule } from 'expo-speech-recognition';
 
 interface SearchBarProps {
   value: string;
@@ -31,8 +33,10 @@ const SearchBar: React.FC<SearchBarProps> = ({
 }) => {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const inputRef = useRef<TextInput>(null);
   const pulseAnim = useRef(new Animated.Value(1)).current;
+  const listenPulseAnim = useRef(new Animated.Value(1)).current;
 
   // Pulse animation for loading state
   useEffect(() => {
@@ -56,6 +60,28 @@ const SearchBar: React.FC<SearchBarProps> = ({
     }
   }, [isLoading, pulseAnim]);
 
+  // Pulse animation for listening state
+  useEffect(() => {
+    if (isListening) {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(listenPulseAnim, {
+            toValue: 0.5,
+            duration: 500,
+            useNativeDriver: true,
+          }),
+          Animated.timing(listenPulseAnim, {
+            toValue: 1,
+            duration: 500,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    } else {
+      listenPulseAnim.setValue(1);
+    }
+  }, [isListening, listenPulseAnim]);
+
   // Update suggestions when value changes
   useEffect(() => {
     if (value.length >= 2) {
@@ -67,6 +93,110 @@ const SearchBar: React.FC<SearchBarProps> = ({
       setShowSuggestions(false);
     }
   }, [value]);
+
+  const handleSpeechRecognition = useCallback(async () => {
+    if (isListening) {
+      // Stop listening
+      try {
+        ExpoSpeechRecognitionModule.stop();
+        setIsListening(false);
+      } catch (error) {
+        console.log('Stop error:', error);
+      }
+      return;
+    }
+
+    try {
+      // Check and request permissions
+      const permission = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert(
+          'Permission Required',
+          'Please grant microphone permission to use speech recognition.',
+          [{ text: 'OK' }]
+        );
+        return;
+      }
+
+      // Get available locale
+      const localesResult = await ExpoSpeechRecognitionModule.getSupportedLocales({});
+      const locale = localesResult.locales?.[0] || 'en-US';
+      console.log('Using locale:', locale);
+
+      // Start listening
+      setIsListening(true);
+      Keyboard.dismiss();
+
+      ExpoSpeechRecognitionModule.start({
+        lang: locale || 'en-US',
+        interimResults: true,
+        maxAlternatives: 1,
+        requiresOnDeviceRecognition: false,
+        addsPunctuation: true,
+        iosTaskHint: 'dictation',
+      });
+    } catch (error) {
+      console.error('Speech recognition error:', error);
+      setIsListening(false);
+      Alert.alert('Error', 'Failed to start speech recognition. Please try again.');
+    }
+  }, [isListening]);
+
+  // Handle speech recognition results
+  useEffect(() => {
+    const subscription = ExpoSpeechRecognitionModule.addListener('result', (event: any) => {
+      if (event.results && event.results.length > 0) {
+        const result = event.results[0];
+        const transcript = result[0]?.transcript;
+
+        if (transcript) {
+          // Update input with transcribed text
+          onChangeText(transcript);
+
+          // If final result, submit automatically
+          if (result[0]?.isFinal) {
+            setIsListening(false);
+            // Small delay to ensure text is updated before submission
+            setTimeout(() => {
+              if (transcript.trim()) {
+                onSubmit(transcript.trim());
+              }
+            }, 100);
+          }
+        }
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [onChangeText, onSubmit]);
+
+  // Handle speech recognition end
+  useEffect(() => {
+    const endSubscription = ExpoSpeechRecognitionModule.addListener('end', () => {
+      setIsListening(false);
+    });
+
+    return () => {
+      endSubscription.remove();
+    };
+  }, []);
+
+  // Handle errors
+  useEffect(() => {
+    const errorSubscription = ExpoSpeechRecognitionModule.addListener('error', (event: any) => {
+      console.error('Speech error:', event.error);
+      setIsListening(false);
+      if (event.error !== 'no-speech' && event.error !== 'aborted') {
+        Alert.alert('Speech Error', `Error: ${event.error}`);
+      }
+    });
+
+    return () => {
+      errorSubscription.remove();
+    };
+  }, []);
 
   const handleSubmit = useCallback(() => {
     if (value.trim()) {
@@ -129,12 +259,19 @@ const SearchBar: React.FC<SearchBarProps> = ({
           autoCapitalize="none"
           autoCorrect={false}
           returnKeyType="search"
-          editable={!disabled}
+          editable={!disabled && !isListening}
           selectTextOnFocus
         />
+
+        {/* Listening indicator */}
+        {isListening && (
+          <Animated.View style={[styles.listeningIndicator, { opacity: listenPulseAnim }]}>
+            <Text style={styles.listeningText}>🎤</Text>
+          </Animated.View>
+        )}
         
         {/* Clear Button */}
-        {value.length > 0 && (
+        {value.length > 0 && !isListening && (
           <TouchableOpacity 
             style={styles.clearButton} 
             onPress={handleClear}
@@ -143,20 +280,48 @@ const SearchBar: React.FC<SearchBarProps> = ({
             <Text style={styles.clearIcon}>✕</Text>
           </TouchableOpacity>
         )}
-        
-        {/* Search Button */}
+
+        {/* Microphone Button */}
         <TouchableOpacity
           style={[
-            styles.searchButton,
-            (!value.trim() || disabled) && styles.searchButtonDisabled,
+            styles.micButton,
+            isListening && styles.micButtonActive,
+            disabled && styles.micButtonDisabled,
           ]}
-          onPress={handleSubmit}
-          disabled={!value.trim() || disabled}
+          onPress={handleSpeechRecognition}
+          disabled={disabled}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Text style={styles.searchButtonText}>
-            {isLoading ? '...' : 'Go'}
+          <Text style={[styles.micIcon, isListening && styles.micIconActive]}>
+            {isListening ? '⏹️' : '🎤'}
           </Text>
         </TouchableOpacity>
+        
+        {/* Search Button - hide when listening */}
+        {!isListening && (
+          <TouchableOpacity
+            style={[
+              styles.searchButton,
+              (!value.trim() || disabled) && styles.searchButtonDisabled,
+            ]}
+            onPress={handleSubmit}
+            disabled={!value.trim() || disabled}
+          >
+            <Text style={styles.searchButtonText}>
+              {isLoading ? '...' : 'Go'}
+            </Text>
+          </TouchableOpacity>
+        )}
+
+        {/* Listening - Stop button */}
+        {isListening && (
+          <TouchableOpacity
+            style={styles.stopListeningButton}
+            onPress={handleSpeechRecognition}
+          >
+            <Text style={styles.stopListeningText}>Stop</Text>
+          </TouchableOpacity>
+        )}
       </Animated.View>
 
       {/* Autocomplete Suggestions */}
@@ -220,6 +385,32 @@ const styles = StyleSheet.create({
     color: '#888',
     fontSize: 16,
   },
+  listeningIndicator: {
+    marginRight: 8,
+  },
+  listeningText: {
+    fontSize: 18,
+  },
+  micButton: {
+    backgroundColor: '#3a3a6a',
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: 10,
+    marginRight: 8,
+  },
+  micButtonActive: {
+    backgroundColor: '#f44336',
+  },
+  micButtonDisabled: {
+    backgroundColor: '#2a2a4a',
+    opacity: 0.5,
+  },
+  micIcon: {
+    fontSize: 18,
+  },
+  micIconActive: {
+    fontSize: 18,
+  },
   searchButton: {
     backgroundColor: '#4CAF50',
     paddingHorizontal: 20,
@@ -230,6 +421,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#2a4a2a',
   },
   searchButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  stopListeningButton: {
+    backgroundColor: '#f44336',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+  },
+  stopListeningText: {
     color: '#fff',
     fontWeight: '600',
     fontSize: 14,

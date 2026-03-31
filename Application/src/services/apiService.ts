@@ -1,18 +1,14 @@
-/**
- * API Service for SignVision
- * Handles communication with the FastAPI backend for NLP processing and semantic search
- */
-
 // API Configuration
 // Using ADB reverse proxy: run `adb reverse tcp:8000 tcp:8000`
 const API_CONFIG = {
   baseUrl: __DEV__ 
-    ? 'http://localhost:8000'  // Works with adb reverse
+    ? 'http://localhost:8000'
     : 'https://your-production-api.com',
-  timeout: 30000,
+  timeout: 60000,
+  retries: 3,
+  retryDelay: 1000,
 };
 
-// Types for API responses
 export interface GlossResult {
   subject: string | null;
   object: string | null;
@@ -63,24 +59,43 @@ export interface SearchResponse {
   }>;
 }
 
-// Custom error for API failures
 export class ApiError extends Error {
   constructor(
     message: string,
     public statusCode?: number,
-    public response?: unknown
+    public response?: unknown,
+    public isRetryable: boolean = false
   ) {
     super(message);
     this.name = 'ApiError';
   }
 }
 
-/**
- * Make an API request with timeout and error handling
- */
-async function apiRequest<T>(
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function isRetryableError(error: unknown): boolean {
+  if (error instanceof ApiError) {
+    return error.isRetryable;
+  }
+  if (error instanceof Error) {
+    const msg = error.message.toLowerCase();
+    return (
+      error.name === 'AbortError' ||
+      msg.includes('network') ||
+      msg.includes('timeout') ||
+      msg.includes('failed to fetch') ||
+      msg.includes('connection')
+    );
+  }
+  return false;
+}
+
+async function apiRequestWithRetry<T>(
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
+  retriesLeft: number = API_CONFIG.retries
 ): Promise<T> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), API_CONFIG.timeout);
@@ -99,107 +114,109 @@ async function apiRequest<T>(
 
     if (!response.ok) {
       const errorBody = await response.text();
+      const isRetryable = response.status >= 500 || response.status === 429;
       throw new ApiError(
-        `API request failed: ${response.statusText}`,
+        `API error: ${response.status} ${response.statusText}`,
         response.status,
-        errorBody
+        errorBody,
+        isRetryable
       );
     }
 
     return await response.json();
   } catch (error) {
     clearTimeout(timeoutId);
-    
+
+    if (retriesLeft > 0 && isRetryableError(error)) {
+      console.log(`[API] Retry ${API_CONFIG.retries - retriesLeft + 1}/${API_CONFIG.retries} for ${endpoint}`);
+      await sleep(API_CONFIG.retryDelay * (API_CONFIG.retries - retriesLeft + 1));
+      return apiRequestWithRetry<T>(endpoint, options, retriesLeft - 1);
+    }
+
     if (error instanceof ApiError) {
       throw error;
     }
-    
+
     if (error instanceof Error) {
       if (error.name === 'AbortError') {
-        throw new ApiError('Request timeout - backend may be unavailable');
+        throw new ApiError('Request timeout - check your connection', undefined, undefined, true);
       }
-      throw new ApiError(`Network error: ${error.message}`);
+      throw new ApiError(`Network error: ${error.message}`, undefined, undefined, true);
     }
-    
+
     throw new ApiError('Unknown error occurred');
   }
 }
 
-/**
- * Process a sentence through the NLP pipeline
- * Returns GLOSS tokens and sign URLs with semantic fallback
- */
 export async function processSentence(text: string): Promise<ProcessResponse> {
-  return apiRequest<ProcessResponse>('/process', {
+  return apiRequestWithRetry<ProcessResponse>('/process', {
     method: 'POST',
     body: JSON.stringify({ text }),
   });
 }
 
-/**
- * Transcribe audio and process through NLP pipeline
- * @param audioUri - Local file URI of the audio recording
- */
 export async function transcribeAudio(audioUri: string): Promise<ProcessResponse> {
   const formData = new FormData();
-  
-  // Get the filename from URI
   const filename = audioUri.split('/').pop() || 'audio.wav';
   
-  // Append the audio file
   formData.append('file', {
     uri: audioUri,
     type: 'audio/wav',
     name: filename,
   } as unknown as Blob);
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), API_CONFIG.timeout);
+  let retriesLeft = API_CONFIG.retries;
+  
+  while (retriesLeft >= 0) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), API_CONFIG.timeout);
 
-  try {
-    const response = await fetch(`${API_CONFIG.baseUrl}/transcribe`, {
-      method: 'POST',
-      body: formData,
-      signal: controller.signal,
-      headers: {
-        // Don't set Content-Type for FormData - browser/RN will set it with boundary
-      },
-    });
+    try {
+      const response = await fetch(`${API_CONFIG.baseUrl}/transcribe`, {
+        method: 'POST',
+        body: formData,
+        signal: controller.signal,
+      });
 
-    clearTimeout(timeoutId);
+      clearTimeout(timeoutId);
 
-    if (!response.ok) {
-      const errorBody = await response.text();
-      throw new ApiError(
-        `Transcription failed: ${response.statusText}`,
-        response.status,
-        errorBody
-      );
+      if (!response.ok) {
+        const errorBody = await response.text();
+        throw new ApiError(
+          `Transcription failed: ${response.statusText}`,
+          response.status,
+          errorBody,
+          response.status >= 500
+        );
+      }
+
+      return await response.json();
+    } catch (error) {
+      clearTimeout(timeoutId);
+      
+      if (retriesLeft > 0 && isRetryableError(error)) {
+        console.log(`[API] Transcribe retry ${API_CONFIG.retries - retriesLeft + 1}/${API_CONFIG.retries}`);
+        await sleep(API_CONFIG.retryDelay * (API_CONFIG.retries - retriesLeft + 1));
+        retriesLeft--;
+        continue;
+      }
+
+      if (error instanceof ApiError) throw error;
+      if (error instanceof Error) {
+        throw new ApiError(`Transcription error: ${error.message}`, undefined, undefined, true);
+      }
+      throw new ApiError('Unknown transcription error');
     }
-
-    return await response.json();
-  } catch (error) {
-    clearTimeout(timeoutId);
-    
-    if (error instanceof ApiError) throw error;
-    if (error instanceof Error) {
-      throw new ApiError(`Transcription error: ${error.message}`);
-    }
-    throw new ApiError('Unknown transcription error');
   }
+  
+  throw new ApiError('Transcription failed after retries');
 }
 
-/**
- * Look up a single word with semantic fallback
- */
 export async function lookupWordApi(word: string): Promise<LookupResponse> {
   const encoded = encodeURIComponent(word.trim());
-  return apiRequest<LookupResponse>(`/lookup/${encoded}`);
+  return apiRequestWithRetry<LookupResponse>(`/lookup/${encoded}`);
 }
 
-/**
- * Perform semantic search for similar words
- */
 export async function semanticSearch(
   query: string,
   limit: number = 5
@@ -208,33 +225,30 @@ export async function semanticSearch(
     query: query.trim(),
     limit: limit.toString(),
   });
-  return apiRequest<SearchResponse>(`/search?${params}`);
+  return apiRequestWithRetry<SearchResponse>(`/search?${params}`);
 }
 
-/**
- * Check if the backend API is available
- */
 export async function checkApiHealth(): Promise<boolean> {
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    
     const response = await fetch(`${API_CONFIG.baseUrl}/`, {
       method: 'GET',
+      signal: controller.signal,
     });
+    
+    clearTimeout(timeoutId);
     return response.ok;
   } catch {
     return false;
   }
 }
 
-/**
- * Update the API base URL (useful for development/testing)
- */
 export function setApiBaseUrl(url: string): void {
   API_CONFIG.baseUrl = url;
 }
 
-/**
- * Get the current API base URL
- */
 export function getApiBaseUrl(): string {
   return API_CONFIG.baseUrl;
 }

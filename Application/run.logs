@@ -1,0 +1,130 @@
+Run these commands in order.
+
+  1. Install only lightweight required packages
+
+  sudo pacman -S --needed android-tools jdk17-openjdk android-udev curl unzip
+  sudo udevadm control --reload-rules
+  sudo udevadm trigger
+
+  2. Put Android SDK on your bigger partition, then symlink to ~/Android/Sdk
+
+  SDK_REAL="/mnt/onkar/New_Volume/Android/Sdk"
+  mkdir -p "$SDK_REAL/cmdline-tools" "$HOME/Android"
+
+  if [ -e "$HOME/Android/Sdk" ] && [ ! -L "$HOME/Android/Sdk" ]; then
+    mv "$HOME/Android/Sdk" "$HOME/Android/Sdk.backup.$(date +%s)"
+  fi
+  ln -sfn "$SDK_REAL" "$HOME/Android/Sdk"
+
+  3. Download and install latest Android command-line tools
+
+  cd /tmp
+  ZIP_NAME=$(curl -fsSL https://dl.google.com/android/repository/repository2-1.xml \
+    | grep -o 'commandlinetools-linux-[0-9]\+_latest.zip' \
+    | sort -u | tail -n1)
+
+  curl -fLO "https://dl.google.com/android/repository/$ZIP_NAME"
+  rm -rf /tmp/cmdline-tools-extract
+  mkdir -p /tmp/cmdline-tools-extract
+  unzip -q "$ZIP_NAME" -d /tmp/cmdline-tools-extract
+
+  mkdir -p "$SDK_REAL/cmdline-tools/latest"
+  cp -a /tmp/cmdline-tools-extract/cmdline-tools/. "$SDK_REAL/cmdline-tools/latest/"
+
+  4. Set env vars (~/.zshrc) and load them
+
+  grep -q 'ANDROID_SDK_ROOT' ~/.zshrc || cat >> ~/.zshrc <<'EOF'
+  export JAVA_HOME=/usr/lib/jvm/java-17-openjdk
+  export ANDROID_HOME=$HOME/Android/Sdk
+  export ANDROID_SDK_ROOT=$ANDROID_HOME
+  export GRADLE_USER_HOME=/mnt/onkar/New_Volume/.gradle
+  export PATH=$PATH:$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/emulator
+  EOF
+
+  source ~/.zshrc
+
+  5. Install minimal SDK components
+
+  yes | sdkmanager --sdk_root="$ANDROID_HOME" --licenses
+  sdkmanager --sdk_root="$ANDROID_HOME" \
+    "platform-tools" \
+    "build-tools;35.0.0" \
+    "platforms;android-35"
+
+  6. Connect phone (manual)
+  7. Enable Developer options.
+  8. Enable USB debugging.
+  9. Connect USB cable.
+  10. Set USB mode to File Transfer (not charge-only).
+  11. Verify device connection
+
+  adb kill-server
+  adb start-server
+  adb devices -l
+
+  If it shows unauthorized, accept the RSA popup on phone, then run adb devices -l again.
+
+  8. Build and run your app
+
+  cd /home/onkar/dev/signvision/Application
+  npm install
+  npm run android
+
+  9. If Metro is not running
+
+  npx expo start --dev-client --localhost
+
+  10. Useful checks (optional)
+
+  df -h /home /mnt/onkar/New_Volume
+  echo "$ANDROID_HOME"
+  sdkmanager --sdk_root="$ANDROID_HOME" --list_installed
+
+  Paste your adb devices -l output after step 7 and I’ll validate it line-by-line.
+
+
+Intiail Build error:
+  - [📦] expo-keep-awake (55.0.5-canary-20260327-0789fbc)
+
+
+[Incubating] Problems report is available at: file:///home/onkar/dev/signvision/Application/android/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Could not determine the dependencies of task ':app:compileDebugJavaWithJavac'.
+> Could not resolve all dependencies for configuration ':app:debugCompileClasspath'.
+   > Could not find org.asyncstorage.shared_storage:storage-android:1.0.0.
+     Required by:
+         project ':app' > project :react-native-async-storage_async-storage
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to generate a Build Scan (Powered by Develocity).
+> Get more help at https://help.gradle.org.
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.0.0/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 14m 42s
+32 actionable tasks: 32 executed
+Error: /home/onkar/dev/signvision/Application/android/gradlew app:assembleDebug -x lint -x test --configure-on-demand --build-cache -PreactNativeDevServerPort=8081 -PreactNativeArchitectures=arm64-v8a,armeabi-v7a exited with non-zero code: 1
+Error: /home/onkar/dev/signvision/Application/android/gradlew app:assembleDebug -x lint -x test --configure-on-demand --build-cache -PreactNativeDevServerPort=8081 -PreactNativeArchitectures=arm64-v8a,armeabi-v7a exited with non-zero code: 1
+    at ChildProcess.completionListener (/home/onkar/dev/signvision/Application/node_modules/@expo/spawn-async/src/spawnAsync.ts:67:13)
+    at Object.onceWrapper (node:events:623:12)
+    at ChildProcess.emit (node:events:508:20)
+    at maybeClose (node:internal/child_process:1108:16)
+    at Process.ChildProcess._handle.onexit (node:internal/child_process:305:5)
+    ...
+    at spawnAsync (/home/onkar/dev/signvision/Application/node_modules/@expo/spawn-async/src/spawnAsync.ts:28:21)
+    at spawnGradleAsync (/home/onkar/dev/signvision/Application/node_modules/expo/node_modules/@expo/cli/src/start/platforms/android/gradle.ts:134:28)
+    at assembleAsync (/home/onkar/dev/signvision/Application/node_modules/expo/node_modules/@expo/cli/src/start/platforms/android/gradle.ts:83:16)
+    at runAndroidAsync (/home/onkar/dev/signvision/Application/node_modules/expo/node_modules/@expo/cli/src/run/android/runAndroidAsync.ts:62:24)
+ ELIFECYCLE  Command failed with exit code 1.
+
+
+==================================================================================================

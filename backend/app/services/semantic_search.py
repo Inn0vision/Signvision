@@ -1,4 +1,5 @@
 import logging
+import os
 from typing import List, Tuple, Optional
 from pathlib import Path
 
@@ -6,6 +7,11 @@ from sentence_transformers import SentenceTransformer
 import chromadb
 
 from ..core.config import settings
+
+# Disable SSL verification for HuggingFace downloads (needed for self-signed certificates)
+os.environ["CURL_CA_BUNDLE"] = ""
+os.environ["REQUESTS_CA_BUNDLE"] = ""
+os.environ["HF_HUB_DISABLE_SSL_VERIFY"] = "1"
 
 logger = logging.getLogger("semantic_search")
 

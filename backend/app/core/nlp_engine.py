@@ -136,6 +136,7 @@ FIXED_EXPRESSION_MAP = {
     "good evening": "GOOD EVENING",
     "good afternoon": "GOOD AFTERNOON",
 }
+
 SORTED_FIXED = sorted(
     FIXED_EXPRESSION_MAP.keys(), key=lambda p: len(p.split()), reverse=True
 )

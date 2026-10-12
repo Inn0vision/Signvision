@@ -1,84 +1,174 @@
-# SignVision - Master Project Build & Handoff
+# SignVision — Build, Packaging & Deployment Manual
 
-This file is the absolute source of truth for the SignVision architectural state, environment configuration, debugging history, and constraints. **Do not modify working constraints.**
+> **Master guide for local compilation, EAS Cloud builds, Android Dev Client packaging, and production bundling.**
 
-## 1. Project Overview
-SignVision is an intelligent bidirectional translation system bridging the gap between spoken/written language and Indian Sign Language (ISL). 
+---
 
-**Text/Speech → ISL:** Natural language -> NLP (FastAPI 8000) -> ISL Gloss -> SiGML -> CWASA Avatar.
-**Sign Video → English:** Camera -> MP4/WebM -> Microservice (FastAPI 8001) -> Gemini AI -> English text.
+## ⚡ 1. Brief Build Summary (TL;DR)
 
-## 2. Folder Structure
-- `/Application` : Expo React Native cross-platform UI.
-- `/backend` : Core NLP / Vector original monolithic API.
-- `/video-service` : Isolated Gemini API wrapper for translation.
+### Quick Run Commands
 
-## 3. Architecture Overview
-```
-📱 PHONE / FRONTEND (Port 8081)
-    |--------------------|
-    v                    v
-FastAPI :8000       FastAPI :8001
-(Text to Sign)      (Video to English)
-    |                    |
-CWASA Avatar        Google Gemini 3.6 Flash
-```
-
-## 4. Port Allocations
-- Frontend Metro: `8081`
-- Text-to-Sign Backend: `8000`
-- Sign-to-English Microservice: `8001`
-
-## 5. Environment Execution Rules & Setup
-### Wi-Fi Architecture (No USB required)
-**Crucial:** Physical Android devices treat `localhost` as themselves. All React Native API (`apiService.ts`) endpoints must use the Developer Laptop's local LAN IP (e.g. `10.99.60.213`).
-
-### Run Commands:
-1. Text-to-Sign: `cd backend && source .venv/bin/activate && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload`
-2. Video-to-English: `cd video-service && source .venv/bin/activate && uvicorn main:app --host 0.0.0.0 --port 8001 --reload`
-3. Frontend Native Wi-Fi: `cd Application && npx expo start --dev-client`
-4. Frontend Web: `cd Application && npm run web`
-
-## 6. Android Development Build & Environment
-- **Expo SDK Version:** 55.0.x-canary (DO NOT UPGRADE TO 57)
-- **AsyncStorage Version:** 2.2.0
-- **Android SDK:** `/opt/android-sdk`
-
-Because the app relies on heavy Native dependencies (Camera, Speech), standard Expo Go caused total version rejection. The app is bundled successfully as a custom Development Build APK.
-
-**Missing Local NDK Fixes applied to machine:**
 ```bash
-sudo sdkmanager --sdk_root=/opt/android-sdk --install "ndk;27.1.12297006"
-sudo sdkmanager --sdk_root=/opt/android-sdk --install "build-tools;36.0.0"
-sudo sdkmanager --sdk_root=/opt/android-sdk --install "cmake;3.22.1"
+# 1. Run Web Client (Development)
+cd Application && npm run web
+
+# 2. Run Android Dev Client (Physical Device / Emulator)
+cd Application && npx expo start --dev-client --clear
+
+# 3. Build Android Development APK via EAS Cloud
+cd Application && eas build --profile development --platform android
+
+# 4. Build Standalone Web Production Bundle
+cd Application && npx expo export --platform web
 ```
 
-**Low-RAM Config (Application/android/gradle.properties):**
-```properties
-org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m
-org.gradle.workers.max=2
-org.gradle.parallel=false
+### Build Environment Requirements
+- **Node.js**: v18.x or v20.x
+- **Java Development Kit**: OpenJDK 17 (`JAVA_HOME` configured)
+- **Android SDK**: Build-tools 34.0.0, Platform API 34
+- **EAS CLI**: `npm install -g eas-cli` (v12+)
+
+---
+
+## 🛠️ 2. Detailed Build & Packaging Specification
+
+### 2.1 Project Target Matrix & Environments
+
+| Target Platform | Runtime / Distribution | Native Dependencies | Build Method |
+|:---|:---|:---|:---|
+| **Android (Dev)** | Custom Dev Client APK | `expo-speech-recognition`, `react-native-webview`, `expo-camera` | EAS Cloud or `npx expo run:android` |
+| **Android (Prod)** | Standalone Release APK | Same as above | `eas build --profile production --platform android` |
+| **Web (Dev)** | Webpack / Metro Web | HTML5 Audio, WebGL, WebRTC / MediaRecorder | `npx expo start --web` |
+| **Web (Prod)** | Static SPA Bundle | Same as above | `npx expo export --platform web` |
+
+> **Critical Note on Expo Go**: The SignVision client uses `expo-speech-recognition`, which contains custom native C++/Java bindings. Therefore, the app **cannot run in standard Expo Go** on Android and requires a **Custom Dev Client APK**.
+
+---
+
+### 2.2 Building the Android Dev Client
+
+#### Method A: Cloud Build via Expo Application Services (Recommended)
+This method builds the native Android binary in Expo's cloud infrastructure without requiring a local Android SDK installation:
+
+1. **Install EAS CLI and Log In**:
+   ```bash
+   npm install -g eas-cli
+   eas login
+   ```
+2. **Configure Project (`eas.json`)**:
+   Verify that `Application/eas.json` contains the development profile:
+   ```json
+   {
+     "build": {
+       "development": {
+         "developmentClient": true,
+         "distribution": "internal"
+       },
+       "production": {}
+     }
+   }
+   ```
+3. **Trigger Cloud Build**:
+   ```bash
+   cd Application
+   eas build --profile development --platform android
+   ```
+4. **Install APK**: Download the generated `.apk` link to your Android device and install it.
+
+#### Method B: Local Native Android Build (`npx expo run:android`)
+If you have Android Studio and JDK 17 installed locally:
+
+1. **Ensure Android SDK & Java Environment**:
+   ```bash
+   export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+   export ANDROID_HOME=$HOME/Android/Sdk
+   export PATH=$PATH:$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools
+   ```
+2. **Prebuild & Compile**:
+   ```bash
+   cd Application
+   npx expo run:android
+   ```
+3. **Low-RAM Machine Flags**: If your workstation has $\le$ 16GB RAM, add the following to `Application/android/gradle.properties`:
+   ```properties
+   org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m
+   org.gradle.parallel=false
+   ```
+
+---
+
+### 2.3 Web Packaging & Static Export
+
+To build the optimized static distribution for web hosting (e.g. Vercel, Netlify, AWS S3):
+
+```bash
+cd Application
+npx expo export --platform web
+```
+- **Output Directory**: `Application/dist/`
+- **Serving Locally**:
+  ```bash
+  npx serve Application/dist
+  ```
+
+---
+
+### 2.4 Native Permissions & Manifest Configuration
+
+All required Android and iOS permissions are declared centrally in `Application/app.json`:
+
+```json
+{
+  "expo": {
+    "name": "SignVision",
+    "slug": "signvision",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow SignVision to access camera for sign language gesture translation."
+        }
+      ],
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Allow SignVision to recognize speech for sign translation."
+        }
+      ]
+    ],
+    "android": {
+      "package": "com.signvision.app",
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.CAMERA",
+        "android.permission.INTERNET"
+      ]
+    }
+  }
+}
 ```
 
-## 7. Camera Implementation details
-We rely heavily on Platform boundaries for performance.
-- **Android/iOS:** Uses standard `Expo CameraView` and records natively resolving into a static `uri` ending in `.mp4`.
-- **Web:** Utilizes HTML5 `<video>` binding a live MediaStream, recorded manually via a chunked `MediaRecorder` API resolved into a `video/webm` Blob.
+---
 
-## 8. Gemini Processing Flow
-- Raw MP4/WebM files are piped natively across port 8001. No FFMPEG logic interrupts the core stream. Let Gemini ingest natively via `google-genai` File API.
-- Working Model: **gemini-3.6-flash**. (Prior 1.5 model triggered extreme 404 rejection cascades).
-- Sometimes Gemini internal processing queues evaluate a clip and fault inside Google (state changes from `PROCESSING` -> `FAILED`); API responds smartly requesting a gesture re-record using a 400 rejection trap instead of hard 500 crashes.
+### 2.5 Backend Packaging & Containerization
 
-## 9. Error History & Fixes
-- `Storage/Version Mismatch:` Dev Client utilized instead of Expo Go.
-- `CameraView nested children warnings:` Frontend layout strictly modified to utilize Absolute overlays floating atop siblings.
-- `Java Build terminal loops over-consuming CPU RAM:` `.vscode/settings.json` blocks Redhat java from compiling Android Native folders.
-- `400 File format errors:` FastAPI extended explicitly mapped to accept both `.webm` & `.mp4`.
+Both FastAPI backends are built as stateless asynchronous Python microservices.
 
-## 10. Future DO NOT TOUCH Rules
-- DO NOT invent "Fake confidence UI". Simulated landmarks are UI only.
-- DO NOT rewrite recording loops.
-- DO NOT merge FastAPI endpoints.
-- DO NOT send landmark strings into Gemini Prompts.
-- DO NOT install OpenCV or Tensorflow JS.
+#### Running in Production via Uvicorn & Gunicorn
+```bash
+# Core Backend (:8000)
+cd backend
+source .venv/bin/activate
+gunicorn app.main:app -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000
+
+# Video Microservice (:8001)
+cd video-service
+source .venv/bin/activate
+gunicorn main:app -w 2 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8001
+```
+
+---
+
+*SignVision — Reliable builds, predictable runtimes.*

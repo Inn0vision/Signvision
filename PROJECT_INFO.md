@@ -1,54 +1,189 @@
-# SignVision Project Info
+# SignVision — Project Information & System Specification
 
-## Overall Project Purpose
-SignVision is a mobile application that translates English text and speech into Indian Sign Language (ISL) animations in real-time. It provides Accessibility tools by bridging the communication gap using AI-powered NLP capable of reordering English grammatical structure into ISL-compliant GLOSS tokens, finally rendering them through a 3D WebGL Avatar (CWASA system).
+> **A comprehensive technical profile, architecture specification, and component blueprint for the SignVision platform.**
 
-## Architecture
-SignVision follows a distributed Mobile-Client + AI-Backend system architecture:
-1.  **Frontend**: Built in React Native (Expo). Manages user inputs (voice/text), interacts with the internal/local word dictionary, displays a 3D Sign Language avatar embedded in a WebView, and sends requests to the python backends.
-2.  **Core Backend**: A Python FastAPI service that parses English sentences into their syntactic structure, utilizes LLMs (NVIDIA GPT-120b) for semantic extraction, applies ISL grammar transformations, and maps the results to stored signs.
-3.  **Video Microservice**: A dedicated FastAPI endpoint (`video-service`) focused on analyzing uploaded sign videos and using Gemini to transcribe them into English text.
+---
 
-## Folder Structure
-*   `Application/`: React Native Expo mobile frontend core.
-*   `backend/`: Python FastAPI backend for Text/Speech to ISL translation.
-*   `video-service/`: Python FastAPI microservice for Video to Text translation.
-*   `data/`: Precompiled JSON dictionary linking ISL gloss tokens to S3 URLs.
-*   `dataset/`: Granular ISL alphabet mapping, source JSONs for sign data.
-*   `feats/`: Semantic search tools linking nearest-neighbor algorithms over sign vocabulary.
-*   `docs/`: Drafts, architecture images, and project history documentation.
-*   `app/`: Empty/legacy folder structure reflecting placeholder branches.
+## ⚡ 1. Brief Summary (TL;DR)
 
-## Major Features
-*   **Word-Level Lookup (Offline)**: Search literal dictionary words and instantly replay sign animations utilizing string-similarity matching.
-*   **Sentence-Level Translation (Online)**: Captures voice or full text, applies ISL grammatical NLP transformation, and queues a continuous video avatar playback.
-*   **Video-to-Text Sign Recognition**: Uploads continuous ISL sign video, sending it for multimodal interpretation via Gemini API to extract its English equivalent.
+SignVision is a full-stack, AI-powered accessibility platform delivering real-time bidirectional translation between English (speech/text) and Indian Sign Language (ISL).
 
-## Routes & Data Flow
-**Core Backend (Port 8000)**
-*   `POST /process`: Takes sentence `{"text": "I go to school"}` -> Tokenizes & NLP -> Outputs GLOSS `[SCHOOL, GO]` and mapped S3 Sign URLs.
-*   `POST /transcribe`: Takes `.wav` audio -> Converts to Text -> Hits `/process`.
-*   `GET /lookup/{word}`: Single word mapping.
-*   `GET /search`: Returns closest matches via ChromaDB vector embeddings.
+### Quick Facts & System Metrics
+- **Mission**: Universal communication for 2.7M+ Deaf and Hard-of-Hearing individuals in India.
+- **Form Factors**: Native Android APK (Custom Dev Client), iOS (EAS Build), Desktop/Mobile Web (Chrome/Firefox).
+- **Core Dictionary**: 1,500+ pre-compiled ISL signs stored as `.sigml` XML motion assets on AWS S3 (`ap-south-1`).
+- **AI Pipelines**:
+  - **Forward**: Text/Speech $\rightarrow$ spaCy `en_core_web_trf` $\rightarrow$ NVIDIA GPT-120b $\rightarrow$ ISL Grammar Rules $\rightarrow$ 3D CWASA WebGL Avatar.
+  - **Reverse**: Camera Video Stream $\rightarrow$ FastAPI Microservice $\rightarrow$ Google Gemini 3.6 Flash $\rightarrow$ Natural English Text.
+- **Offline Capability**: On-device dictionary lookup via bundled JSON with character-bigram Dice similarity matching.
 
-**Video Microservice (Port 8001)**
-*   `POST /api/translate-video`: Takes `.mp4/.webm` chunk -> Prompts Gemini -> Returns string translation.
+### Service & Routing Matrix
 
-## Technologies
-*   **Mobile**: React Native, Expo (`expo-speech-recognition`, `react-native-webview`).
-*   **Backend**: Python, FastAPI, Uvicorn.
-*   **NLP & ML**: spaCy (`en_core_web_trf`), Sentence-Transformers (`all-MiniLM-L6-v2`), ChromaDB, NVIDIA LLM API (`openai/gpt-oss-120b`), Google GenAI.
-*   **Storage**: AWS S3 (for `.sigml` animation files), Local AsyncStorage.
+| Service | Port | Protocols | Endpoints | Primary Technology |
+|:---|:---|:---|:---|:---|
+| **Frontend** | `8081` | HTTP, WS (Metro) | Static Web App, React Native bundle | Expo, React Native 0.83, TypeScript |
+| **Core NLP Backend** | `8000` | HTTP REST, JSON | `/process`, `/transcribe`, `/lookup/{w}`, `/search`, `/health` | Python, FastAPI, spaCy, ChromaDB |
+| **Video Microservice** | `8001` | HTTP REST, Multipart | `/api/translate-video`, `/health` | Python, FastAPI, Google GenAI SDK |
+| **Asset Cloud** | `443` | HTTPS | `https://signvision-085587597556.s3.ap-south-1.amazonaws.com/` | AWS S3 Public Read + Wildcard CORS |
 
-## Database & Authentication
-*   **Database**: No strict relational database is necessary. Instead, the application relies on an embedded vector database (**ChromaDB**) for semantic searching, and large embedded JSON dictionary objects (`sign_language_data.json`) for precise word lookups.
-*   **Authentication**: The current system does not implement direct user accounts, auth flows, or login gates. API services are secured locally or via environment secrets (`GEMINI_API_KEY`, `GPT_API_KEY`) ensuring safe calls to upstream ML providers.
+---
 
-## Important Commands
-**Frontend:**
-*   `npx expo start` (Launch dev client)
-*   `eas build -p android --profile development` (Build Android dev APK)
+## 🏗️ 2. Detailed Technical Specification
 
-**Backend:**
-*   `uvicorn app.main:app --reload --port 8000` (Start main translation API)
-*   `uvicorn main:app --reload --port 8001` (Start video microservice API from `video-service` folder)
+### 2.1 Full System Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           SignVision Platform                               │
+│                                                                             │
+│   ┌──────────────────────────────────────────────────────────────────────┐  │
+│   │               Client Application Layer (Expo RN @ :8081)             │  │
+│   │                                                                      │  │
+│   │   [SearchBar.tsx]           [HomeScreen.tsx]     [AvatarWebView.tsx] │  │
+│   │   - Speech-to-Text Input    - State Controller   - Embedded WebGL    │  │
+│   │   - Floating Composer       - Queue Ref Buffer   - CWASA Engine      │  │
+│   │   - Autocomplete Engine     - History Tracking   - SiGML XML Player  │  │
+│   │          │                          │                    ▲           │  │
+│   │          └──────────────┬───────────┘                    │           │  │
+│   │                         ▼                                │           │  │
+│   │              [s3Service.ts] (Offline)                    │           │  │
+│   │              - Dice Bigram Matcher                       │           │  │
+│   │              - 1,500+ Bundled Words                      │           │  │
+│   │                         │                                │           │  │
+│   │                         ▼                                │           │  │
+│   │              [apiService.ts] (Online)                    │           │  │
+│   │              - Exponential Backoff Client                │           │  │
+│   │              - AbortController Timeouts                  │           │  │
+│   └─────────────────────────┼────────────────────────────────┼───────────┘  │
+│                             │                                │              │
+│                 HTTP POST   │                    Direct      │ HTTPS Fetch  │
+│                 /process    │                    SiGML URL   │ .sigml       │
+│                             ▼                                ▼              │
+│   ┌─────────────────────────────────────────┐   ┌────────────────────────┐  │
+│   │   Core NLP AI Backend (FastAPI @ :8000) │   │     Storage Layer      │  │
+│   │                                         │   │                        │  │
+│   │   1. Preprocessing & Normalization      │   │  AWS S3 (ap-south-1)   │  │
+│   │   2. Fixed Phrase Short-circuit         │   │  Bucket:               │  │
+│   │   3. spaCy en_core_web_trf POS Analysis │   │  signvision-           │  │
+│   │   4. NVIDIA GPT-120b Semantic Extraction│   │  085587597556          │  │
+│   │   5. ISL Grammar Rule Engine            │   │                        │  │
+│   │   6. GLOSS Assembly & Word Lookup       │   │  ChromaDB (Local)      │  │
+│   │   7. ChromaDB Vector Fallback           │   │  all-MiniLM-L6-v2      │  │
+│   └─────────────────────────────────────────┘   └────────────────────────┘  │
+│                                                              ▲              │
+│                 HTTP POST /api/translate-video               │              │
+│                 (.mp4 / .webm video multipart)               │              │
+│                             │                                │              │
+│                             ▼                                │              │
+│   ┌──────────────────────────────────────────────────────────┴───────────┐  │
+│   │            Video Vision Microservice (FastAPI @ :8001)               │  │
+│   │                                                                      │  │
+│   │   - Multipart File Buffer Streamer                                   │  │
+│   │   - Google GenAI SDK (Client)                                        │  │
+│   │   - Gemini 3.6 Flash Multimodal Video Ingestion                      │  │
+│   │   - ISL Handshape, Orientation, & Motion Interpretation              │  │
+│   └──────────────────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### 2.2 Microservices & Directory Structure
+
+```
+Signvision/
+├── Application/                 # Universal Expo React Native mobile & web app
+│   ├── src/
+│   │   ├── components/          # UI components (AvatarWebView, SearchBar, ui/Button, ui/Input)
+│   │   ├── screens/             # Screen containers (HomeScreen, CameraTranslateScreen)
+│   │   ├── services/            # Client services (apiService, s3Service)
+│   │   ├── types/               # Single-source-of-truth TypeScript definitions
+│   │   └── data/                # Bundled sign_language_data.json dictionary
+│   ├── app.json                 # Expo config (permissions, Android package, plugins)
+│   └── package.json             # NPM dependencies
+│
+├── backend/                     # Core NLP translation engine (FastAPI @ :8000)
+│   ├── app/
+│   │   ├── core/                # config.py (Pydantic Settings), nlp_engine.py (6-stage NLP)
+│   │   ├── services/            # word_lookup.py, semantic_search.py
+│   │   └── main.py              # FastAPI application router & CORS setup
+│   └── requirements.txt         # Python dependencies
+│
+├── video-service/               # Video-to-English translation microservice (FastAPI @ :8001)
+│   ├── main.py                  # Gemini 3.6 Flash multimodal API integration
+│   └── requirements.txt         # Python dependencies (google-genai, fastapi, uvicorn)
+│
+├── data/                        # Master data repository
+│   ├── sign_language_data.json  # Master dictionary mapping gloss tokens to S3 URLs
+│   └── Initial-sigml-files/     # Offline raw XML SiGML gesture descriptions
+│
+├── dataset/                     # Alphabetical sign source datasets (a.json - z.json, numbers)
+├── feats/                       # Semantic search prototypes & embeddings generator
+└── docs/                        # Specifications, component matrices, audits, and plans
+```
+
+---
+
+### 2.3 Detailed Data Flows
+
+#### Flow 1: Offline Word Mode (Latency: < 50ms)
+1. User enters a single word (e.g., `"SCHOOL"`).
+2. `s3Service.lookupWord()` standardizes the input to uppercase.
+3. Performs a 4-tier check:
+   - **Exact match**: Direct key lookup in the local 1,500-word dictionary.
+   - **Anchor match**: Matches synonym arrays (e.g., `"AEROPLANE"` $\rightarrow$ `"AIRPLANE"`).
+   - **Partial match**: Substring containment check.
+   - **Fuzzy fallback**: Calculates character-bigram Dice coefficient similarity to suggest close alternatives.
+4. Returns the verified AWS S3 `.sigml` URL.
+5. `AvatarWebView` sends a `play` message to the CWASA WebGL canvas.
+6. The 3D avatar renders the sign animation immediately.
+
+#### Flow 2: Online Sentence Mode (Latency: 300ms – 1.2s)
+1. User enters or speaks an English sentence (e.g., `"I will not go to school"`).
+2. `apiService.processSentence()` issues `POST http://<HOST>:8000/process`.
+3. The Core NLP Engine executes its 6-stage pipeline:
+   - **Preprocessing**: Lowercasing, contraction expansion (`"won't"` $\rightarrow$ `"will not"`), sentence segmentation.
+   - **Fixed Expressions**: Instant pattern matching for standard phrases (`"thank you"` $\rightarrow$ `[THANKYOU]`).
+   - **Linguistic Analysis**: spaCy `en_core_web_trf` tags part-of-speech (POS) and syntactic dependencies.
+   - **Semantic Extraction**: NVIDIA GPT-120b extracts structured entities: Subject, Object, Verb, Tense, Negation, Question Type.
+   - **ISL Grammar Transform**: Drops articles (`a`, `an`, `the`) and auxiliary verbs (`am`, `is`, `are`), moves time markers to the head (`FUTURE`), shifts WH-words to the sentence end, and appends negation (`NOT`).
+   - **GLOSS Assembly**: Produces ISL syntax: `[FUTURE, I, SCHOOL, GO, NOT]`.
+4. The Gloss tokens are matched to S3 URLs via `WordLookupService` (with ChromaDB semantic vector fallback).
+5. Frontend receives the response, enqueues the signs in `HomeScreen`, and plays them sequentially through the 3D avatar.
+
+#### Flow 3: Sign-to-English Video Translation (Latency: 2.5s – 5.0s)
+1. User holds the record button in `CameraTranslateScreen` to capture 5–8 seconds of sign gestures.
+2. Web uses `MediaRecorder` (`video/webm`); Android/iOS uses `Expo CameraView` (`video/mp4`).
+3. Payload is uploaded via multipart `POST http://<HOST>:8001/api/translate-video`.
+4. FastAPI buffers the video to a temporary path (`/tmp/`) and streams it to Google Gemini 3.6 Flash via `google-genai` File API.
+5. Gemini processes the video with an accessibility prompt instructed to evaluate ISL handshapes, facial markers, and movement trajectories.
+6. Returns natural English text (`"What are you doing?"`) or `"UNCLEAR SIGN SEQUENCE"` if the sign was ambiguous.
+7. Frontend displays the natural translation result card with an option to sign again.
+
+---
+
+### 2.4 Technologies & Dependencies
+
+| Area | Technology | Version | Key Justification |
+|:---|:---|:---|:---|
+| **Mobile Runtime** | Expo / React Native | SDK 55 / RN 0.83 | Universal compilation across Android, iOS, and Web; native speech integration |
+| **Speech Recognition** | `expo-speech-recognition` | 3.2.x | Native device bindings (`SpeechRecognizer` / `SFSpeechRecognizer`) with interim transcripts |
+| **3D Avatar** | UEA CWASA (WebGL/SiGML) | 2020 CWA release | Mature, research-grade ISL bone animation library; zero native 3D engine overhead |
+| **Backend Framework** | FastAPI | 0.104+ | Native async I/O, automatic OpenAPI docs, Pydantic type validation |
+| **Linguistic NLP** | spaCy | 3.7+ (`en_core_web_trf`) | Transformer-based tokenization and POS tagging for grammatically ambiguous inputs |
+| **Semantic AI** | NVIDIA API (GPT-120b) | `openai/gpt-oss-120b` | High-parameter reasoning model for semantic slot extraction |
+| **Vector Database** | ChromaDB | 0.4+ | Embedded in-process vector store with HNSW indexing for nearest-neighbor lookups |
+| **Embeddings** | `sentence-transformers` | 2.2+ (`all-MiniLM-L6-v2`) | 384-dimensional dense semantic vectors running efficiently on CPU |
+| **Video AI** | Google Gemini | `gemini-3.6-flash` | State-of-the-art multimodal vision understanding for continuous video gestures |
+| **Cloud Storage** | AWS S3 | `ap-south-1` (Mumbai) | Global CDN-class delivery of XML `.sigml` animation files |
+
+---
+
+### 2.5 Security, Privacy & Network Boundaries
+- **No Hardcoded Secrets**: All API keys (`GPT_API_KEY`, `GEMINI_API_KEY`, AWS credentials) are loaded from environment variables via `pydantic-settings` or `.env`.
+- **CORS Standards**: Wildcard origins (`allow_origins=["*"]`) are configured with `allow_credentials=False` to strictly comply with browser security models.
+- **Local Network Wi-Fi Binding**: Both backends bind to `0.0.0.0` so mobile devices on the same subnet can access the endpoints without requiring USB tethering.
+
+---
+
+*SignVision — Engineered for performance, accuracy, and accessibility.*

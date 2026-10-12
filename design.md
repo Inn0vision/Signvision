@@ -1,227 +1,140 @@
-# SignVision System Architecture Design
+# SignVision — Design System & UI/UX Specification
 
-This document outlines the architecture for the SignVision project. It is split into two sections: a **High-Level Design** intended for non-technical stakeholders (focusing on user flow and abstract components) and a **Low-Level Design** intended for engineers (focusing on microservices, specific technologies, pipelines, and data flow). 
-
-Both sections feature a **Plain Text (ASCII) diagram** for quick reading natively in any text editor, followed by an advanced **Mermaid diagram** for enhanced visual rendering.
+> **Comprehensive design system specification, color token hierarchy, ergonomic layout rules, and accessibility standards.**
 
 ---
 
-## 1. High-Level Architecture (For Non-Technical Audiences)
+## ⚡ 1. Brief Design Summary (TL;DR)
 
-### Plain Text Diagram
-```text
-                          [ User (Target Audience: Deaf / Hearing) ]
-                                                |
-               [ Voice/Speech Input ]    [ Text Input ]    [ Video File Upload ]
-                         \                      |                      /
-                          \                     |                     /
-                           v                    v                    v
- +-----------------------------------------------------------------------------------------+
- |                                 SignVision Mobile App                                   |
- |                                                                                         |
- |                [ Smart Input UI ]                    [ 3D Avatar Display UI ]           |
- +------------------|----------------|---------------------------------^-------------------+
-                    |                |                                 |
-   (Sends Voice/Text String)    (Sends Sign Video)                     |
-                    |                |                                 |
-                    v                v                                 |
- +-------------------------+     +--------------------------+          |
- |   Core AI Cloud Brain   |     | Video Translation Cloud  |          |
- |                         |     |                          |          |
- |  [ ISL Grammar Engine ] |     | [ Video Vision Engine ]  |          |
- |  (Understands rules &   |     |  (Analyzes sign language |          |
- |   translates English    |     |   video and translates   |          |
- |   into Sign structure)  |     |   it into English Text)  |          |
- +----------|--------------+     +------------|-------------+          |
-            |                                 |                        |
-            v                                 | (Returns English Text) |
- +-------------------------+                  |                        |
- |   Databases & Storage   |                  |                        |
- |                         |                  |                        |
- | [Text-to-Sign Mapping]  |                  |                        |
- | (Matches words to signs)|                  |                        |
- |                         |                  |                        |
- | [3D Animation Cloud]    |                  |                        |
- | (Provides AWS 3D files) |                  |                        |
- +----------|--------------+                  |                        |
-            |                                 |                        |
-            +---------------------------------+------------------------+
-                                              |
-                                              |
-                                              |
-                     (Displays 3D Avatar Animation OR Printed English Text)
-```
+SignVision adheres to the **"Obsidian Slate"** design system—a high-contrast, accessibility-first visual language tailored for clarity and ease of use in deaf and hard-of-hearing communication.
 
-### Mermaid Diagram
-```mermaid
-flowchart TD
-    %% Styling
-    classDef user fill:#e1f5fe,stroke:#0288d1,stroke-width:2px,color:#000
-    classDef app fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#000
-    classDef brain fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#000
-    classDef storage fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#000
+### Core Design Tokens
+- **Canvas / Background**: `#07080D` (Ultra-deep slate)
+- **Secondary Surface**: `#0B0E14` (Recessed history trays & cards)
+- **Elevated Surface**: `#111722` (Floating composer, modal sheets)
+- **Primary Accent / Success**: `#10B981` (Emerald green — active playback, confirmation)
+- **Secondary Accent**: `#06B6D4` (Cyan — subtle badges, focus states)
+- **Primary Text**: `#F8FAFC` (High-contrast slate white, 14.5:1 contrast against `#07080D`)
+- **Muted Text**: `#94A3B8` (Slate gray for secondary metadata)
+- **Destructive / Error**: `#EF4444` (Vibrant crimson)
 
-    User((🧑 Deaf & Hearing<br>Users)):::user
-
-    subgraph MobileApp [SignVision Mobile App]
-        VoiceInput[🎙️ Voice Input]:::app
-        TextInput[⌨️ Text Input]:::app
-        VideoInput[📷 Video Upload]:::app
-        AvatarScreen[🧍 3D Signing Avatar / Text Screen]:::app
-    end
-
-    subgraph AIEdge [Core AI Translation Cloud]
-        GrammarBrain[🧠 ISL Grammar Engine<br>Converts English to Sign Grammar]:::brain
-    end
-    
-    subgraph VideoEdge [Video Translation Cloud]
-        VideoBrain[👁️ Video Vision Engine<br>Translates Video to English]:::brain
-    end
-
-    subgraph DataHousings [Databases & Storage]
-        Dictionary[(📖 Sign Dictionary<br>Offline & Online)]:::storage
-        AnimationFiles[(🎞️ AWS Cloud<br>Animation Files)]:::storage
-    end
-
-    User -- Speaks --> VoiceInput
-    User -- Types --> TextInput
-    User -- Uploads Video --> VideoInput
-
-    VoiceInput -- "Sends words" --> GrammarBrain
-    TextInput -- "Sends words" --> GrammarBrain
-    VideoInput -- "Sends mp4/webm" --> VideoBrain
-
-    GrammarBrain -- "Reads structure" --> Dictionary
-    Dictionary -- "Retrieves signs" --> AnimationFiles
-    AnimationFiles -- "Streams 3D Animation" --> AvatarScreen
-
-    VideoBrain -- "Returns English Text" --> AvatarScreen
-    
-    AvatarScreen -- "Plays Animation or Shows Text" --> User
-```
+### Ergonomic Layout Rule
+The **Thumb-Zone Principle**: All interactive inputs (voice button, text composer, mode switcher) are pinned to the bottom 35% of the mobile viewport within easy reach of one-handed thumb interaction. The top 65% is dedicated to the visual rendering stage (CWASA 3D WebGL Avatar).
 
 ---
 
-## 2. Low-Level Architecture (For Technical Engineers)
+## 🎨 2. Detailed Design Specification
 
-### Plain Text Diagram
-```text
- +-------------------------------------------------------------------------+
- |                      Expo React Native Frontend                         |
- |                                                                         |
- |   [ SearchBar.tsx ] (Text/Voice)            [ Video UI ] (Video)        |
- |          |                                        |                     |
- |  (If offline word match)                          | (HTTP POST          |
- |  [ s3Service.ts ]          (HTTP POST /process)   |  /translate-video)  |
- +----------|------------------------|---------------|---------------------+
-            |                        |               |
-       (Local JSON)                  v               v
-            |       +------------------------+  +------------------------+
-            |       |Core Backend (Port 8000)|  |Video Service (Port 8001|
-            |       |                        |  |                        |
-            |       | [ spaCy POS Tagging ]  |  | [ File chunk uploader ]|
-            |       |          |             |  |            |           |
-            |       | [ NVIDIA LLM APIs ]    |  |            v           |
-            |       |          |             |  |[Google Gemini Vision & |
-            |       | [ ISL Transformer ]    |  | LLM Interpretation API]|
-            |       |          |             |  |            |           |
-            |       | [ ChromaDB Database ]  |  |            |           |
-            |       +----------|-------------+  +------------|-----------+
-            |                  |                             |
-            |           (Returns Object)             (Returns English)
-            v                  v                             |
- +--------------------------------------------------+        |
- |   [ AvatarWebView.tsx ] (Plays Sign Queue)       |<-------+
- |                       |                          |
- |   [ WebGL CWASA Avatar HTML ] <-- fetch .sigml   |
- +-----------------------|--------------------------+
-                         v
-              [ AWS S3 Cloud Bucket ]
+### 2.1 Color Palette & Token Scale
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                        Obsidian Slate Palette                          │
+├──────────────┬──────────────┬──────────────┬──────────────┬────────────┤
+│  #07080D     │  #111722     │  #10B981     │  #06B6D4     │  #F8FAFC   │
+│  Canvas      │  Elevated    │  Emerald     │  Cyan        │  Text-100  │
+└──────────────┴──────────────┴──────────────┴──────────────┴────────────┘
 ```
 
-### Mermaid Diagram
-```mermaid
-flowchart TD
-    %% Styling
-    classDef frontend fill:#1c2833,stroke:#3498db,stroke-width:2px,color:#fff
-    classDef backend fill:#117864,stroke:#2ecc71,stroke-width:2px,color:#fff
-    classDef pipeline fill:#7d3c98,stroke:#9b59b6,stroke-width:2px,color:#fff
-    classDef external fill:#f39c12,stroke:#e67e22,stroke-width:2px,color:#fff
-    classDef storage fill:#34495e,stroke:#95a5a6,stroke-width:2px,color:#fff
-
-    subgraph Frontend [Expo React Native Mobile App]
-        Input[SearchBar.tsx<br>expo-speech-recognition]:::frontend
-        AppLogic[HomeScreen.tsx<br>State & Queue Control]:::frontend
-        OfflineDict[s3Service.ts<br>Local JSON Exact/Fuzzy Match]:::frontend
-        CWASA[AvatarWebView.tsx<br>WebGL CWASA Bridge]:::frontend
-    end
-
-    CloudS3[(AWS S3<br>sigml-files/)]:::external
-    NVIDIA[NVIDIA API<br>openai/gpt-oss-120b]:::external
-    Gemini[Google Gemini API<br>gemini-3.6-flash]:::external
-
-    subgraph VideoService [Video Microservice - Port 8001]
-        MainVideo[main.py<br>POST /translate-video]:::backend
-        GeminiWrapper[Gemini Model Upload Logic]:::backend
-    end
-
-    subgraph CoreBackend [Core ISL Backend - Port 8000]
-        MainCore[app.main:app<br>POST /process]:::backend
-        
-        subgraph NLP_Pipeline [nlp_engine.py]
-            Preprocess[Pre-processing]:::pipeline
-            SpaCy[spaCy en_core_web_trf]:::pipeline
-            LLM[LLM Semantic Extraction]:::pipeline
-            ISLRules[ISL Grammar Rules]:::pipeline
-        end
-        
-        WordLookup[word_lookup.py<br>Match GLOSS to URLs]:::backend
-        SemanticSearch[semantic_search.py<br>Sentence-Transformers]:::backend
-        ChromaDB[(ChromaDB Vector Store)]:::storage
-        DictJSON[(sign_language_data.json)]:::storage
-    end
-
-    %% DATA FLOW
-    Input -- "String / Voice Audio" --> AppLogic
-    AppLogic -- "Offline Local Lookup" --> OfflineDict
-    OfflineDict -- "Fallback to Online" --> MainCore
-
-    Input -- "File Upload (mp4/webm)" --> MainVideo
-    MainVideo --> GeminiWrapper
-    GeminiWrapper -- "Sends video + ISL prompt" --> Gemini
-    Gemini -- "Returns English" --> AppLogic
-
-    MainCore --> Preprocess
-    Preprocess --> SpaCy
-    SpaCy --> LLM
-    LLM --> NVIDIA
-    NVIDIA --> LLM
-    LLM --> ISLRules
-    ISLRules --> WordLookup
-
-    WordLookup --> DictJSON
-    WordLookup -- "Semantic Fallback" --> SemanticSearch
-    SemanticSearch --> ChromaDB
-
-    WordLookup -- "Returns {word, s3_url}" --> MainCore
-    MainCore -- "JSON Response" --> AppLogic
-
-    AppLogic -- "Sequence URLs via Ref Queue" --> CWASA
-    CWASA -- "HTTPS Fetch .sigml" --> CloudS3
-```
+| Token | Hex Value | Usage Role | WCAG Contrast |
+|:---|:---|:---|:---|
+| `canvas.background` | `#07080D` | Base application background | Base |
+| `surface.secondary` | `#0B0E14` | History trays, card containers | 1.1:1 vs Canvas |
+| `surface.elevated` | `#111722` | Floating composer, action sheets | 1.4:1 vs Canvas |
+| `border.subtle` | `#1E293B` | Structural dividers, inactive input borders | 2.1:1 vs Canvas |
+| `border.focus` | `#10B981` | Focused input border, active tab indicator | 8.2:1 vs Canvas |
+| `accent.primary` | `#10B981` | Primary CTA, playback active, mic recording | 8.2:1 vs Canvas |
+| `accent.cyan` | `#06B6D4` | Information chips, secondary indicators | 7.9:1 vs Canvas |
+| `text.primary` | `#F8FAFC` | Headings, user input, GLOSS tokens | 14.5:1 (AAA) |
+| `text.secondary` | `#94A3B8` | Subtitles, timestamps, placeholder text | 7.2:1 (AAA) |
+| `text.muted` | `#64748B` | Disabled labels, subtle borders | 4.6:1 (AA) |
+| `state.error` | `#EF4444` | Network failure toasts, invalid input states | 5.1:1 (AA) |
 
 ---
 
-## 3. High-Level Summary of System Layers
+### 2.2 Typography Scale
 
-### Presentation Layer
-*   **Expo / React Native**: Acts as a thick client. Handles exact dictionary lookups instantly on device without a network requirement by scanning a bundled `sign_language_data.json` file.
-*   **CWASA Render Bridge**: Embedded webview running UEA's CWASA javascript library to render WebGL 3D bone animations from SiGML descriptors. 
+SignVision uses the native system font stack (`System` on iOS/Android, `-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto` on Web) for zero-latency initial rendering.
 
-### Inference & Integration Layer
-*   **Video to Text (8001)**: Relies on `google-genai` multi-modal vision capabilities to bypass custom ML vision training. Isolated microservice due to drastically different throughput/LLM requirements.
-*   **Text to ISL (8000)**: Multi-stage pipeline. Uses `spaCy` for POS extraction, `NVIDIA LLM` strictly for contextual decomposition, and deterministic Python logic for ISL grammatical reordering to prevent hallucination.
+| Style Role | Font Weight | Size (pt/px) | Line Height | Letter Spacing |
+|:---|:---|:---|:---|:---|
+| **Display Title** | 700 (Bold) | 24 | 30 | -0.5px |
+| **Section Header** | 600 (SemiBold) | 18 | 24 | -0.2px |
+| **Card Header** | 600 (SemiBold) | 16 | 22 | 0.0px |
+| **Body Primary** | 400 (Regular) | 15 | 21 | 0.0px |
+| **Body Small / Hint**| 400 (Regular) | 13 | 18 | +0.1px |
+| **GLOSS Token** | 700 (Bold, Mono) | 14 | 18 | +0.8px |
+| **Badge / Caption** | 600 (SemiBold) | 11 | 14 | +0.4px |
 
-### Storage & Embeddings Layer
-*   **ChromaDB**: Holds 384-dimensional dense vectors created by `all-MiniLM-L6-v2` for semantic search (e.g. mapping "furious" to "ANGRY").
-*   **AWS S3**: Securely hosts static `.sigml` animation payloads globally.
+---
+
+### 2.3 Ergonomic Layout & Component Hierarchy
+
+```
+┌────────────────────────────────────────────────────────┐
+│  SignVision Mobile Viewport (412 x 915)                │
+├────────────────────────────────────────────────────────┤
+│ [Top Bar]  SignVision Brand | Network Status Badge     │
+├────────────────────────────────────────────────────────┤
+│                                                        │
+│                                                        │
+│               CWASA 3D WebGL Avatar                    │
+│                 (Dominant Stage)                       │
+│                                                        │
+│                                                        │
+├────────────────────────────────────────────────────────┤
+│ [History & GLOSS Strip]  [TOMORROW] [I] [SCHOOL] [GO]  │
+├────────────────────────────────────────────────────────┤
+│ [Mode Selector Tabs]    [ Word Mode ]  [ Sentence Mode ]│
+├────────────────────────────────────────────────────────┤
+│ [Floating Composer]                                    │
+│  ┌──────────────────────────────────────────────┐      │
+│  │ [🔍 Search / Type sentence...]  [🎤]  [▶]    │      │
+│  └──────────────────────────────────────────────┘      │
+└────────────────────────────────────────────────────────┘
+```
+
+#### Structural Layout Invariants
+1. **Never Obscure the Avatar**: The 3D avatar WebGL container must maintain at least 45% of the visible viewport during all user interactions, even when the soft keyboard is deployed.
+2. **Native Keyboard Avoidance**: The composer is wrapped in a native `KeyboardAvoidingView` with `behavior={Platform.OS === 'ios' ? 'padding' : undefined}` to prevent layout popping.
+3. **Stacked Trays**: The search history tray is strictly stacked *above* the mode selector tab row, eliminating any overlapping z-index conflicts.
+
+---
+
+### 2.4 Modular Component Primitives
+
+SignVision avoids heavy third-party UI libraries (e.g. NativeBase, Paper) in favor of lightweight, custom primitives inspired by `shadcn/ui`:
+
+#### `Button.tsx` (`Application/src/components/ui/Button.tsx`)
+- **Variants**:
+  - `default`: Solid emerald background (`#10B981`) with dark text (`#07080D`).
+  - `secondary`: Elevated slate (`#111722`) with subtle border.
+  - `outline`: Transparent background with `#1E293B` border.
+  - `ghost`: Transparent background with hover glow.
+  - `icon`: Square 40x40 touch target optimized for microphone and send actions.
+- **Micro-Interactions**: Features subtle scale transitions (`transform: [{ scale: pressed ? 0.96 : 1.0 }]`) on press.
+
+#### `Input.tsx` (`Application/src/components/ui/Input.tsx`)
+- **Focus Rings**: Emits a glowing emerald ring (`borderColor: '#10B981'`) when focused.
+- **Accessibility**: Includes `accessibilityLabel`, `accessibilityHint`, and high-contrast placeholder text (`#64748B`).
+
+---
+
+### 2.5 Motion Physics & Animation Standards
+
+1. **GLOSS Token Slides**: Token entry and exit transitions utilize `LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)` with a 250ms duration.
+2. **Playback Pulse**: The currently active GLOSS token glows with an emerald border and subtle scale pulse to indicate playback synchronization with the 3D avatar.
+3. **Microphone Pulse**: When recording speech via `expo-speech-recognition`, the microphone button pulses with a breathing cyan/emerald glow to provide immediate visual feedback.
+
+---
+
+### 2.6 Accessibility Compliance (WCAG 2.1 AAA)
+
+- **Contrast Ratios**: All text elements exceed the 7:1 AAA contrast threshold against their respective backgrounds.
+- **Touch Target Sizes**: All interactive elements (buttons, inputs, tabs) maintain a minimum touch target size of 48x48dp.
+- **Screen Reader Support**: Every icon button includes descriptive `accessibilityLabel` attributes (e.g., `"Record speech input"`, `"Play sign animation"`).
+- **Reduced Motion**: Respects device accessibility preferences for reduced motion, disabling layout animations when enabled.
+
+---
+
+*SignVision — Crafted for accessibility, speed, and elegance.*

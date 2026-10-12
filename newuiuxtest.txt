@@ -1,0 +1,753 @@
+# SIGNVISION — FINAL UI PERFECTION, RESPONSIVE LAYOUT AUDIT, ALIGNMENT CORRECTION AND CROSS-PLATFORM QUALITY ASSURANCE
+
+## 1. YOUR MISSION
+
+You have already implemented, or attempted to implement, the SignVision frontend redesign.
+
+Your next assignment is to act as a **principal UI engineer, visual QA specialist, responsive-layout expert, React Native engineer, web accessibility engineer, and frontend regression tester**.
+
+Your job is to independently verify whether the implementation is actually correct.
+
+Do not assume that the previous implementation is perfect simply because it compiles, looks acceptable on your development screen, or follows the design specification.
+
+Inspect the actual application, identify defects, reproduce them, fix them, and test the corrected result.
+
+The ultimate objective is to achieve the highest practical level of visual consistency, accurate alignment, responsiveness, accessibility, and functional reliability across mobile and web.
+
+**This is an implementation-and-correction task, not a code review report. Do not merely identify problems. Correct them directly wherever it is safe to do so.**
+
+Work in the existing SignVision repository. Preserve all working translation behavior, the 3D signing avatar, WebView messaging, animation loading, camera functionality, speech recognition, history, and other existing integrations.
+
+Do not recreate the whole application unnecessarily.
+
+---
+
+# 2. FIRST: INSPECT THE ACTUAL IMPLEMENTATION
+
+Before editing anything, inspect the current result of the previous redesign.
+
+Read the current implementation rather than assuming the previous prompt was followed correctly.
+
+Inspect:
+
+- The main screen and its layout hierarchy.
+- All modified and newly created components.
+- Shared design tokens and styling.
+- Navigation and screen entry points.
+- Mobile-specific and web-specific implementations.
+- Global layout wrappers and safe-area handling.
+- Responsive breakpoints.
+- Avatar/WebView container and its surrounding layout.
+- Translation composer and mode selector.
+- Gloss-token and playback controls.
+- History components.
+- Dialogs, sheets, menus, overlays, and autocomplete dropdowns.
+- Keyboard handling.
+- Loading, error, permission, and empty states.
+- Accessibility properties.
+- All relevant changes in the Git diff, where Git is available.
+
+Determine exactly which UI implementation serves native mobile and which serves web.
+
+If React Native Web or a shared component system is used, distinguish shared behavior from platform-specific behavior.
+
+Identify components whose layout depends on absolute positioning, hardcoded dimensions, arbitrary offsets, nested scrolling, or duplicated styling.
+
+Check whether the new design tokens are genuinely being used throughout the application or whether old colors, spacing values, and styling patterns remain scattered across components.
+
+Do not blindly replace working implementations.
+
+Create a concise defect checklist before making changes. Prioritize actual visual and functional problems discovered during inspection.
+
+---
+
+# 3. REQUIRED VISUAL TESTING ENVIRONMENT
+
+Use the strongest testing tools already available in the project and execution environment.
+
+Depending on the existing architecture, use:
+
+- The actual running web application.
+- Browser developer tools and responsive viewport emulation.
+- Existing Playwright, Cypress, or equivalent tests, if available.
+- Available browser automation and screenshot capture.
+- An existing Android emulator or iOS simulator, if available.
+- A real connected device, if the environment supports it.
+- Existing accessibility inspection tools.
+- The project's current build, test, lint, and type-check commands.
+
+Do not automatically install a large testing framework just to satisfy this checklist. First investigate the existing tools and determine the least complicated reliable approach.
+
+For web, test the application itself at multiple viewport sizes. Do not rely on reviewing source code alone.
+
+For native mobile, inspect the actual native application on an available emulator, simulator, or device wherever possible.
+
+A responsive web preview is not proof that a native React Native application works correctly.
+
+If native hardware or an emulator is unavailable, perform every feasible check, explain which device-specific behavior remains unverified, and do not claim to have tested it.
+
+Do not fabricate screenshots, device testing, accessibility test results, or successful builds.
+
+---
+
+# 4. MASTER ALIGNMENT AUDIT
+
+THIS IS A CRITICAL PRIORITY.
+
+Inspect every major screen and reusable component for accurate, consistent alignment.
+
+## 4.1 Horizontal alignment
+
+Verify:
+
+- The left and right edges of related content align consistently.
+- The header's content follows the correct content grid.
+- The avatar stage is centered or intentionally positioned.
+- The translation composer aligns with its intended content area.
+- The word/sentence selector aligns with the composer where appropriate.
+- Gloss-token containers follow the correct content boundaries.
+- History items align with their section headings.
+- Related action buttons follow a consistent baseline.
+- Icon and text combinations are vertically centered.
+- Desktop panels align to consistent column boundaries.
+- Cards, dialogs, dropdowns, and sheets have deliberate content padding.
+- Dividers and borders do not appear randomly offset.
+
+Do not force every element to have the same width when it serves a different purpose. Use a consistent layout grid while preserving the intended visual hierarchy.
+
+## 4.2 Vertical alignment
+
+Check:
+
+- Header height and internal alignment.
+- Distance between the header and primary content.
+- Avatar positioning within its stage.
+- Space between the avatar, gloss information, and playback actions.
+- Mode selector and composer placement.
+- History section spacing.
+- Vertical centering of icons within controls.
+- Button-label alignment.
+- Input text alignment, including multiline text.
+- Dropdown anchoring and menu positioning.
+- Dialog title, body, and action-button alignment.
+- Vertical spacing across loading, empty, success, and error states.
+
+Correct inconsistent spacing between related components.
+
+Do not solve one misalignment by introducing an arbitrary margin that breaks another breakpoint.
+
+## 4.3 Spacing consistency
+
+Audit all important spacing values against the established design tokens.
+
+Look for:
+
+- Inconsistent horizontal padding.
+- Unnecessary large gaps.
+- Components touching when they should have breathing room.
+- Overcrowded sections.
+- Different gaps between visually equivalent controls.
+- Unintentional differences between similar cards.
+- Excessive padding on small phones.
+- Excessive empty space on desktop.
+- Repeated borders that make the screen feel fragmented.
+- Overlapping shadows or inconsistent radii.
+
+Use shared design tokens and layout relationships where practical.
+
+When correcting an issue, fix its actual source instead of accumulating local overrides.
+
+## 4.4 Visual hierarchy and balance
+
+Ask the following while examining every rendered screen:
+
+- Is the 3D avatar clearly the main visual attraction?
+- Can the user quickly identify where to enter a word or sentence?
+- Is the active translation mode immediately obvious?
+- Are primary actions more prominent than secondary actions?
+- Is the history area taking too much space?
+- Does the interface have excessive cards or containers?
+- Are important labels readable at ordinary viewing distances?
+- Are glass effects making text harder to read?
+- Does the interface look intentionally designed rather than mechanically assembled?
+- Is there a clear visual path from input to translation to avatar playback?
+
+Fix any imbalance that makes the screen confusing, cluttered, or awkward.
+
+---
+
+# 5. MOBILE RESPONSIVENESS AUDIT
+
+Mobile must be verified separately from desktop.
+
+Test these web viewport sizes where the web application is available:
+
+| Test case | Width | Height |
+|---|---:|---:|
+| Very narrow phone | 320 | 568 |
+| Small phone | 360 | 640 |
+| Standard phone | 390 | 844 |
+| Large phone | 430 | 932 |
+| Small tablet / constrained layout | 600 | 800 |
+| Tablet portrait | 768 | 1024 |
+| Tablet landscape | 1024 | 768 |
+
+These are CSS viewport dimensions for web testing, not a claim that every physical device has identical usable dimensions.
+
+For native mobile, use the available actual emulator or device configurations and test equivalent constrained screen sizes where supported.
+
+## 5.1 Small-screen integrity
+
+At every narrow viewport, verify that:
+
+- The complete primary workflow fits the available space or scrolls appropriately.
+- Header controls are not clipped.
+- The avatar is not unintentionally compressed.
+- The composer remains usable.
+- Mode controls are not cut off.
+- Text and icons do not overlap.
+- History does not push primary controls beyond usability.
+- Gloss tokens wrap cleanly.
+- Floating controls do not cover important content.
+- No unintended horizontal scrolling occurs.
+- No controls render outside the viewport.
+- No fixed-height region truncates essential content.
+
+Do not solve small-screen issues simply by shrinking every component.
+
+Preserve a comfortable hierarchy and reduce secondary content before making essential controls difficult to use.
+
+## 5.2 Safe areas and system interfaces
+
+For native mobile, verify:
+
+- Status bar and top safe-area insets.
+- Camera notches and display cutouts.
+- Bottom gesture/navigation areas.
+- System navigation bars.
+- Device orientation changes.
+- Safe placement of floating and bottom-anchored controls.
+
+Do not assume one hardcoded bottom offset works on all phones.
+
+Avoid double-applying safe-area padding, which can create unnecessary gaps.
+
+## 5.3 Keyboard and composer behavior
+
+This is a mandatory functional test.
+
+Test:
+
+1. Opening text input when the keyboard is hidden.
+2. Opening the keyboard on a short screen.
+3. Entering multiline text.
+4. Switching from word to sentence mode.
+5. Opening autocomplete.
+6. Selecting a suggestion.
+7. Dismissing autocomplete.
+8. Submitting a translation.
+9. Dismissing the keyboard.
+10. Reopening the input after a previous translation.
+11. Scrolling while the keyboard is present, where supported.
+
+Verify that:
+
+- The focused input remains visible.
+- The composer moves or resizes appropriately.
+- The keyboard does not conceal the primary action.
+- The dropdown is not clipped or positioned off-screen.
+- Text is not lost during layout changes.
+- The screen does not jump unexpectedly.
+- The user can still access any relevant controls.
+- Dismissing the keyboard does not leave unexplained blank areas.
+
+Use the appropriate native keyboard-handling mechanism and web behavior for the actual platform. Do not assume the same implementation works identically on iOS, Android, and browsers.
+
+## 5.4 Scrolling and overlapping
+
+Inspect all scrollable areas.
+
+Look for:
+
+- Nested scrolling conflicts.
+- Multiple competing scroll containers.
+- Unreachable history entries.
+- Scrollbars appearing in inappropriate places.
+- The bottom composer covering content.
+- Menus rendering behind other layers.
+- Unintended scroll locking.
+- Content disappearing after orientation changes.
+
+The floating composer must never make the final history item or another essential control permanently inaccessible.
+
+---
+
+# 6. DESKTOP AND WIDE-SCREEN AUDIT
+
+Test the actual web application at these viewport sizes:
+
+| Test case | Width | Height |
+|---|---:|---:|
+| Compact desktop | 1024 | 768 |
+| Typical laptop | 1280 | 800 |
+| Standard desktop | 1440 | 900 |
+| Wide desktop | 1600 | 900 |
+| Large monitor | 1920 | 1080 |
+
+Also resize gradually between these sizes to detect abrupt or broken breakpoint transitions.
+
+## 6.1 Main layout
+
+Verify that:
+
+- The central avatar stage has sufficient width and height.
+- Side panels do not squeeze the main content unnecessarily.
+- The translation composer remains visually connected to the primary workflow.
+- History and secondary content remain secondary.
+- Header and panel boundaries align.
+- The design does not stretch awkwardly across large monitors.
+- Large empty areas are intentional rather than caused by fixed sizing.
+- Content does not become too wide to read comfortably.
+- Sidebar and central-content proportions make visual sense.
+- The visual center of the page is aligned with the intended main content area, not automatically with the entire screen when a sidebar is present.
+
+Use fluid dimensions and sensible maximum widths.
+
+Do not make the avatar excessively large or crop it merely to fill empty space.
+
+## 6.2 Desktop interaction details
+
+Verify:
+
+- Buttons and interactive surfaces have correct hover states.
+- Keyboard focus is visible.
+- Tooltips are anchored correctly.
+- Dialogs and dropdowns fit within the viewport.
+- Escape and outside-click behavior work where intended.
+- Menus do not render behind the avatar or other surfaces.
+- Keyboard navigation follows a logical order.
+- Mouse interaction and keyboard interaction both work.
+- Browser resizing does not leave stale layout state.
+
+Do not make important functionality accessible only through hover.
+
+---
+
+# 7. CROSS-PLATFORM VISUAL CONSISTENCY
+
+SignVision should feel like the same product across web and native mobile, but the layouts do not have to be identical.
+
+Create a shared visual identity while respecting real platform differences.
+
+Verify consistency in:
+
+- Color tokens.
+- Typography hierarchy.
+- Spacing and radii.
+- Primary action styling.
+- Word/sentence mode selection.
+- Gloss-token appearance.
+- Avatar integration.
+- Feedback and loading states.
+- Icon meaning.
+- Error-message wording.
+- Interaction hierarchy.
+
+Do not use a browser-only component inside native React Native code just to achieve identical styling.
+
+Do not force native controls to behave exactly like web controls when this creates poor interaction or accessibility.
+
+If a shared component behaves differently on web and native, inspect the actual platform implementation and correct the difference intentionally.
+
+Avoid separate style implementations that gradually develop unrelated colors, spacing, or button variants.
+
+---
+
+# 8. SIGNVISION AVATAR AND WEBVIEW INTEGRATION AUDIT
+
+The existing 3D signing avatar must remain functional throughout the UI refinement.
+
+Inspect the actual WebView, HTML, CSS, rendering setup, and message bridge.
+
+Verify:
+
+- Correct initial sizing.
+- Proper responsive resizing.
+- Consistent background treatment.
+- No unexpected rectangular edges.
+- No content clipping.
+- No incorrect aspect ratio.
+- No unwanted scrollbars.
+- No WebView reload triggered by ordinary input changes.
+- No loss of active playback when unrelated UI state changes.
+- No duplicated animation requests.
+- No broken S3 animation URLs.
+- No altered message formats.
+- Correct loading feedback.
+- Graceful handling of failed animation assets.
+- Correct playback queue interaction.
+- Proper behavior after resizing or changing orientation.
+
+If the background is opaque, identify whether the opacity originates from the page, WebGL canvas, renderer, or native WebView.
+
+Do not falsely assume that changing the parent background will make an opaque canvas transparent.
+
+If the renderer cannot reliably support transparency, use a visually cohesive background treatment.
+
+Do not replace the avatar integration with a temporary image or placeholder to make the layout look better.
+
+Preserve the existing functioning sign-language animation system.
+
+---
+
+# 9. COLOR, TYPOGRAPHY AND COMPONENT POLISH
+
+Run a visual consistency pass across the entire application.
+
+## 9.1 Color accuracy
+
+Verify the actual rendered colors against the centralized design system.
+
+Remove accidental remnants of the old palette, inconsistent button colors, unrelated grays, duplicated borders, and arbitrary accent colors.
+
+Ensure success, error, loading, disabled, active, and focus states use the intended semantic tokens.
+
+Check text contrast on translucent surfaces as well as opaque surfaces.
+
+## 9.2 Typography accuracy
+
+Inspect:
+
+- Font sizes.
+- Font weights.
+- Line heights.
+- Text alignment.
+- Truncation.
+- Multiline wrapping.
+- Button-label baselines.
+- Gloss-token wrapping.
+- Long sentence behavior.
+- Text scaling.
+- Small-screen readability.
+
+Correct inconsistent heading scales and cramped supporting text.
+
+Do not use truncation for information users need to understand a translation or critical error.
+
+## 9.3 Component consistency
+
+Compare equivalent buttons, inputs, controls, menus, overlays, and panels across screens.
+
+Verify consistent:
+
+- Control heights.
+- Internal padding.
+- Border thickness.
+- Corner radii.
+- Icon size.
+- Icon-to-label gap.
+- Focus appearance.
+- Disabled opacity.
+- Loading indicators.
+- Hover and pressed states.
+
+Do not give visually equivalent controls unrelated dimensions without a clear reason.
+
+## 9.4 Shadows, borders and glass surfaces
+
+Remove shadows that appear muddy, clipped, overly strong, or inconsistent.
+
+Check whether translucent surfaces remain legible against both dark backgrounds and changing avatar content.
+
+Avoid an excessive number of layered surfaces.
+
+Make the interface feel refined without adding visual effects that reduce performance or readability.
+
+---
+
+# 10. ACCESSIBILITY AND USABILITY VERIFICATION
+
+Perform an actual accessibility review of the implemented controls.
+
+Check:
+
+- Accessible names on icon-only buttons.
+- Correct roles and states for interactive elements.
+- Logical focus order.
+- Visible web keyboard focus.
+- Keyboard operation of selectors, menus, dialogs, and suggestions.
+- Screen-reader labels on important native controls.
+- Text contrast.
+- Readable disabled and error states.
+- Text scaling without clipping.
+- Sufficient touch targets.
+- Reduced-motion handling.
+- Clear feedback that does not rely exclusively on color.
+- Permission-denial recovery.
+- Keyboard and focus behavior in dialogs or sheets.
+
+If an automated accessibility tool is already available, use it to identify genuine problems and then inspect the results manually.
+
+Automated checks do not replace keyboard, screen-reader, and visual verification.
+
+Do not add accessibility props blindly without knowing which component receives them.
+
+Make corrections in the actual component implementation and verify the resulting behavior.
+
+---
+
+# 11. REAL FUNCTIONAL REGRESSION TESTING
+
+An attractive screen is not successful if its primary actions no longer work.
+
+Test the existing application using real implemented behavior.
+
+Verify:
+
+1. The application opens through its normal entry point.
+2. Word mode can be selected.
+3. Sentence mode can be selected.
+4. Input can be entered, edited, and cleared where supported.
+5. Autocomplete works, if implemented.
+6. Valid input reaches the actual translation flow.
+7. The 3D avatar receives the appropriate existing command.
+8. Existing animation assets load correctly.
+9. Playback and supported playback controls work.
+10. Gloss tokens display correctly.
+11. Recent-history behavior remains intact.
+12. Existing speech-recognition behavior remains intact.
+13. Denied microphone permission does not block text input.
+14. Existing camera functionality remains intact, where implemented.
+15. Loading states reflect genuine activity.
+16. Errors and recovery actions behave correctly.
+17. Dialogs, menus, sheets, and overlays open and close appropriately.
+18. Browser resizing does not break state or functionality.
+19. Returning to the screen does not unnecessarily reset or duplicate the avatar.
+20. Ordinary typing does not interrupt active animation playback without a legitimate reason.
+
+Test empty input, longer sentences, rapid repeated taps, delayed responses, and realistic failure conditions where the environment allows.
+
+Do not replace a failing integration with mock data merely to produce a successful test.
+
+Clearly separate actual functional tests from static source inspection.
+
+---
+
+# 12. AUTOMATED CHECKS AND CODE QUALITY
+
+Run the project's existing checks using its configured scripts and package manager.
+
+Use appropriate commands for:
+
+- TypeScript.
+- Linting.
+- Existing unit tests.
+- Integration tests.
+- Web production builds.
+- Native project validation.
+- Browser or end-to-end tests.
+
+Inspect browser errors, application logs, and runtime warnings that are relevant to changed code.
+
+Check for:
+
+- Missing React keys.
+- Broken imports.
+- Type mismatches.
+- Incorrect component props.
+- State updates that create stale UI.
+- Duplicate event handlers.
+- Runtime exceptions.
+- Missing assets.
+- Unexpected layout warnings.
+- Failed API calls.
+- Errors caused by platform-specific imports.
+
+Do not silence errors simply to obtain a clean build.
+
+If a failure existed before the redesign, identify it accurately and determine whether the new code introduces any additional problem.
+
+---
+
+# 13. VISUAL ITERATION: INSPECT, FIX, RE-RENDER, RECHECK
+
+THIS IS THE CORE OF THE TASK.
+
+Do not perform one inspection and then immediately declare completion.
+
+Use the following iterative process:
+
+### Iteration 1: Baseline inspection
+
+Launch the current application where possible.
+
+Capture or inspect its actual rendered appearance on representative mobile and desktop viewports.
+
+Identify the most significant issues with:
+
+- Alignment.
+- Spacing.
+- Responsive composition.
+- Typography.
+- Overflow.
+- Component consistency.
+- Avatar integration.
+- Interaction behavior.
+
+### Iteration 2: Correct the layout foundations
+
+Fix shared design tokens, parent layouts, flex or grid constraints, width limits, spacing relationships, and responsive breakpoints.
+
+Where multiple screens share the same defect, fix the shared source rather than patching each instance separately.
+
+### Iteration 3: Correct component-level defects
+
+Fix the composer, selectors, avatar stage, gloss tokens, history, buttons, overlays, and other affected components.
+
+Verify keyboard and safe-area behavior rather than relying on static appearance.
+
+### Iteration 4: Re-render and compare
+
+Run the application again and inspect the corrected output.
+
+Check whether:
+
+- The original defect is actually fixed.
+- Other screen sizes remain correct.
+- Shared components have not regressed.
+- Keyboard behavior is still correct.
+- The avatar has not been damaged.
+- Spacing remains consistent throughout the interface.
+
+### Iteration 5: Test edge cases
+
+Inspect narrow viewports, large text, long content, empty states, open menus, keyboard visibility, and constrained desktop layouts.
+
+Fix any new issue revealed by these tests.
+
+### Iteration 6: Final regression verification
+
+Rerun relevant build, type, lint, and functional checks after the final changes.
+
+Inspect the actual final version, not a screenshot produced before the most recent edits.
+
+Repeat this cycle as many times as needed until all critical and high-priority issues that are reproducible and fixable within the available environment have been corrected.
+
+Do not introduce new design features merely to demonstrate activity.
+
+Concentrate on measurable quality improvements and preserve the existing architecture.
+
+---
+
+# 14. DEFECT PRIORITY AND ACCEPTANCE RULES
+
+Classify detected issues by severity.
+
+**Critical:** Application cannot launch, core translation workflow is broken, the avatar integration is broken, or important user actions are inaccessible.
+
+**High:** Composer is unusable, content overlaps, essential controls are clipped, mobile layout is broken, web content overflows, or major accessibility interactions fail.
+
+**Medium:** Noticeable alignment errors, inconsistent spacing, broken secondary interactions, poorly positioned menus, or substantial typography inconsistencies.
+
+**Low:** Small decorative inconsistencies, slight differences in shadows, or minor polish defects that do not affect usability.
+
+Fix critical and high-priority issues first. Address medium and low-priority issues during the refinement passes wherever feasible.
+
+A successful build alone is not acceptance.
+
+A screenshot that looks good at one resolution alone is not acceptance.
+
+A checklist with no actual implementation corrections is not acceptance.
+
+---
+
+# 15. FINAL ACCEPTANCE CHECKLIST
+
+Before declaring completion, verify each applicable requirement.
+
+## Layout
+- [ ] Header and main content align correctly.
+- [ ] The avatar stage has the intended visual prominence.
+- [ ] The composer and mode selector are correctly positioned.
+- [ ] Related components share consistent spacing.
+- [ ] Buttons, text, and icons align cleanly.
+- [ ] No unintended clipping or overlapping exists.
+- [ ] Dialogs, menus, and overlays fit their available space.
+
+## Mobile
+- [ ] Narrow screens remain usable.
+- [ ] Safe areas are respected.
+- [ ] Keyboard opening and dismissal work correctly.
+- [ ] Composer and autocomplete remain usable.
+- [ ] Long text wraps without breaking the layout.
+- [ ] Touch targets are appropriately sized.
+- [ ] History and secondary content remain accessible.
+- [ ] Orientation changes do not break the interface, where tested.
+
+## Web
+- [ ] Desktop layout uses space effectively.
+- [ ] Tablet and narrow layouts are coherent.
+- [ ] Responsive resizing works without broken transitions.
+- [ ] No unintended horizontal overflow exists.
+- [ ] Keyboard navigation and focus are functional.
+- [ ] Menus and dialogs remain within the viewport.
+
+## Visual quality
+- [ ] The color system is consistent.
+- [ ] Typography is consistent and readable.
+- [ ] Spacing follows the design system.
+- [ ] Surface treatments are restrained and intentional.
+- [ ] Glassmorphism does not harm readability.
+- [ ] The app has no leftover visibly inconsistent styles.
+
+## Functionality
+- [ ] Word and Sentence modes work.
+- [ ] Input and autocomplete work where implemented.
+- [ ] Existing translation behavior is preserved.
+- [ ] The avatar and animation pipeline remain operational.
+- [ ] History and playback behavior are preserved.
+- [ ] Existing speech and camera features remain operational where implemented.
+- [ ] Permission and error handling remain functional.
+
+## Engineering
+- [ ] No new unresolved imports or type errors.
+- [ ] Relevant project checks have been run.
+- [ ] No obvious new runtime errors remain.
+- [ ] Final changes have been checked for regressions.
+- [ ] Any unavailable device-specific testing is documented honestly.
+
+Do not mark a checkbox complete solely because the code appears to support it. Verify the actual behavior wherever the environment allows.
+
+---
+
+# 16. FINAL REPORT
+
+After fixing the defects, provide a concise and factual report containing:
+
+1. The screens and components inspected.
+2. The viewport sizes and devices actually tested.
+3. The most important alignment and responsive defects discovered.
+4. The specific fixes implemented.
+5. The mobile and web behavior verified.
+6. The avatar, translation, keyboard, and permission flows tested.
+7. The build, lint, type-check, and test outcomes.
+8. Any remaining defects or limitations.
+9. Any tests that could not be performed and the reason.
+
+Do not claim that the application has been verified on a physical device unless it actually has.
+
+Do not claim that there are zero defects when the necessary devices or testing facilities were unavailable.
+
+A good final report must describe actual implementation work and observed results, not merely repeat this checklist.
+
+## FINAL DIRECTIVE
+
+Inspect the implemented SignVision application from the user's perspective.
+
+Find the real problems, especially alignment errors, spacing inconsistencies, viewport overflow, keyboard issues, awkward avatar placement, and responsive defects.
+
+Fix the underlying causes. Re-render the application. Inspect it again. Test the affected user flows. Repeat until the implementation meets the quality requirements as closely as the available environment allows.
+
+**Do not stop at reviewing, reporting, or suggesting changes. Make the necessary corrections directly, protect the existing working functionality, and verify the final rendered result on mobile and web wherever testing is possible.**
+
+Begin by inspecting the current implementation and its actual runtime output.

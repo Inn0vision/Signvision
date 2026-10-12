@@ -1,3 +1,10 @@
 export { default as AvatarWebView } from './AvatarWebView';
 export type { AvatarWebViewRef } from './AvatarWebView';
-export { default as SearchBar } from './SearchBar';
+export { SearchBar, type SearchBarProps } from './SearchBar';
+export { ModeSelector, type ModeSelectorProps } from './ModeSelector';
+export { GlossTokenBar, type GlossTokenBarProps, type GlossToken } from './GlossTokenBar';
+export { PlaybackQueueBar, type PlaybackQueueBarProps } from './PlaybackQueueBar';
+export { Header, type HeaderProps } from './Header';
+export { HistorySheet, type HistorySheetProps } from './HistorySheet';
+export { default as HandLandmarkOverlay } from './HandLandmarkOverlay';
+export * from './ui';

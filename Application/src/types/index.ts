@@ -32,7 +32,16 @@ export interface PingMessage {
   type: 'ping';
 }
 
-export type WebViewOutgoingMessage = PlayMessage | StopMessage | ChangeAvatarMessage | PingMessage;
+export interface SpeedMessage {
+  type: 'speed';
+  speed: number;
+}
+
+export interface ResetCameraMessage {
+  type: 'resetCamera';
+}
+
+export type WebViewOutgoingMessage = PlayMessage | StopMessage | ChangeAvatarMessage | PingMessage | SpeedMessage | ResetCameraMessage;
 
 // App state types
 export type PlaybackStatus = 'idle' | 'loading' | 'playing' | 'finished' | 'error';
@@ -46,11 +55,18 @@ export interface AppState {
   searchHistory: string[];
 }
 
-// Search history item
 export interface HistoryItem {
   word: string;
   timestamp: number;
   found: boolean;
+}
+
+export interface SearchHistoryItem {
+  id: string;
+  query: string;
+  timestamp: number;
+  isSentence?: boolean;
+  foundCount?: number;
 }
 
 // Avatar options

@@ -12,7 +12,7 @@ const AVATAR_HTML_CONTENT = `
     <link rel="stylesheet" href="https://vhg.cmp.uea.ac.uk/tech/jas/vhg2020/cwa/cwasa.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { width: 100%; height: 100%; overflow: hidden; background: #1a1a2e; }
+        html, body { width: 100%; height: 100%; overflow: hidden; background: transparent; }
         .main { display: flex; flex-direction: column; width: 100%; height: 100%; position: relative; }
         .avatar-wrap { flex: 1; display: flex; align-items: center; justify-content: center; }
         .CWASAAvatar { width: 100% !important; height: 100% !important; max-width: 450px; max-height: 550px; }
@@ -244,6 +244,8 @@ export interface AvatarWebViewRef {
   play: (url: string, word: string) => void;
   stop: () => void;
   ping: () => void;
+  setSpeed?: (speed: number) => void;
+  resetCamera?: () => void;
 }
 
 interface AvatarWebViewProps {
@@ -277,6 +279,12 @@ const AvatarWebView = forwardRef<AvatarWebViewRef, AvatarWebViewProps>(
       },
       ping: () => {
         sendMessage({ type: 'ping' });
+      },
+      setSpeed: (speed: number) => {
+        sendMessage({ type: 'speed', speed });
+      },
+      resetCamera: () => {
+        sendMessage({ type: 'resetCamera' });
       },
     }));
 
@@ -395,7 +403,7 @@ const AvatarWebView = forwardRef<AvatarWebViewRef, AvatarWebViewProps>(
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a2e',
+    backgroundColor: 'transparent',
     borderRadius: 16,
     overflow: 'hidden',
   },

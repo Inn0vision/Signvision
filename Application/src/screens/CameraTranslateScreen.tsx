@@ -1,24 +1,40 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, ActivityIndicator, Platform, Animated } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  ActivityIndicator,
+  Platform,
+  Animated,
+  SafeAreaView,
+} from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { translateVideoClip } from '../services/apiService';
 import HandLandmarkOverlay from '../components/HandLandmarkOverlay';
+import { Card } from '../components/ui/Card';
+import { Badge } from '../components/ui/Badge';
+import { Button } from '../components/ui/Button';
+import { COLORS, RADII, TYPOGRAPHY, SHADOWS } from '../theme/tokens';
 
-interface CameraTranslateScreenProps {
+export interface CameraTranslateScreenProps {
   onBack: () => void;
+  onSignRecognized?: (text: string) => void;
 }
 
-export default function CameraTranslateScreen({ onBack }: CameraTranslateScreenProps) {
+export default function CameraTranslateScreen({ onBack, onSignRecognized }: CameraTranslateScreenProps) {
   const [permission, requestPermission] = useCameraPermissions();
   const [webPermissionGranted, setWebPermissionGranted] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [translation, setTranslation] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [facing, setFacing] = useState<"front" | "back">("front");
+  const [facing, setFacing] = useState<'front' | 'back'>('front');
+  const [recordingSeconds, setRecordingSeconds] = useState(0);
 
   // Animations
   const recordScale = useRef(new Animated.Value(1)).current;
+  const pulseAnim = useRef(new Animated.Value(1)).current;
 
   // Native refs
   const cameraRef = useRef<CameraView>(null);
@@ -30,14 +46,15 @@ export default function CameraTranslateScreen({ onBack }: CameraTranslateScreenP
   const [webStream, setWebStream] = useState<any>(null);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const counterRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Automatically request Web camera permission
+  // Web camera permission
   useEffect(() => {
     if (Platform.OS === 'web') {
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({ 
-          video: { facingMode: facing === "front" ? "user" : "environment" }, 
-          audio: false 
+        navigator.mediaDevices.getUserMedia({
+          video: { facingMode: facing === 'front' ? 'user' : 'environment' },
+          audio: false,
         })
           .then((stream) => {
             setWebPermissionGranted(true);
@@ -45,7 +62,7 @@ export default function CameraTranslateScreen({ onBack }: CameraTranslateScreenP
           })
           .catch((err) => {
             console.error('Camera access denied on web:', err);
-            setErrorMsg('Camera access is required.');
+            setErrorMsg('Camera access is required for live sign translation.');
           });
 
         return () => {
@@ -66,6 +83,20 @@ export default function CameraTranslateScreen({ onBack }: CameraTranslateScreenP
     }
   }, [webStream, webPermissionGranted]);
 
+  // Pulse animation for recording
+  useEffect(() => {
+    if (isRecording) {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, { toValue: 1.25, duration: 600, useNativeDriver: true }),
+          Animated.timing(pulseAnim, { toValue: 1, duration: 600, useNativeDriver: true }),
+        ])
+      ).start();
+    } else {
+      pulseAnim.setValue(1);
+    }
+  }, [isRecording, pulseAnim]);
+
   const hasPermission = Platform.OS === 'web' ? webPermissionGranted : permission?.granted;
 
   if (!permission && Platform.OS !== 'web') {
@@ -75,38 +106,46 @@ export default function CameraTranslateScreen({ onBack }: CameraTranslateScreenP
   if (!hasPermission) {
     return (
       <View style={styles.centerContainer}>
-        <Text style={styles.promptText}>Camera permission is required.</Text>
-        {Platform.OS !== 'web' && (
-          <TouchableOpacity style={styles.grantBtn} onPress={requestPermission}>
-            <Text style={styles.grantText}>Grant Permission</Text>
-          </TouchableOpacity>
-        )}
-        <TouchableOpacity style={styles.backBtn} onPress={onBack}>
-          <Text style={styles.backText}>Cancel</Text>
-        </TouchableOpacity>
-        {errorMsg && <Text style={styles.promptText}>{errorMsg}</Text>}
+        <View style={styles.permissionCard}>
+          <Text style={styles.permIcon}>📷</Text>
+          <Text style={styles.permTitle}>Camera Access Required</Text>
+          <Text style={styles.permDesc}>
+            SignVision needs access to your camera to recognize Indian Sign Language gestures in real-time.
+          </Text>
+          {Platform.OS !== 'web' && (
+            <Button
+              variant="glow"
+              onPress={requestPermission}
+              style={styles.permActionBtn}
+            >
+              Grant Permission
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            onPress={onBack}
+            style={styles.permActionBtn}
+          >
+            Cancel & Return
+          </Button>
+          {errorMsg && <Text style={styles.permError}>{errorMsg}</Text>}
+        </View>
       </View>
     );
   }
 
   const toggleCamera = () => {
     if (isRecording || isProcessing) return;
-    setFacing(current => current === "front" ? "back" : "front");
+    setFacing(current => (current === 'front' ? 'back' : 'front'));
   };
 
   const handlePress = () => {
     if (isProcessing) return;
     if (isRecording) {
-      Animated.spring(recordScale, {
-        toValue: 1,
-        useNativeDriver: true,
-      }).start();
+      Animated.spring(recordScale, { toValue: 1, useNativeDriver: true }).start();
       stopRecording();
     } else {
-      Animated.spring(recordScale, {
-        toValue: 1.2,
-        useNativeDriver: true,
-      }).start();
+      Animated.spring(recordScale, { toValue: 1.15, useNativeDriver: true }).start();
       startRecording();
     }
   };
@@ -116,6 +155,11 @@ export default function CameraTranslateScreen({ onBack }: CameraTranslateScreenP
     setIsRecording(true);
     setTranslation(null);
     setErrorMsg(null);
+    setRecordingSeconds(0);
+
+    counterRef.current = setInterval(() => {
+      setRecordingSeconds(prev => prev + 1);
+    }, 1000);
 
     timerRef.current = setTimeout(() => stopRecording(), 7500);
 
@@ -147,7 +191,7 @@ export default function CameraTranslateScreen({ onBack }: CameraTranslateScreenP
         mediaRecorder.start();
       } catch (err: any) {
         setIsRecording(false);
-        setErrorMsg("Failed to start MediaRecorder on web.");
+        setErrorMsg('Failed to start MediaRecorder on web.');
       }
     } else {
       if (!cameraRef.current) return;
@@ -157,13 +201,14 @@ export default function CameraTranslateScreen({ onBack }: CameraTranslateScreenP
         if (data && data.uri) processVideo(data.uri);
       } catch (e: any) {
         setIsRecording(false);
-        setErrorMsg("Failed to record native video.");
+        setErrorMsg('Failed to record camera video.');
       }
     }
   };
 
   const stopRecording = () => {
     if (timerRef.current) clearTimeout(timerRef.current);
+    if (counterRef.current) clearInterval(counterRef.current);
     if (!isRecording) return;
 
     if (Platform.OS === 'web') {
@@ -182,7 +227,7 @@ export default function CameraTranslateScreen({ onBack }: CameraTranslateScreenP
       const response = await translateVideoClip(videoData);
       setTranslation(response.translation);
     } catch (e: any) {
-      setErrorMsg(e.message || "Failed to process ISL video.");
+      setErrorMsg(e.message || 'Failed to analyze ISL video.');
     } finally {
       setIsProcessing(false);
     }
@@ -192,231 +237,395 @@ export default function CameraTranslateScreen({ onBack }: CameraTranslateScreenP
     setTranslation(null);
     setErrorMsg(null);
     setIsProcessing(false);
-  }
+    setRecordingSeconds(0);
+  };
 
   const isComplete = translation || errorMsg;
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       {/* 1. Camera Canvas (Bottom Layer) */}
-      <View style={styles.cameraContainerPlaceholder}>
+      <View style={styles.cameraContainer}>
         <View style={styles.cameraWrapper}>
           {Platform.OS === 'web' ? (
             <video
-              ref={videoRef} autoPlay playsInline muted
-              style={StyleSheet.flatten([styles.camera, { objectFit: 'contain' }] as any)}
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              style={StyleSheet.flatten([styles.camera, { objectFit: 'cover' }] as any)}
             />
           ) : (
-            <CameraView style={styles.camera} ref={cameraRef} facing={facing} zoom={0} mode="video" />
+            <CameraView
+              style={styles.camera}
+              ref={cameraRef}
+              facing={facing}
+              zoom={0}
+              mode="video"
+            />
           )}
         </View>
       </View>
 
-      {/* 2. Visual Overlays (Middle Layer) */}
-      <View style={styles.overlay}>
-
-        {/* Header */}
+      {/* 2. Cybernetic HUD Overlays (Middle Layer) */}
+      <View style={styles.overlay} pointerEvents="box-none">
+        {/* Top HUD Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.closeBtn} onPress={onBack}>
-            <Text style={styles.closeText}>← Sign {'=>'} English</Text>
+          <TouchableOpacity
+            style={styles.backBtn}
+            onPress={onBack}
+            accessible={true}
+            accessibilityRole="button"
+            accessibilityLabel="Back to avatar screen"
+          >
+            <Text style={styles.backBtnText}>← Avatar Stage</Text>
           </TouchableOpacity>
-          <View style={[styles.statusDot, isRecording && styles.statusDotRecording]} />
+
+          <Badge
+            label={isRecording ? `REC 00:0${recordingSeconds}` : isProcessing ? 'AI INFERENCE' : 'VISION HUD ACTIVE'}
+            variant={isRecording ? 'ruby' : isProcessing ? 'cyan' : 'emerald'}
+            pulse={isRecording || isProcessing}
+          />
+
+          <TouchableOpacity
+            style={[styles.flipBtn, (isRecording || isProcessing) && styles.flipBtnDisabled]}
+            onPress={toggleCamera}
+            disabled={isRecording || isProcessing}
+            accessible={true}
+            accessibilityRole="button"
+            accessibilityLabel={`Flip camera. Currently ${facing}`}
+          >
+            <Text style={styles.flipBtnText}>FLIP</Text>
+          </TouchableOpacity>
         </View>
 
-        {/* Hand Landmark Tracker (Simulated Visual Effect only runs when scanning) */}
+        {/* Hand Landmark Reticle Overlay */}
         {!isComplete && !isProcessing && (
-          <HandLandmarkOverlay isActive={true} />
+          <HandLandmarkOverlay
+            isActive={true}
+            isRecording={isRecording}
+            statusText={isRecording ? 'RECORDING ISL GESTURES' : 'ALIGN HANDS IN RETICLE'}
+          />
         )}
 
-        {/* 3. Action Layer (Top Layer) */}
-        <View style={styles.contentWrapper}>
-          <View style={styles.spacer} />
+        {/* 3. Action Layer (Bottom Layer) */}
+        <View style={styles.footerControls} pointerEvents="box-none">
+          {/* Result Card */}
+          {isComplete ? (
+            <Card variant="glass" glowColor={translation ? 'emerald' : 'ruby'} style={styles.resultCard}>
+              <View style={styles.resultHeader}>
+                <Badge
+                  label={translation && !translation.includes('UNCLEAR') ? 'SIGN TRANSLATED' : 'UNRECOGNIZED'}
+                  variant={translation && !translation.includes('UNCLEAR') ? 'emerald' : 'ruby'}
+                />
+              </View>
 
-          <View style={styles.footerControls}>
-            {/* If finished translating: Result Card */}
-            {isComplete ? (
-              <View style={styles.resultCard}>
-                <Text style={styles.resultCardLabel}>SIGN {translation && !translation.includes('UNCLEAR') ? 'DETECTED' : 'UNRECOGNIZED'}</Text>
+              {translation && !translation.includes('UNCLEAR') ? (
+                <>
+                  <Text style={styles.resultTranslation}>“{translation}”</Text>
+                  <Text style={styles.resultSubtitle}>
+                    Inferred from your gestures using AI Vision.
+                  </Text>
+                </>
+              ) : (
+                <>
+                  <Text style={styles.resultTranslation}>Unclear Gesture Sequence</Text>
+                  <Text style={styles.resultSubtitle}>
+                    {errorMsg || 'Could not recognize sequence. Ensure good lighting and sign within the reticle.'}
+                  </Text>
+                </>
+              )}
 
-                {translation && !translation.includes('UNCLEAR') ? (
-                  <>
-                    <Text style={styles.resultCardTranslation}>“{translation}”</Text>
-                    <Text style={styles.resultCardSubtitle}>
-                      You may be trying to say something like this.
-                    </Text>
-                  </>
-                ) : (
-                  <>
-                    <Text style={styles.resultCardTranslation}>Unclear Sign Sequence</Text>
-                    <Text style={styles.resultCardSubtitle}>
-                      {errorMsg || "We couldn't understand that sign sequence. Try signing again with a little more space and clearer movement."}
-                    </Text>
-                  </>
+              <View style={styles.resultActions}>
+                <Button
+                  variant="glow"
+                  size="default"
+                  onPress={resetState}
+                  accessibilityLabel="Sign again"
+                  style={styles.actionButton}
+                >
+                  Sign Again
+                </Button>
+                {translation && !translation.includes('UNCLEAR') && onSignRecognized && (
+                  <Button
+                    variant="outline"
+                    size="default"
+                    onPress={() => onSignRecognized(translation)}
+                    accessibilityLabel="Replay in 3D Avatar"
+                    style={styles.actionButton}
+                  >
+                    View on 3D Avatar
+                  </Button>
                 )}
+              </View>
+            </Card>
+          ) : isProcessing ? (
+            /* Processing Card */
+            <Card variant="glass" glowColor="cyan" style={styles.processingCard}>
+              <ActivityIndicator size="large" color={COLORS.cyan} />
+              <Text style={styles.processingTitle}>Translating Sign Gestures...</Text>
+              <Text style={styles.processingSubtitle}>
+                Running video inference with Gemini Vision AI pipeline
+              </Text>
+            </Card>
+          ) : (
+            /* Recording Trigger UI */
+            <View style={styles.triggerDeck}>
+              <Text style={styles.promptHint}>
+                {isRecording ? 'Capturing signs... Tap stop when done' : 'Position hands clearly in frame'}
+              </Text>
 
-                <TouchableOpacity style={styles.signAgainBtn} onPress={resetState}>
-                  <Text style={styles.signAgainText}>Sign Again</Text>
+              <View style={styles.triggerRow}>
+                <TouchableOpacity
+                  onPress={handlePress}
+                  activeOpacity={0.85}
+                  accessible={true}
+                  accessibilityRole="button"
+                  accessibilityLabel={isRecording ? 'Stop recording sign' : 'Start recording sign language'}
+                  style={styles.recordOuterTouch}
+                >
+                  <Animated.View
+                    style={[
+                      styles.recordRing,
+                      isRecording && styles.recordRingActive,
+                      { transform: [{ scale: pulseAnim }] },
+                    ]}
+                  >
+                    <View
+                      style={[
+                        styles.recordInnerSquare,
+                        isRecording && styles.recordInnerActive,
+                      ]}
+                    />
+                  </Animated.View>
                 </TouchableOpacity>
               </View>
-            ) : isProcessing ? (
-              /* Processing UI */
-              <View style={styles.processingUI}>
-                <ActivityIndicator size="large" color="#fff" />
-                <Text style={styles.processingTitle}>Analyzing your sign...</Text>
-                <Text style={styles.processingSubtitle}>Understanding the gesture sequence</Text>
-              </View>
-            ) : (
-              /* Normal Recording UI */
-              <View style={styles.recordingUI}>
-                <Text style={styles.guideText}>
-                  {isRecording ? "Listening sequence..." : "Sign naturally"}
-                </Text>
 
-                <View style={styles.recordRow}>
-                  <View style={styles.sideButtonFallback} />
-
-                  <TouchableOpacity
-                    onPress={handlePress}
-                    activeOpacity={0.8}
-                    style={styles.recordButtonContainer}
-                  >
-                    <Animated.View style={[styles.recordOuterRing, isRecording && styles.recordOuterRingActive, { transform: [{ scale: recordScale }] }]}>
-                      <View style={[styles.recordInnerCircle, isRecording && { borderRadius: 8, width: 30, height: 30 }]} />
-                    </Animated.View>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity 
-                    style={[styles.flipBtn, isRecording && {opacity: 0.5}]} 
-                    onPress={toggleCamera} 
-                    disabled={isRecording}
-                  >
-                    <View style={styles.flipBtnCircle}>
-                      <Text style={styles.flipBtnText}>FLIP</Text>
-                    </View>
-                  </TouchableOpacity>
-                </View>
-
-                <Text style={styles.holdText}>{isRecording ? "TAP TO STOP" : "TAP TO SIGN"}</Text>
-              </View>
-            )}
-          </View>
+              <Text style={styles.triggerLabel}>
+                {isRecording ? 'TAP TO COMPLETE SIGN' : 'TAP TO RECORD SIGN'}
+              </Text>
+            </View>
+          )}
         </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#000' },
-  cameraContainerPlaceholder: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  cameraWrapper: { width: '100%', aspectRatio: Platform.OS === 'web' ? 16/9 : 3/4, overflow: 'hidden', borderRadius: Platform.OS === 'web' ? 0 : 24, backgroundColor: '#000' },
-  camera: { flex: 1, width: '100%', height: '100%' },
-
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.canvas,
+  },
+  cameraContainer: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#000',
+  },
+  cameraWrapper: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+    overflow: 'hidden',
+  },
+  camera: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
   overlay: {
     ...StyleSheet.absoluteFillObject,
+    justifyContent: 'space-between',
     zIndex: 10,
   },
-
-  contentWrapper: {
-    flex: 1,
-    justifyContent: 'space-between',
-  },
-  spacer: { flex: 1 }, // Pushes controls to bottom
-
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
-    paddingTop: Platform.OS === 'android' ? 45 : 25,
+    paddingHorizontal: 16,
+    paddingTop: Platform.OS === 'android' ? 36 : 12,
     zIndex: 20,
   },
-  closeBtn: {
-    backgroundColor: 'rgba(20, 20, 30, 0.65)',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 24,
+  backBtn: {
+    backgroundColor: 'rgba(7, 8, 13, 0.75)',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: RADII.full,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: COLORS.borderMedium,
   },
-  closeText: { color: '#fff', fontWeight: 'bold', fontSize: 14, letterSpacing: 0.5 },
-  statusDot: {
-    width: 10, height: 10, borderRadius: 5, backgroundColor: 'rgba(255,255,255,0.3)'
+  backBtnText: {
+    ...TYPOGRAPHY.caption,
+    color: COLORS.textPrimary,
+    fontWeight: '700',
+    fontSize: 12,
   },
-  statusDotRecording: {
-    backgroundColor: '#f44336',
-    shadowColor: '#f44336', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 10,
+  flipBtn: {
+    backgroundColor: 'rgba(7, 8, 13, 0.75)',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: RADII.full,
+    borderWidth: 1,
+    borderColor: COLORS.borderMedium,
   },
-
+  flipBtnDisabled: {
+    opacity: 0.4,
+  },
+  flipBtnText: {
+    ...TYPOGRAPHY.caption,
+    color: COLORS.textPrimary,
+    fontWeight: '700',
+    fontSize: 11,
+    letterSpacing: 1,
+  },
   footerControls: {
-    padding: 24,
-    paddingBottom: Platform.OS === 'ios' ? 40 : 24,
+    padding: 20,
+    paddingBottom: Platform.OS === 'ios' ? 36 : 20,
     zIndex: 20,
   },
-
-  // State: Recording Normal
-  recordingUI: { alignItems: 'center' },
-  guideText: { color: '#fff', fontSize: 16, fontWeight: '500', marginBottom: 24, textShadowColor: 'rgba(0,0,0,0.5)', textShadowRadius: 4 },
-  recordOuterRing: {
-    width: 80, height: 80, borderRadius: 40,
-    borderWidth: 4, borderColor: 'rgba(255,255,255,0.5)',
-    justifyContent: 'center', alignItems: 'center',
+  triggerDeck: {
+    alignItems: 'center',
+  },
+  promptHint: {
+    ...TYPOGRAPHY.body,
+    fontSize: 14,
+    color: COLORS.textPrimary,
+    fontWeight: '600',
+    marginBottom: 16,
+    textShadowColor: 'rgba(0,0,0,0.8)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 6,
+  },
+  triggerRow: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  recordOuterTouch: {
+    padding: 6,
+  },
+  recordRing: {
+    width: 76,
+    height: 76,
+    borderRadius: RADII.full,
+    borderWidth: 4,
+    borderColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+  },
+  recordRingActive: {
+    borderColor: COLORS.ruby,
+    backgroundColor: 'rgba(244, 63, 94, 0.25)',
+  },
+  recordInnerSquare: {
+    width: 58,
+    height: 58,
+    borderRadius: RADII.full,
+    backgroundColor: '#FFFFFF',
+  },
+  recordInnerActive: {
+    width: 28,
+    height: 28,
+    borderRadius: RADII.sm,
+    backgroundColor: COLORS.ruby,
+  },
+  triggerLabel: {
+    ...TYPOGRAPHY.caption,
+    color: COLORS.textSecondary,
+    fontSize: 11,
+    letterSpacing: 1.5,
+    fontWeight: '700',
+  },
+  processingCard: {
+    padding: 24,
+    alignItems: 'center',
+    backgroundColor: 'rgba(7, 8, 13, 0.88)',
+    borderRadius: RADII.xl,
+  },
+  processingTitle: {
+    ...TYPOGRAPHY.h3,
+    color: COLORS.textPrimary,
+    marginTop: 14,
+    marginBottom: 6,
+  },
+  processingSubtitle: {
+    ...TYPOGRAPHY.body,
+    fontSize: 13,
+    color: COLORS.textMuted,
+    textAlign: 'center',
+  },
+  resultCard: {
+    padding: 20,
+    backgroundColor: 'rgba(7, 8, 13, 0.92)',
+    borderRadius: RADII.xl,
+  },
+  resultHeader: {
+    marginBottom: 10,
+  },
+  resultTranslation: {
+    ...TYPOGRAPHY.h2,
+    color: COLORS.textPrimary,
+    fontSize: 22,
+    marginBottom: 8,
+  },
+  resultSubtitle: {
+    ...TYPOGRAPHY.body,
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    marginBottom: 16,
+    lineHeight: 18,
+  },
+  resultActions: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  actionButton: {
+    flex: 1,
+  },
+  centerContainer: {
+    flex: 1,
+    backgroundColor: COLORS.canvas,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  permissionCard: {
+    backgroundColor: COLORS.panel,
+    borderRadius: RADII.xl,
+    padding: 28,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.borderMedium,
+    maxWidth: 360,
+    ...SHADOWS.card,
+  },
+  permIcon: {
+    fontSize: 44,
     marginBottom: 16,
   },
-  recordOuterRingActive: {
-    borderColor: 'rgba(244, 67, 54, 0.8)',
-    backgroundColor: 'rgba(244, 67, 54, 0.3)',
+  permTitle: {
+    ...TYPOGRAPHY.h2,
+    fontSize: 18,
+    color: COLORS.textPrimary,
+    marginBottom: 8,
+    textAlign: 'center',
   },
-  recordInnerCircle: {
-    width: 60, height: 60, borderRadius: 30,
-    backgroundColor: '#fff',
+  permDesc: {
+    ...TYPOGRAPHY.body,
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    marginBottom: 20,
+    lineHeight: 20,
   },
-  
-  recordRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', paddingHorizontal: 40, marginBottom: 16 },
-  recordButtonContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  sideButtonFallback: { width: 48, height: 48 },
-  flipBtn: { width: 48, height: 48, justifyContent: 'center', alignItems: 'center' },
-  flipBtnCircle: { width: 48, height: 48, borderRadius: 24, backgroundColor: 'rgba(255,255,255,0.2)', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.4)' },
-  flipBtnText: { color: '#fff', fontSize: 10, fontWeight: '700', letterSpacing: 1 },
-
-  holdText: { color: 'rgba(255,255,255,0.7)', fontSize: 12, letterSpacing: 1.5, fontWeight: '600' },
-
-  // State: Processing
-  processingUI: {
-    backgroundColor: 'rgba(15, 15, 30, 0.85)',
-    padding: 30,
-    borderRadius: 24,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.15)',
+  permActionBtn: {
+    width: '100%',
+    marginBottom: 10,
   },
-  processingTitle: { color: '#fff', fontSize: 18, fontWeight: 'bold', marginTop: 16 },
-  processingSubtitle: { color: '#888', fontSize: 14, marginTop: 8 },
-
-  // State: Result Card
-  resultCard: {
-    backgroundColor: 'rgba(15, 15, 30, 0.95)',
-    padding: 24,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+  permError: {
+    ...TYPOGRAPHY.caption,
+    color: COLORS.ruby,
+    marginTop: 8,
+    textAlign: 'center',
   },
-  resultCardLabel: { color: '#4CAF50', fontSize: 12, fontWeight: '700', letterSpacing: 1.5, marginBottom: 12 },
-  resultCardTranslation: { color: '#fff', fontSize: 24, fontWeight: '800', marginBottom: 12 },
-  resultCardSubtitle: { color: '#888', fontSize: 14, lineHeight: 20, marginBottom: 24 },
-  signAgainBtn: {
-    backgroundColor: '#fff',
-    paddingVertical: 14,
-    borderRadius: 16,
-    alignItems: 'center',
-  },
-  signAgainText: { color: '#000', fontSize: 16, fontWeight: '700' },
-
-  // Permissions Center
-  centerContainer: { flex: 1, backgroundColor: '#0f0f1e', justifyContent: 'center', alignItems: 'center' },
-  promptText: { color: '#fff', fontSize: 16, marginBottom: 20 },
-  grantBtn: { backgroundColor: '#4CAF50', padding: 12, borderRadius: 8, marginBottom: 15 },
-  grantText: { color: '#fff', fontWeight: 'bold' },
-  backBtn: { padding: 12 },
-  backText: { color: '#888' },
 });

@@ -11,12 +11,35 @@ export interface AvatarMessage {
   gloss?: string;
   avatar?: string;
   initialized?: boolean;
+  signIndex?: number;
 }
 
 export interface PlayMessage {
   type: 'play';
   url: string;
   word: string;
+}
+
+export interface PlaySequenceMessage {
+  type: 'playSequence';
+  sigmlText: string;
+  words: string[];
+  initialIndex?: number;
+}
+
+export interface PlaySequenceUrlsMessage {
+  type: 'playSequenceUrls';
+  urls: string[];
+  words: string[];
+  initialIndex?: number;
+}
+
+export interface PauseMessage {
+  type: 'pause';
+}
+
+export interface ResumeMessage {
+  type: 'resume';
 }
 
 export interface StopMessage {
@@ -32,7 +55,26 @@ export interface PingMessage {
   type: 'ping';
 }
 
-export type WebViewOutgoingMessage = PlayMessage | StopMessage | ChangeAvatarMessage | PingMessage;
+export interface SpeedMessage {
+  type: 'speed';
+  speed: number;
+}
+
+export interface ResetCameraMessage {
+  type: 'resetCamera';
+}
+
+export type WebViewOutgoingMessage =
+  | PlayMessage
+  | PlaySequenceMessage
+  | PlaySequenceUrlsMessage
+  | PauseMessage
+  | ResumeMessage
+  | StopMessage
+  | ChangeAvatarMessage
+  | PingMessage
+  | SpeedMessage
+  | ResetCameraMessage;
 
 // App state types
 export type PlaybackStatus = 'idle' | 'loading' | 'playing' | 'finished' | 'error';
@@ -46,15 +88,22 @@ export interface AppState {
   searchHistory: string[];
 }
 
-// Search history item
 export interface HistoryItem {
   word: string;
   timestamp: number;
   found: boolean;
 }
 
+export interface SearchHistoryItem {
+  id: string;
+  query: string;
+  timestamp: number;
+  isSentence?: boolean;
+  foundCount?: number;
+}
+
 // Avatar options
-export const AVATAR_OPTIONS = ['anna', 'marc', 'francoise', 'luna'] as const;
+export const AVATAR_OPTIONS = ['luna', 'marc', 'anna', 'francoise', 'siggi'] as const;
 export type AvatarName = typeof AVATAR_OPTIONS[number];
 
 // API Response types (from backend)

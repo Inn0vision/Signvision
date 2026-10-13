@@ -148,11 +148,35 @@ async function apiRequestWithRetry<T>(
   }
 }
 
+// In-memory cache for sentence processing results to eliminate redundant network requests
+const sentenceProcessCache = new Map<string, ProcessResponse>();
+const MAX_SENTENCE_CACHE_SIZE = 200;
+
+export function clearProcessSentenceCache(): void {
+  sentenceProcessCache.clear();
+}
+
 export async function processSentence(text: string): Promise<ProcessResponse> {
-  return apiRequestWithRetry<ProcessResponse>('/process', {
+  const normalizedKey = text.trim().toLowerCase();
+  const cached = sentenceProcessCache.get(normalizedKey);
+  if (cached) {
+    return cached;
+  }
+
+  const response = await apiRequestWithRetry<ProcessResponse>('/process', {
     method: 'POST',
     body: JSON.stringify({ text }),
   });
+
+  if (response && response.success && response.results && response.results.length > 0) {
+    if (sentenceProcessCache.size >= MAX_SENTENCE_CACHE_SIZE) {
+      const oldestKey = sentenceProcessCache.keys().next().value;
+      if (oldestKey) sentenceProcessCache.delete(oldestKey);
+    }
+    sentenceProcessCache.set(normalizedKey, response);
+  }
+
+  return response;
 }
 
 export async function transcribeAudio(audioUri: string): Promise<ProcessResponse> {

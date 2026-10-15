@@ -19,9 +19,10 @@ RUN groupadd -g 1000 appuser && \
 
 WORKDIR /app
 
-# Install Python requirements
+# Install Python requirements (pre-install CPU-only PyTorch to avoid 5GB+ CUDA dependencies on CPU host)
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu && \
+    pip install --no-cache-dir -r requirements.txt
 
 # Copy application source and runtime dictionaries
 COPY app/ /app/app/

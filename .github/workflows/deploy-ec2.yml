@@ -9,13 +9,25 @@ on:
       - 'signvision_isl_inference_bundle/**'
       - 'compose.yaml'
       - 'Caddyfile'
+      - 'scripts/**'
       - '.github/workflows/deploy-ec2.yml'
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Target service to build and deploy'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - backend
+          - video-service
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout exact commit
         uses: actions/checkout@v4
         with:
           fetch-depth: 2
@@ -23,90 +35,87 @@ jobs:
       - name: Determine changed components
         id: changes
         run: |
-          BACKEND_CHANGED="false"
-          VIDEO_CHANGED="false"
-          CONFIG_CHANGED="false"
-
-          if git diff --name-only HEAD~1 HEAD | grep -E '^backend/'; then
-            BACKEND_CHANGED="true"
-          fi
-          if git diff --name-only HEAD~1 HEAD | grep -E '^(video-service/|signvision_isl_inference_bundle/)'; then
-            VIDEO_CHANGED="true"
-          fi
-          if git diff --name-only HEAD~1 HEAD | grep -E '^(compose\.yaml|Caddyfile|\.github/)'; then
-            CONFIG_CHANGED="true"
-          fi
-
-          # If it's a fresh setup or config changed, build all
-          if [ "$CONFIG_CHANGED" = "true" ] || [ "$BACKEND_CHANGED" = "true" -a "$VIDEO_CHANGED" = "true" ]; then
-            TARGET_SERVICE="all"
-          elif [ "$VIDEO_CHANGED" = "true" ]; then
-            TARGET_SERVICE="video-service"
-          elif [ "$BACKEND_CHANGED" = "true" ]; then
-            TARGET_SERVICE="backend"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TARGET_SERVICE="${{ github.event.inputs.target }}"
           else
-            TARGET_SERVICE="all"
+            BACKEND_CHANGED="false"
+            VIDEO_CHANGED="false"
+            CONFIG_CHANGED="false"
+
+            if git diff --name-only HEAD~1 HEAD | grep -E '^backend/'; then
+              BACKEND_CHANGED="true"
+            fi
+            if git diff --name-only HEAD~1 HEAD | grep -E '^(video-service/|signvision_isl_inference_bundle/)'; then
+              VIDEO_CHANGED="true"
+            fi
+            if git diff --name-only HEAD~1 HEAD | grep -E '^(compose\.yaml|Caddyfile|scripts/|\.github/)'; then
+              CONFIG_CHANGED="true"
+            fi
+
+            if [ "$CONFIG_CHANGED" = "true" ] || [ "$BACKEND_CHANGED" = "true" -a "$VIDEO_CHANGED" = "true" ]; then
+              TARGET_SERVICE="all"
+            elif [ "$VIDEO_CHANGED" = "true" ]; then
+              TARGET_SERVICE="video-service"
+            elif [ "$BACKEND_CHANGED" = "true" ]; then
+              TARGET_SERVICE="backend"
+            else
+              TARGET_SERVICE="all"
+            fi
           fi
 
           echo "target_service=$TARGET_SERVICE" >> "$GITHUB_OUTPUT"
-          echo "Deploying target service: $TARGET_SERVICE"
+          echo "Selected deployment target: $TARGET_SERVICE"
+
+      - name: Create clean source archive for exact commit
+        run: |
+          mkdir -p /tmp/signvision_dist
+          tar --exclude='.git' \
+              --exclude='.github' \
+              --exclude='.env*' \
+              --exclude='*.pem' \
+              --exclude='*.key' \
+              --exclude='Application/node_modules' \
+              --exclude='node_modules' \
+              --exclude='__pycache__' \
+              --exclude='.venv' \
+              -czf /tmp/signvision_dist/release.tar.gz .
+          ls -lh /tmp/signvision_dist/release.tar.gz
 
       - name: Deploy to EC2 via SSH
         env:
-          SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY || secrets.EC2_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.EC2_KNOWN_HOSTS }}
           EC2_HOST: ${{ vars.EC2_HOST || '35.154.167.249' }}
           EC2_USER: ${{ vars.EC2_USER || 'ubuntu' }}
+          DEPLOY_PATH: ${{ vars.EC2_DEPLOY_PATH || '/opt/signvision' }}
           TARGET: ${{ steps.changes.outputs.target_service }}
           COMMIT_SHA: ${{ github.sha }}
         run: |
           mkdir -p ~/.ssh
-          echo "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 700 ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts 2>/dev/null
 
-          echo "Connecting to $EC2_USER@$EC2_HOST..."
+          if [ -n "$KNOWN_HOSTS" ]; then
+            echo "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else
+            ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts
+          fi
+          chmod 644 ~/.ssh/known_hosts
+
+          echo "Uploading source archive to $EC2_USER@$EC2_HOST:/tmp/..."
+          scp -i ~/.ssh/deploy_key /tmp/signvision_dist/release.tar.gz "$EC2_USER@$EC2_HOST":/tmp/signvision-${COMMIT_SHA}.tar.gz
+
+          echo "Executing remote deployment script on EC2..."
           ssh -i ~/.ssh/deploy_key "$EC2_USER@$EC2_HOST" "bash -s" << EOF
             set -euo pipefail
-            cd /opt/signvision
+            sudo mkdir -p "$DEPLOY_PATH"
+            sudo chown -R "$EC2_USER:$EC2_USER" "$DEPLOY_PATH"
 
-            # Pull latest changes from git
-            echo "Updating code to commit $COMMIT_SHA..."
-            if [ -d .git ]; then
-              git fetch origin main
-              git reset --hard origin/main
-            else
-              git clone https://github.com/Pruthviraj141/Signvision.git .
-            fi
+            tar -xzf "/tmp/signvision-${COMMIT_SHA}.tar.gz" -C "$DEPLOY_PATH"
+            rm -f "/tmp/signvision-${COMMIT_SHA}.tar.gz"
 
-            # Independent service build and deployment
-            echo "Deploying target: $TARGET"
-            if [ "$TARGET" = "video-service" ]; then
-              echo "Rebuilding and restarting ONLY video-service..."
-              docker compose build video-service
-              docker compose up -d --no-deps video-service
-            elif [ "$TARGET" = "backend" ]; then
-              echo "Rebuilding and restarting ONLY backend..."
-              docker compose build backend
-              docker compose up -d --no-deps backend
-            else
-              echo "Building and updating full stack..."
-              docker compose build
-              docker compose up -d --remove-orphans
-            fi
-
-            # Health verification
-            echo "Verifying health checks..."
-            for i in {1..20}; do
-              if curl -s -f http://127.0.0.1/core/health > /dev/null 2>&1 && curl -s -f http://127.0.0.1/video/health > /dev/null 2>&1; then
-                echo "=== DEPLOYMENT VERIFIED HEALTHY ==="
-                docker compose ps
-                exit 0
-              fi
-              echo "Waiting for healthy containers (\$i/20)..."
-              sleep 4
-            done
-
-            echo "Health verification failed!"
-            docker compose logs --tail=50
-            exit 1
+            chmod +x "$DEPLOY_PATH/scripts/deploy-ec2.sh"
+            export EC2_DEPLOY_PATH="$DEPLOY_PATH"
+            "$DEPLOY_PATH/scripts/deploy-ec2.sh" "$TARGET" "$COMMIT_SHA"
           EOF

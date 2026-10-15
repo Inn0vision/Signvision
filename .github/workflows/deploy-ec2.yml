@@ -44,8 +44,6 @@ jobs:
           tags: |
             ${{ steps.login-ecr.outputs.registry }}/signvision-backend:${{ github.sha }}
             ${{ steps.login-ecr.outputs.registry }}/signvision-backend:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
 
       - name: Build and Push Video Service Image
         uses: docker/build-push-action@v5
@@ -56,8 +54,6 @@ jobs:
           tags: |
             ${{ steps.login-ecr.outputs.registry }}/signvision-video-service:${{ github.sha }}
             ${{ steps.login-ecr.outputs.registry }}/signvision-video-service:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
 
       - name: Trigger EC2 Deployment via SSM Run Command
         run: |

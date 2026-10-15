@@ -66,6 +66,22 @@ jobs:
           echo "target_service=$TARGET_SERVICE" >> "$GITHUB_OUTPUT"
           echo "Selected deployment target: $TARGET_SERVICE"
 
+      - name: Set up Node.js for Web Frontend
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: Application/package.json
+
+      - name: Build Web Frontend Export
+        env:
+          EXPO_PUBLIC_CORE_API_URL: http://${{ vars.EC2_HOST || '35.154.167.249' }}/core
+          EXPO_PUBLIC_VIDEO_API_URL: http://${{ vars.EC2_HOST || '35.154.167.249' }}/video
+        run: |
+          cd Application
+          npm ci || npm install
+          npx expo export --platform web --clear
+
       - name: Create clean source archive for exact commit
         run: |
           mkdir -p /tmp/signvision_dist

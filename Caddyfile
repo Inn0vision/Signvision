@@ -23,8 +23,10 @@
         }
     }
 
-    # Root status check
+    # Serve Visual SignVision SPA Web App
     handle {
-        respond "SignVision Gateway Active" 200
+        root * /srv
+        try_files {path} /index.html
+        file_server
     }
 }

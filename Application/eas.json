@@ -17,10 +17,21 @@
       }
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_CORE_API_URL": "http://35.154.167.249/core",
+        "EXPO_PUBLIC_VIDEO_API_URL": "http://35.154.167.249/video"
+      }
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_CORE_API_URL": "http://35.154.167.249/core",
+        "EXPO_PUBLIC_VIDEO_API_URL": "http://35.154.167.249/video"
+      }
     }
   },
   "submit": {

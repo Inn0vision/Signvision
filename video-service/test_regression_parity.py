@@ -42,9 +42,6 @@ def test_feature_parity_numerical_tolerance(engine):
     PART 2 Parity Check: Verifies that standalone uniform frame feature extraction
     matches engine.extractor.extract_video_features with documented tolerance (< 1e-5).
     """
-    if not DATA_RAW_DIR.exists():
-        pytest.skip(f"Raw dataset videos not found at {DATA_RAW_DIR}. Skipping parity test in CI.")
-
     classes_to_test = ["GOOD_MORNING", "THANK_YOU", "WORK", "HOW_ARE_YOU", "PLEASE"]
     tested_count = 0
 

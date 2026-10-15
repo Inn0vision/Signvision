@@ -17,23 +17,10 @@
       }
     },
     "preview": {
-      "distribution": "internal",
-      "developmentClient": false,
-      "android": {
-        "buildType": "apk",
-        "gradleCommand": ":app:assembleRelease"
-      },
-      "env": {
-        "EXPO_PUBLIC_CORE_API_URL": "https://signvision.work.gd/core",
-        "EXPO_PUBLIC_VIDEO_API_URL": "https://signvision.work.gd/video"
-      }
+      "distribution": "internal"
     },
     "production": {
-      "autoIncrement": true,
-      "env": {
-        "EXPO_PUBLIC_CORE_API_URL": "https://signvision.work.gd/core",
-        "EXPO_PUBLIC_VIDEO_API_URL": "https://signvision.work.gd/video"
-      }
+      "autoIncrement": true
     }
   },
   "submit": {

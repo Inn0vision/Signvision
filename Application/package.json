@@ -16,7 +16,6 @@
     "expo": "55.0.10-canary-20260327-0789fbc",
     "expo-asset": "^55.0.11-canary-20260327-0789fbc",
     "expo-camera": "55.0.12-canary-20260327-0789fbc",
-    "expo-dev-client": "55.0.20-canary-20260327-0789fbc",
     "expo-speech-recognition": "^3.1.2",
     "expo-status-bar": "55.0.5-canary-20260327-0789fbc",
     "react": "19.2.0",

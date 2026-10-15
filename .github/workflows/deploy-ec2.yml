@@ -1,0 +1,104 @@
+name: SignVision Deploy to EC2
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'backend/**'
+      - 'video-service/**'
+      - 'signvision_isl_inference_bundle/**'
+      - 'compose.prod.yaml'
+      - 'Caddyfile'
+      - '.github/workflows/deploy-ec2.yml'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN || 'arn:aws:iam::777724728464:role/SignVisionGitHubDeployRole' }}
+          aws-region: ${{ vars.AWS_REGION || 'ap-south-1' }}
+
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and Push Core Backend Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: |
+            ${{ steps.login-ecr.outputs.registry }}/signvision-backend:${{ github.sha }}
+            ${{ steps.login-ecr.outputs.registry }}/signvision-backend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and Push Video Service Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./video-service/Dockerfile
+          push: true
+          tags: |
+            ${{ steps.login-ecr.outputs.registry }}/signvision-video-service:${{ github.sha }}
+            ${{ steps.login-ecr.outputs.registry }}/signvision-video-service:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Trigger EC2 Deployment via SSM Run Command
+        run: |
+          INSTANCE_ID="${{ vars.EC2_INSTANCE_ID || 'i-0d53d656ca85c6851' }}"
+          REGISTRY="${{ steps.login-ecr.outputs.registry }}"
+          BACKEND_IMAGE="${REGISTRY}/signvision-backend:${{ github.sha }}"
+          VIDEO_IMAGE="${REGISTRY}/signvision-video-service:${{ github.sha }}"
+
+          echo "Initiating SSM deployment on instance $INSTANCE_ID..."
+          CMD_ID=$(aws ssm send-command \
+            --instance-ids "$INSTANCE_ID" \
+            --document-name "AWS-RunShellScript" \
+            --comment "SignVision Deploy Commit ${{ github.sha }}" \
+            --parameters "commands=[\"sudo /opt/signvision/deploy.sh '$BACKEND_IMAGE' '$VIDEO_IMAGE'\"]" \
+            --query "Command.CommandId" \
+            --output text)
+
+          echo "SSM Command ID: $CMD_ID"
+
+          # Poll for execution result
+          STATUS="InProgress"
+          for i in {1..30}; do
+            sleep 6
+            INVOCATION=$(aws ssm get-command-invocation \
+              --command-id "$CMD_ID" \
+              --instance-id "$INSTANCE_ID" \
+              --output json 2>/dev/null || echo '{"Status":"InProgress"}')
+            
+            STATUS=$(echo "$INVOCATION" | jq -r '.Status // "InProgress"')
+            echo "Deployment progress ($i/30): $STATUS"
+
+            if [ "$STATUS" = "Success" ]; then
+              echo "=== DEPLOYMENT SUCCEEDED ==="
+              echo "$INVOCATION" | jq -r '.StandardOutputContent'
+              exit 0
+            elif [ "$STATUS" = "Failed" ] || [ "$STATUS" = "Cancelled" ] || [ "$STATUS" = "TimedOut" ]; then
+              echo "=== DEPLOYMENT FAILED with status $STATUS ==="
+              echo "$INVOCATION" | jq -r '.StandardErrorContent'
+              exit 1
+            fi
+          done
+
+          echo "SSM Command monitoring timed out after 3 minutes."
+          exit 1

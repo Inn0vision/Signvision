@@ -1,0 +1,95 @@
+services:
+  backend:
+    image: ${BACKEND_IMAGE}
+    container_name: signvision-backend
+    restart: unless-stopped
+    expose:
+      - "8000"
+    env_file:
+      - path: /etc/signvision/backend.env
+        required: false
+    environment:
+      - PORT=8000
+      - REDIS_URL=redis://redis:6379/0
+      - REDIS_CACHE_ENABLED=true
+      - REDIS_CACHE_TTL=604800
+      - TRANSLATION_CACHE_VERSION=v1
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - signvision-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  video-service:
+    image: ${VIDEO_IMAGE}
+    container_name: signvision-video-service
+    restart: unless-stopped
+    expose:
+      - "8001"
+    env_file:
+      - path: /etc/signvision/video.env
+        required: false
+    environment:
+      - PORT=8001
+      - SIGN_CONFIDENCE_THRESHOLD=0.50
+      - MIN_HAND_COVERAGE=0.50
+    networks:
+      - signvision-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: signvision-redis
+    restart: unless-stopped
+    command: redis-server --maxmemory 128mb --maxmemory-policy allkeys-lru --save "" --appendonly no
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - signvision-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+
+  caddy:
+    image: caddy:2.8-alpine
+    container_name: signvision-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /opt/signvision/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - backend
+      - video-service
+    networks:
+      - signvision-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  caddy_data:
+  caddy_config:
+
+networks:
+  signvision-network:
+    driver: bridge

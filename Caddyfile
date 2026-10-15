@@ -1,0 +1,30 @@
+:80 {
+    log {
+        output stdout
+        format console
+    }
+
+    # Route /core/* to Core NLP Backend (strips /core prefix)
+    handle_path /core/* {
+        reverse_proxy backend:8000 {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+        }
+    }
+
+    # Route /video/* to Video Inference Microservice (strips /video prefix)
+    handle_path /video/* {
+        reverse_proxy video-service:8001 {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            transport http {
+                response_header_timeout 60s
+            }
+        }
+    }
+
+    # Root status check
+    handle {
+        respond "SignVision Gateway Active" 200
+    }
+}

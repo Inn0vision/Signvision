@@ -105,3 +105,4 @@ Thumbs.db
 !.vscode/settings.json
 !.vscode/launch.json
 .ipynb_checkpoints/
+*.pem

@@ -5,20 +5,19 @@ services:
       dockerfile: Dockerfile
     container_name: signvision-backend
     restart: unless-stopped
-    ports:
-      - "8000:8000"
+    expose:
+      - "8000"
+    env_file:
+      - path: /etc/signvision/backend.env
+        required: false
+      - path: .env
+        required: false
     environment:
       - PORT=8000
       - REDIS_URL=redis://redis:6379/0
       - REDIS_CACHE_ENABLED=true
       - REDIS_CACHE_TTL=604800
       - TRANSLATION_CACHE_VERSION=v1
-      - GROQ_API_KEY=${GROQ_API_KEY:-}
-      - GROQ_API_KEY_FALLBACK_1=${GROQ_API_KEY_FALLBACK_1:-}
-      - GROQ_API_KEY_FALLBACK_2=${GROQ_API_KEY_FALLBACK_2:-}
-      - GROQ_API_KEY_FALLBACK_3=${GROQ_API_KEY_FALLBACK_3:-}
-      - GROQ_API_KEYS=${GROQ_API_KEYS:-}
-      - GROQ_MODEL=${GROQ_MODEL:-openai/gpt-oss-20b}
     depends_on:
       redis:
         condition: service_healthy
@@ -36,8 +35,13 @@ services:
       dockerfile: video-service/Dockerfile
     container_name: signvision-video-service
     restart: unless-stopped
-    ports:
-      - "8001:8001"
+    expose:
+      - "8001"
+    env_file:
+      - path: /etc/signvision/video.env
+        required: false
+      - path: .env
+        required: false
     environment:
       - PORT=8001
       - SIGN_CONFIDENCE_THRESHOLD=0.50
@@ -74,8 +78,11 @@ services:
     restart: unless-stopped
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
     depends_on:
       - backend
       - video-service
@@ -86,6 +93,10 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+
+volumes:
+  caddy_data:
+  caddy_config:
 
 networks:
   signvision-network:

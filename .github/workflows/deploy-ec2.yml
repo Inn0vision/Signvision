@@ -1,4 +1,4 @@
-name: SignVision Deploy to EC2
+name: SignVision Deploy to EC2 (Direct SSH & Docker Compose)
 
 on:
   push:
@@ -7,94 +7,106 @@ on:
       - 'backend/**'
       - 'video-service/**'
       - 'signvision_isl_inference_bundle/**'
-      - 'compose.prod.yaml'
+      - 'compose.yaml'
       - 'Caddyfile'
       - '.github/workflows/deploy-ec2.yml'
 
-permissions:
-  id-token: write
-  contents: read
-
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Configure AWS credentials via OIDC
-        uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ vars.AWS_ROLE_ARN || 'arn:aws:iam::777724728464:role/SignVisionGitHubDeployRole' }}
-          aws-region: ${{ vars.AWS_REGION || 'ap-south-1' }}
+          fetch-depth: 2
 
-      - name: Log in to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Build and Push Core Backend Image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./backend
-          file: ./backend/Dockerfile
-          push: true
-          tags: |
-            ${{ steps.login-ecr.outputs.registry }}/signvision-backend:${{ github.sha }}
-            ${{ steps.login-ecr.outputs.registry }}/signvision-backend:latest
-
-      - name: Build and Push Video Service Image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./video-service/Dockerfile
-          push: true
-          tags: |
-            ${{ steps.login-ecr.outputs.registry }}/signvision-video-service:${{ github.sha }}
-            ${{ steps.login-ecr.outputs.registry }}/signvision-video-service:latest
-
-      - name: Trigger EC2 Deployment via SSM Run Command
+      - name: Determine changed components
+        id: changes
         run: |
-          INSTANCE_ID="${{ vars.EC2_INSTANCE_ID || 'i-0d53d656ca85c6851' }}"
-          REGISTRY="${{ steps.login-ecr.outputs.registry }}"
-          BACKEND_IMAGE="${REGISTRY}/signvision-backend:${{ github.sha }}"
-          VIDEO_IMAGE="${REGISTRY}/signvision-video-service:${{ github.sha }}"
+          BACKEND_CHANGED="false"
+          VIDEO_CHANGED="false"
+          CONFIG_CHANGED="false"
 
-          echo "Initiating SSM deployment on instance $INSTANCE_ID..."
-          CMD_ID=$(aws ssm send-command \
-            --instance-ids "$INSTANCE_ID" \
-            --document-name "AWS-RunShellScript" \
-            --comment "SignVision Deploy Commit ${{ github.sha }}" \
-            --parameters "commands=[\"sudo /opt/signvision/deploy.sh '$BACKEND_IMAGE' '$VIDEO_IMAGE'\"]" \
-            --query "Command.CommandId" \
-            --output text)
+          if git diff --name-only HEAD~1 HEAD | grep -E '^backend/'; then
+            BACKEND_CHANGED="true"
+          fi
+          if git diff --name-only HEAD~1 HEAD | grep -E '^(video-service/|signvision_isl_inference_bundle/)'; then
+            VIDEO_CHANGED="true"
+          fi
+          if git diff --name-only HEAD~1 HEAD | grep -E '^(compose\.yaml|Caddyfile|\.github/)'; then
+            CONFIG_CHANGED="true"
+          fi
 
-          echo "SSM Command ID: $CMD_ID"
+          # If it's a fresh setup or config changed, build all
+          if [ "$CONFIG_CHANGED" = "true" ] || [ "$BACKEND_CHANGED" = "true" -a "$VIDEO_CHANGED" = "true" ]; then
+            TARGET_SERVICE="all"
+          elif [ "$VIDEO_CHANGED" = "true" ]; then
+            TARGET_SERVICE="video-service"
+          elif [ "$BACKEND_CHANGED" = "true" ]; then
+            TARGET_SERVICE="backend"
+          else
+            TARGET_SERVICE="all"
+          fi
 
-          # Poll for execution result
-          STATUS="InProgress"
-          for i in {1..30}; do
-            sleep 6
-            INVOCATION=$(aws ssm get-command-invocation \
-              --command-id "$CMD_ID" \
-              --instance-id "$INSTANCE_ID" \
-              --output json 2>/dev/null || echo '{"Status":"InProgress"}')
-            
-            STATUS=$(echo "$INVOCATION" | jq -r '.Status // "InProgress"')
-            echo "Deployment progress ($i/30): $STATUS"
+          echo "target_service=$TARGET_SERVICE" >> "$GITHUB_OUTPUT"
+          echo "Deploying target service: $TARGET_SERVICE"
 
-            if [ "$STATUS" = "Success" ]; then
-              echo "=== DEPLOYMENT SUCCEEDED ==="
-              echo "$INVOCATION" | jq -r '.StandardOutputContent'
-              exit 0
-            elif [ "$STATUS" = "Failed" ] || [ "$STATUS" = "Cancelled" ] || [ "$STATUS" = "TimedOut" ]; then
-              echo "=== DEPLOYMENT FAILED with status $STATUS ==="
-              echo "$INVOCATION" | jq -r '.StandardErrorContent'
-              exit 1
+      - name: Deploy to EC2 via SSH
+        env:
+          SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+          EC2_HOST: ${{ vars.EC2_HOST || '35.154.167.249' }}
+          EC2_USER: ${{ vars.EC2_USER || 'ubuntu' }}
+          TARGET: ${{ steps.changes.outputs.target_service }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+
+          echo "Connecting to $EC2_USER@$EC2_HOST..."
+          ssh -i ~/.ssh/deploy_key "$EC2_USER@$EC2_HOST" "bash -s" << EOF
+            set -euo pipefail
+            cd /opt/signvision
+
+            # Pull latest changes from git
+            echo "Updating code to commit $COMMIT_SHA..."
+            if [ -d .git ]; then
+              git fetch origin main
+              git reset --hard origin/main
+            else
+              git clone https://github.com/Pruthviraj141/Signvision.git .
             fi
-          done
 
-          echo "SSM Command monitoring timed out after 3 minutes."
-          exit 1
+            # Independent service build and deployment
+            echo "Deploying target: $TARGET"
+            if [ "$TARGET" = "video-service" ]; then
+              echo "Rebuilding and restarting ONLY video-service..."
+              docker compose build video-service
+              docker compose up -d --no-deps video-service
+            elif [ "$TARGET" = "backend" ]; then
+              echo "Rebuilding and restarting ONLY backend..."
+              docker compose build backend
+              docker compose up -d --no-deps backend
+            else
+              echo "Building and updating full stack..."
+              docker compose build
+              docker compose up -d --remove-orphans
+            fi
+
+            # Health verification
+            echo "Verifying health checks..."
+            for i in {1..20}; do
+              if curl -s -f http://127.0.0.1/core/health > /dev/null 2>&1 && curl -s -f http://127.0.0.1/video/health > /dev/null 2>&1; then
+                echo "=== DEPLOYMENT VERIFIED HEALTHY ==="
+                docker compose ps
+                exit 0
+              fi
+              echo "Waiting for healthy containers (\$i/20)..."
+              sleep 4
+            done
+
+            echo "Health verification failed!"
+            docker compose logs --tail=50
+            exit 1
+          EOF

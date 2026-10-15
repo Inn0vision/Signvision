@@ -56,10 +56,9 @@ jobs:
         run: |
           python signvision_isl_inference_bundle/smoke_test.py
 
-      - name: Validate Docker Compose Configurations
+      - name: Validate Docker Compose Configuration
         run: |
           docker compose -f compose.yaml config
-          BACKEND_IMAGE=test-backend:ci VIDEO_IMAGE=test-video:ci docker compose -f compose.prod.yaml config
 
       - name: Set up Node.js for Frontend
         uses: actions/setup-node@v4

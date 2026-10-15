@@ -8,8 +8,7 @@ pydantic-settings>=2.1.0
 python-dotenv>=1.0.0
 python-multipart>=0.0.6
 
-# SignVision AI Backends (LLMj & NLP)
-spacy>=3.7.0
+# SignVision AI Backends (LLM & NLP)
 groq>=0.4.0
 google-genai>=0.2.0
 
@@ -17,6 +16,14 @@ google-genai>=0.2.0
 sentence-transformers>=2.2.0
 chromadb>=0.4.0
 
-# Audio Processing
+# Audio Transcription (Backend STT via Google Speech Recognition)
+# NOTE: pydub requires FFmpeg to be installed on the system for audio format conversion.
+# Install FFmpeg with: sudo apt-get install ffmpeg  OR  brew install ffmpeg
 SpeechRecognition>=3.10.0
 pydub>=0.25.0
+
+# Caching
+redis>=5.0.0
+
+
+

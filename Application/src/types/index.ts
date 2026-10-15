@@ -134,6 +134,9 @@ export interface ProcessingResult {
 export interface ProcessResponse {
   success: boolean;
   text: string;
+  original_text?: string;
+  detected_language?: string;
+  translated_text?: string;
   results: ProcessingResult[];
   error?: string;
 }
@@ -147,3 +150,28 @@ export interface SignQueueItem {
 
 // Processing mode for the app
 export type ProcessingMode = 'word' | 'sentence';
+
+// Video recognition microservice response (:8001)
+export interface TranslateVideoCandidate {
+  sign: string;
+  probability: number;
+}
+
+export interface TranslateVideoResponse {
+  translation: string;
+  status?: 'CONFIDENT' | 'UNCERTAIN';
+  predicted_sign?: string;
+  raw_predicted_sign?: string;
+  confidence?: number;
+  hand_coverage?: number;
+  rejection_reason?: string;
+  status_message?: string;
+  runner_up?: { sign: string | null; probability: number } | null;
+  decision_margin?: number | null;
+  wrist_motion?: number | null;
+  gate_checks?: Record<string, { value: number; threshold: number; passed: boolean }>;
+  top_candidates?: TranslateVideoCandidate[];
+  temporal_window?: Record<string, any>;
+  inference_time_ms?: number;
+  total_processing_time_ms?: number;
+}

@@ -1,198 +1,308 @@
-import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, Animated, Text } from 'react-native';
-import { COLORS, RADII, TYPOGRAPHY, SHADOWS } from '../theme/tokens';
+import React, { useMemo } from 'react';
+import { View, StyleSheet, Text, Platform } from 'react-native';
+import { COLORS, RADII, TYPOGRAPHY } from '../theme/tokens';
+import {
+  type HandLandmarkList,
+  HAND_CONNECTIONS,
+} from '../services/handTrackingService';
 
-interface HandLandmarkOverlayProps {
+export interface HandLandmarkOverlayProps {
   isActive: boolean;
   statusText?: string;
   isRecording?: boolean;
+  detectedHands?: HandLandmarkList[];
+  viewportWidth: number;
+  viewportHeight: number;
+  isMirrored?: boolean;
 }
 
-export default function HandLandmarkOverlay({
-  isActive,
-  statusText = 'GESTURE TRACKING ACTIVE',
-  isRecording = false,
-}: HandLandmarkOverlayProps) {
-  const pulseAnim = useRef(new Animated.Value(0)).current;
-  const floatAnim = useRef(new Animated.Value(0)).current;
-  const scanAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    if (isActive) {
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(pulseAnim, { toValue: 1, duration: 1400, useNativeDriver: true }),
-          Animated.timing(pulseAnim, { toValue: 0, duration: 1400, useNativeDriver: true }),
-        ])
-      ).start();
-
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(floatAnim, { toValue: 8, duration: 1800, useNativeDriver: true }),
-          Animated.timing(floatAnim, { toValue: 0, duration: 1800, useNativeDriver: true }),
-        ])
-      ).start();
-
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(scanAnim, { toValue: 240, duration: 2200, useNativeDriver: true }),
-          Animated.timing(scanAnim, { toValue: 0, duration: 2200, useNativeDriver: true }),
-        ])
-      ).start();
-    } else {
-      pulseAnim.stopAnimation();
-      floatAnim.stopAnimation();
-      scanAnim.stopAnimation();
-      pulseAnim.setValue(0);
-      floatAnim.setValue(0);
-      scanAnim.setValue(0);
-    }
-  }, [isActive, pulseAnim, floatAnim, scanAnim]);
-
-  if (!isActive) return null;
-
-  const pointPositions = [
-    { top: 0, left: 40 }, 
-    { top: -20, left: 10 }, 
-    { top: -30, left: -20 }, 
-    { top: -20, left: -50 }, 
-    { top: 0, left: -70 }, 
-    { top: 50, left: -10 }, 
-    { top: 80, left: 0 }, 
-  ];
-
-  const primaryColor = isRecording ? COLORS.ruby : COLORS.cyan;
-  const primaryLight = isRecording ? '#FDA4AF' : COLORS.cyanLight;
+/**
+ * Single anatomical bone connecting two MediaPipe landmarks in viewport pixel space.
+ */
+function LandmarkBone({
+  x1,
+  y1,
+  x2,
+  y2,
+  color,
+}: {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  color: string;
+}) {
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const length = Math.sqrt(dx * dx + dy * dy);
+  const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
+  const cx = (x1 + x2) / 2;
+  const cy = (y1 + y2) / 2;
 
   return (
-    <View style={styles.container} pointerEvents="none">
-      <Animated.View
+    <View
+      style={{
+        position: 'absolute',
+        left: cx - length / 2,
+        top: cy - 1,
+        width: length,
+        height: 2,
+        backgroundColor: color,
+        transform: [{ rotate: `${angle}deg` }],
+        borderRadius: 1,
+      }}
+    />
+  );
+}
+
+/**
+ * Real-time MediaPipe Hand Landmark Overlay.
+ * 
+ * Displays the 21 actual anatomical keypoints and skeletal connections
+ * for up to 2 visible hands detected in the live camera feed.
+ */
+export default function HandLandmarkOverlay({
+  isActive,
+  statusText,
+  isRecording = false,
+  detectedHands = [],
+  viewportWidth,
+  viewportHeight,
+  isMirrored = false,
+}: HandLandmarkOverlayProps) {
+  if (!isActive || viewportWidth <= 0 || viewportHeight <= 0) return null;
+
+  const hasDetectedHands = detectedHands.length > 0;
+  const boneColor = isRecording ? COLORS.ruby : COLORS.emerald;
+  const jointColor = isRecording ? '#FDA4AF' : COLORS.emeraldLight;
+
+  // Determine contextual guidance status
+  const effectiveStatus = useMemo(() => {
+    if (statusText) return statusText;
+    if (hasDetectedHands) {
+      return detectedHands.length === 1 ? '1 Hand detected' : '2 Hands detected';
+    }
+    return 'Show your hands';
+  }, [statusText, hasDetectedHands, detectedHands.length]);
+
+  return (
+    <View
+      style={[
+        styles.container,
+        {
+          width: viewportWidth,
+          height: viewportHeight,
+        },
+      ]}
+      pointerEvents="none"
+    >
+      {/* 1. Real MediaPipe 21-Joint Skeletal Overlay */}
+      {detectedHands.map((hand, handIdx) => {
+        // Map 21 normalized landmarks (0..1) to viewport pixel space
+        const pixelPoints = hand.map((pt) => ({
+          x: (isMirrored ? 1 - pt.x : pt.x) * viewportWidth,
+          y: pt.y * viewportHeight,
+        }));
+
+        return (
+          <View key={`hand-${handIdx}`} style={StyleSheet.absoluteFillObject} pointerEvents="none">
+            {/* Skeletal Bones */}
+            {HAND_CONNECTIONS.map(([idx1, idx2], connIdx) => {
+              const p1 = pixelPoints[idx1];
+              const p2 = pixelPoints[idx2];
+              if (!p1 || !p2) return null;
+
+              return (
+                <LandmarkBone
+                  key={`bone-${handIdx}-${connIdx}`}
+                  x1={p1.x}
+                  y1={p1.y}
+                  x2={p2.x}
+                  y2={p2.y}
+                  color={boneColor}
+                />
+              );
+            })}
+
+            {/* 21 Keypoint Joint Markers */}
+            {pixelPoints.map((pt, ptIdx) => {
+              const isTip = [4, 8, 12, 16, 20].includes(ptIdx);
+              const isWrist = ptIdx === 0;
+              const size = isTip ? 6.5 : isWrist ? 7 : 4.5;
+
+              return (
+                <View
+                  key={`joint-${handIdx}-${ptIdx}`}
+                  style={[
+                    styles.jointMarker,
+                    {
+                      left: pt.x - size / 2,
+                      top: pt.y - size / 2,
+                      width: size,
+                      height: size,
+                      borderRadius: size / 2,
+                      backgroundColor: isTip ? '#FFFFFF' : jointColor,
+                      borderColor: boneColor,
+                      borderWidth: isTip ? 1.5 : 1,
+                    },
+                  ]}
+                />
+              );
+            })}
+          </View>
+        );
+      })}
+
+      {/* 2. Unobtrusive Signing Frame Corner Brackets */}
+      <View
         style={[
-          styles.trackingBox,
+          styles.guideReticle,
           {
-            borderColor: isRecording ? 'rgba(244, 63, 94, 0.3)' : 'rgba(6, 182, 212, 0.3)',
-            backgroundColor: isRecording ? 'rgba(244, 63, 94, 0.04)' : 'rgba(6, 182, 212, 0.04)',
-            transform: [{ translateY: floatAnim }],
+            borderColor: isRecording ? 'rgba(244, 63, 94, 0.4)' : 'rgba(255, 255, 255, 0.2)',
           },
         ]}
       >
-        {/* Laser Scanline */}
-        <Animated.View
+        <View
           style={[
-            styles.scanLine,
+            styles.cornerTopLeft,
+            { borderColor: isRecording ? COLORS.ruby : 'rgba(255, 255, 255, 0.85)' },
+          ]}
+        />
+        <View
+          style={[
+            styles.cornerTopRight,
+            { borderColor: isRecording ? COLORS.ruby : 'rgba(255, 255, 255, 0.85)' },
+          ]}
+        />
+        <View
+          style={[
+            styles.cornerBottomLeft,
+            { borderColor: isRecording ? COLORS.ruby : 'rgba(255, 255, 255, 0.85)' },
+          ]}
+        />
+        <View
+          style={[
+            styles.cornerBottomRight,
+            { borderColor: isRecording ? COLORS.ruby : 'rgba(255, 255, 255, 0.85)' },
+          ]}
+        />
+      </View>
+
+      {/* 3. Guidance Status Pill */}
+      <View style={styles.guidancePill}>
+        <View
+          style={[
+            styles.statusDot,
             {
-              backgroundColor: primaryColor,
-              shadowColor: primaryColor,
-              transform: [{ translateY: scanAnim }],
+              backgroundColor: isRecording
+                ? COLORS.ruby
+                : hasDetectedHands
+                ? COLORS.emerald
+                : COLORS.cyan,
             },
           ]}
         />
-
-        {/* Hand Landmark Keypoints */}
-        <View style={styles.pointsContainer}>
-          {pointPositions.map((pos, i) => (
-            <Animated.View
-              key={i}
-              style={[
-                styles.point,
-                {
-                  backgroundColor: primaryColor,
-                  transform: [{ translateX: pos.left }, { translateY: pos.top }],
-                  opacity: pulseAnim.interpolate({ inputRange: [0, 1], outputRange: [0.4, 0.95] }),
-                },
-              ]}
-            />
-          ))}
-          <Animated.View style={[styles.line, { backgroundColor: isRecording ? 'rgba(244, 63, 94, 0.25)' : 'rgba(6, 182, 212, 0.25)', transform: [{ rotate: '45deg' }, { translateY: 20 }] }]} />
-          <Animated.View style={[styles.line, { backgroundColor: isRecording ? 'rgba(244, 63, 94, 0.25)' : 'rgba(6, 182, 212, 0.25)', transform: [{ rotate: '-45deg' }, { translateY: 20 }] }]} />
-        </View>
-
-        {/* Cybernetic HUD Corner Brackets */}
-        <View style={[styles.cornerTopLeft, { borderColor: primaryColor }]} />
-        <View style={[styles.cornerTopRight, { borderColor: primaryColor }]} />
-        <View style={[styles.cornerBottomLeft, { borderColor: primaryColor }]} />
-        <View style={[styles.cornerBottomRight, { borderColor: primaryColor }]} />
-
-        {/* Telemetry Status Bar */}
-        <View style={styles.telemetryBar}>
-          <View style={[styles.telemetryDot, { backgroundColor: primaryColor }]} />
-          <Animated.Text style={[styles.trackingText, { color: primaryLight, opacity: pulseAnim.interpolate({ inputRange: [0, 1], outputRange: [0.6, 1] }) }]}>
-            {statusText}
-          </Animated.Text>
-        </View>
-      </Animated.View>
+        <Text style={styles.guidanceText} numberOfLines={1}>
+          {effectiveStatus}
+        </Text>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    ...StyleSheet.absoluteFillObject,
+    position: 'absolute',
+    top: 0,
+    left: 0,
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 15,
   },
-  trackingBox: {
-    width: 280,
-    height: 360,
-    justifyContent: 'center',
-    alignItems: 'center',
+  jointMarker: {
+    position: 'absolute',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.5,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  guideReticle: {
+    position: 'absolute',
+    width: '88%',
+    height: '84%',
+    borderRadius: RADII.xl,
     borderWidth: 1,
-    borderRadius: RADII.lg,
-    overflow: 'hidden',
+    borderStyle: 'dashed',
   },
-  scanLine: {
+  cornerTopLeft: {
     position: 'absolute',
-    top: 20,
-    width: '100%',
-    height: 2,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 8,
-    elevation: 4,
+    top: -2,
+    left: -2,
+    width: 22,
+    height: 22,
+    borderTopWidth: 3,
+    borderLeftWidth: 3,
+    borderTopLeftRadius: RADII.md,
   },
-  pointsContainer: {
+  cornerTopRight: {
     position: 'absolute',
-    width: 10,
-    height: 10,
+    top: -2,
+    right: -2,
+    width: 22,
+    height: 22,
+    borderTopWidth: 3,
+    borderRightWidth: 3,
+    borderTopRightRadius: RADII.md,
   },
-  point: {
+  cornerBottomLeft: {
     position: 'absolute',
-    width: 9,
-    height: 9,
-    borderRadius: RADII.full,
+    bottom: -2,
+    left: -2,
+    width: 22,
+    height: 22,
+    borderBottomWidth: 3,
+    borderLeftWidth: 3,
+    borderBottomLeftRadius: RADII.md,
   },
-  line: {
+  cornerBottomRight: {
     position: 'absolute',
-    width: 2,
-    height: 80,
+    bottom: -2,
+    right: -2,
+    width: 22,
+    height: 22,
+    borderBottomWidth: 3,
+    borderRightWidth: 3,
+    borderBottomRightRadius: RADII.md,
   },
-  telemetryBar: {
+  guidancePill: {
     position: 'absolute',
-    bottom: 12,
+    bottom: 14,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(7, 8, 13, 0.75)',
-    paddingHorizontal: 12,
-    paddingVertical: 5,
+    backgroundColor: 'rgba(11, 14, 20, 0.88)',
+    paddingHorizontal: 14,
+    paddingVertical: 6,
     borderRadius: RADII.full,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.16)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  telemetryDot: {
+  statusDot: {
     width: 6,
     height: 6,
-    borderRadius: RADII.full,
-    marginRight: 6,
+    borderRadius: 3,
+    marginRight: 8,
   },
-  trackingText: {
+  guidanceText: {
     ...TYPOGRAPHY.caption,
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 1.2,
-    textTransform: 'uppercase',
+    color: COLORS.textPrimary,
+    fontSize: 12,
+    fontWeight: '600',
+    letterSpacing: 0.3,
   },
-  cornerTopLeft: { position: 'absolute', top: 0, left: 0, width: 22, height: 22, borderTopWidth: 3, borderLeftWidth: 3, borderTopLeftRadius: RADII.sm },
-  cornerTopRight: { position: 'absolute', top: 0, right: 0, width: 22, height: 22, borderTopWidth: 3, borderRightWidth: 3, borderTopRightRadius: RADII.sm },
-  cornerBottomLeft: { position: 'absolute', bottom: 0, left: 0, width: 22, height: 22, borderBottomWidth: 3, borderLeftWidth: 3, borderBottomLeftRadius: RADII.sm },
-  cornerBottomRight: { position: 'absolute', bottom: 0, right: 0, width: 22, height: 22, borderBottomWidth: 3, borderRightWidth: 3, borderBottomRightRadius: RADII.sm },
 });

@@ -1,19 +1,22 @@
 # SignVision — Video Microservice Technical Specification (`video-service_info.md`)
 
-> **Technical specification for the Gemini 3.6 Flash multimodal video ingestion service, prompt architecture, and lifecycle management.**
+> **Technical specification for the local ISL recognition microservice (MediaPipe + Scikit-Learn), thresholding, and lifecycle management.**
 
 ---
 
 ## ⚡ 1. Brief Summary (TL;DR)
 
-The Video Microservice (`video-service/`) runs on port 8001 and provides sign-to-English translation by interpreting continuous sign language video via Google Gemini 3.6 Flash multimodal AI.
+The Video Microservice (`video-service/`) runs on port 8001 and provides sign-to-English translation by interpreting sign language video clips via a locally trained MediaPipe + Scikit-Learn model.
 
 ### Technical Metrics
 - **Runtime**: FastAPI / Uvicorn (Port 8001, bound to `0.0.0.0`)
-- **Model**: `gemini-3.6-flash`
-- **Supported Formats**: `.mp4` (Android/iOS hardware h.264), `.webm` (Web VP8/VP9)
-- **Typical Latency**: 2.5s – 5.0s (depending on video duration and network upload speed)
-- **Garbage Collection**: Deterministic cleanup of both local temporary files and remote Google File API assets.
+- **Model**: Scikit-Learn pipeline (StandardScaler + RBF-SVM / LogisticRegression) trained on 23 ISL gesture classes.
+- **Feature Extraction**: Google MediaPipe HandLandmarker Tasks API (`models/hand_landmarker.task`), 16 uniform sampled frames, 154 features/frame (77 per hand), 2464 total clip dimensions.
+- **Hardware Requirement**: Pure CPU execution (no GPU required).
+- **Supported Formats**: `.mp4`, `.webm`, `.mov`, `.avi`, `.mkv`.
+- **Default Acceptance Threshold**: 0.50 (50% probability requirement).
+- **Hand Coverage Gating**: 0.50 (minimum 50% of frames must contain detected hands).
+- **Typical Latency**: ~200ms – 600ms on CPU.
 
 ---
 
@@ -21,71 +24,19 @@ The Video Microservice (`video-service/`) runs on port 8001 and provides sign-to
 
 ### 2.1 File Ingestion & Storage Pipeline
 
-When a client submits a video via `POST /api/translate-video`, the service executes the following sequence:
+When a client submits a video via `POST /api/translate-video`:
 
-```python
-@app.post("/api/translate-video")
-async def translate_video(video: UploadFile = File(...)):
-    # 1. Generate unique temporary path
-    ext = os.path.splitext(video.filename)[1] or ".mp4"
-    temp_filename = f"/tmp/{uuid.uuid4()}{ext}"
-    
-    # 2. Stream multipart chunks to disk
-    with open(temp_filename, "wb") as buffer:
-        shutil.copyfileobj(video.file, buffer)
-        
-    try:
-        # 3. Upload to Google GenAI File API
-        uploaded_file = client.files.upload(file=temp_filename)
-        
-        # 4. Poll until video processing state is ACTIVE
-        while uploaded_file.state.name == "PROCESSING":
-            time.sleep(1)
-            uploaded_file = client.files.get(name=uploaded_file.name)
-            
-        if uploaded_file.state.name == "FAILED":
-            raise HTTPException(status_code=500, detail="Video processing failed")
-            
-        # 5. Multimodal Inference
-        response = client.models.generate_content(
-            model="gemini-3.6-flash",
-            contents=[uploaded_file, PROMPT]
-        )
-        return {"translation": response.text.strip()}
-        
-    finally:
-        # 6. Guaranteed Cleanup
-        if os.path.exists(temp_filename):
-            os.remove(temp_filename)
-        if uploaded_file:
-            client.files.delete(name=uploaded_file.name)
-```
+1. Unique temporary file `/tmp/<uuid>.<ext>` is created.
+2. Multipart video chunks are saved.
+3. In `asyncio.to_thread()`, `engine.predict_video()` decodes video frames with OpenCV, uniformly samples 16 frames, extracts MediaPipe landmarks, and calls `pipeline.predict_proba()`.
+4. Evaluates probability of predicted class against `SIGN_CONFIDENCE_THRESHOLD` (0.50) and hand coverage against `MIN_HAND_COVERAGE` (0.50).
+5. If confident, returns `{ "translation": "Good morning", "status": "CONFIDENT", "confidence": 0.88, ... }`.
+6. If uncertain, returns `{ "translation": "UNCLEAR SIGN SEQUENCE", "status": "UNCERTAIN", "status_message": "..." }`.
+7. `finally` block deletes the temporary file from `/tmp/`.
 
 ---
 
-### 2.2 Multimodal Sign Recognition Dynamics
-
-Gemini 3.6 Flash analyzes sign language through multi-feature correlation:
-1. **Manual Features**:
-   - **Handshape / Configuration**: Finger flexion, thumb opposition, contact points.
-   - **Orientation**: Palm direction, wrist rotation relative to the torso.
-   - **Location**: Articulation zone (head, chest, neutral space).
-   - **Movement Trajectory**: Linear, circular, or repetitive spatial paths.
-2. **Non-Manual Features**:
-   - Facial expressions conveying grammatical polarity, question markers, and emotional tone.
-   - Head tilts and shoulder shifts indicating topicalization and contrast.
-
----
-
-### 2.3 Error Handling & Fallbacks
-
-- **Ambiguous Gestures**: If the signer's hand shapes or movements are indistinct or not recognized as valid ISL, the model returns `"UNCLEAR SIGN SEQUENCE"`.
-- **Upload Failures**: If the video is corrupted or encoded in an unsupported format, the server returns an HTTP 400 Bad Request.
-- **Quota / Rate Limits**: If Google's API returns HTTP 429, the service catches the exception and returns an HTTP 503 Service Unavailable with a client retry recommendation.
-
----
-
-### 2.4 Health & Telemetry Endpoint (`GET /health`)
+### 2.2 Health Endpoint (`GET /health`)
 
 ```bash
 curl -s http://localhost:8001/health
@@ -93,11 +44,12 @@ curl -s http://localhost:8001/health
 ```json
 {
   "status": "healthy",
-  "service": "SignVision Video Translation API",
-  "version": "1.0.0"
+  "service": "SignVision Video Translation API (Local ISL ML)",
+  "version": "2.0.0",
+  "port": 8001,
+  "engine_ready": true,
+  "classes_count": 23,
+  "threshold": 0.5,
+  "min_hand_coverage": 0.5
 }
 ```
-
----
-
-*SignVision — Video Microservice Technical Specification.*

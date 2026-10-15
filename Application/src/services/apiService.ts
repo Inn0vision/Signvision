@@ -36,6 +36,9 @@ export interface ProcessingResult {
 export interface ProcessResponse {
   success: boolean;
   text: string;
+  original_text?: string;
+  detected_language?: string;
+  translated_text?: string;
   results: ProcessingResult[];
   error?: string;
 }
@@ -156,8 +159,12 @@ export function clearProcessSentenceCache(): void {
   sentenceProcessCache.clear();
 }
 
-export async function processSentence(text: string): Promise<ProcessResponse> {
-  const normalizedKey = text.trim().toLowerCase();
+export async function processSentence(
+  text: string,
+  language: string = 'auto',
+  useSemanticFallback: boolean = true
+): Promise<ProcessResponse> {
+  const normalizedKey = `${language}:${text.trim().toLowerCase()}`;
   const cached = sentenceProcessCache.get(normalizedKey);
   if (cached) {
     return cached;
@@ -165,7 +172,11 @@ export async function processSentence(text: string): Promise<ProcessResponse> {
 
   const response = await apiRequestWithRetry<ProcessResponse>('/process', {
     method: 'POST',
-    body: JSON.stringify({ text }),
+    body: JSON.stringify({
+      text,
+      language,
+      use_semantic_fallback: useSemanticFallback,
+    }),
   });
 
   if (response && response.success && response.results && response.results.length > 0) {
@@ -286,11 +297,20 @@ export const VIDEO_API_CONFIG = {
   retryDelay: 1000,
 };
 
-export interface TranslateVideoResponse {
-  translation: string;
+import { TranslateVideoResponse } from '../types';
+export { TranslateVideoResponse };
+
+export interface TranslateVideoOptions {
+  isMirrored?: boolean;
+  facingMode?: 'front' | 'back' | 'environment';
+  threshold?: number;
+  minHandCoverage?: number;
 }
 
-export async function translateVideoClip(videoData: string | Blob): Promise<TranslateVideoResponse> {
+export async function translateVideoClip(
+  videoData: string | Blob,
+  options?: TranslateVideoOptions
+): Promise<TranslateVideoResponse> {
   const formData = new FormData();
   
   if (typeof videoData === 'string') {
@@ -304,11 +324,26 @@ export async function translateVideoClip(videoData: string | Blob): Promise<Tran
     formData.append('video', videoData, 'video.webm');
   }
 
+  const queryParams = new URLSearchParams();
+  if (options?.isMirrored !== undefined) {
+    queryParams.append('is_mirrored', String(options.isMirrored));
+  }
+  if (options?.facingMode) {
+    queryParams.append('facing_mode', options.facingMode);
+  }
+  if (options?.threshold !== undefined) {
+    queryParams.append('threshold', String(options.threshold));
+  }
+  if (options?.minHandCoverage !== undefined) {
+    queryParams.append('min_hand_coverage', String(options.minHandCoverage));
+  }
+  const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
+
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), VIDEO_API_CONFIG.timeout);
 
   try {
-    const response = await fetch(`${VIDEO_API_CONFIG.baseUrl}/api/translate-video`, {
+    const response = await fetch(`${VIDEO_API_CONFIG.baseUrl}/api/translate-video${queryString}`, {
       method: 'POST',
       body: formData,
       signal: controller.signal,

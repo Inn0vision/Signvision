@@ -73,6 +73,7 @@ export const HomeScreen: React.FC = () => {
   const [currentQueueIndex, setCurrentQueueIndex] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
   const [rawGlossTokens, setRawGlossTokens] = useState<string[]>([]);
+  const [translatedSentence, setTranslatedSentence] = useState<string | null>(null);
   const [playbackSpeed, setPlaybackSpeed] = useState<number>(1.0);
 
   const avatarRef = useRef<AvatarWebViewRef>(null);
@@ -191,6 +192,7 @@ export const HomeScreen: React.FC = () => {
     setSignQueue([]);
     setCurrentQueueIndex(0);
     setRawGlossTokens([]);
+    setTranslatedSentence(null);
     setErrorMessage(null);
     setSuggestions([]);
   };
@@ -215,6 +217,12 @@ export const HomeScreen: React.FC = () => {
           saveToHistory(input, false);
           setIsProcessing(false);
           return;
+        }
+
+        if (response.translated_text && response.translated_text.trim().toLowerCase() !== input.trim().toLowerCase()) {
+          setTranslatedSentence(response.translated_text.trim());
+        } else {
+          setTranslatedSentence(null);
         }
 
         const result = response.results[0];
@@ -412,6 +420,10 @@ export const HomeScreen: React.FC = () => {
       <CameraTranslateScreen
         onBack={() => setIsCameraActive(false)}
         onSignRecognized={(text) => {
+          // Strictly ignore uncertain or failed recognitions
+          if (!text || text === 'UNCLEAR SIGN SEQUENCE' || text.toUpperCase().includes('UNCLEAR')) {
+            return;
+          }
           setIsCameraActive(false);
           setSearchQuery(text);
           handleSearch(text);
@@ -583,7 +595,7 @@ export const HomeScreen: React.FC = () => {
               <View style={styles.paneSection}>
                 <GlossTokenBar
                   tokens={richGlossTokens}
-                  originalSentence={searchQuery}
+                  originalSentence={translatedSentence ? `${searchQuery} → ${translatedSentence}` : searchQuery}
                 />
               </View>
             )}
@@ -748,7 +760,7 @@ export const HomeScreen: React.FC = () => {
           <View style={styles.mobileGlossFloatingWrapper}>
             <GlossTokenBar
               tokens={richGlossTokens}
-              originalSentence={searchQuery}
+              originalSentence={translatedSentence ? `${searchQuery} → ${translatedSentence}` : searchQuery}
             />
           </View>
         )}

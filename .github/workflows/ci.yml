@@ -38,7 +38,11 @@ jobs:
       - name: Run Backend Unit Tests
         env:
           PYTHONPATH: ".:backend"
-          GROQ_API_KEY: "mock_ci_key"
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GROQ_API_KEY_FALLBACK_1: ${{ secrets.GROQ_API_KEY_FALLBACK_1 }}
+          GROQ_API_KEY_FALLBACK_2: ${{ secrets.GROQ_API_KEY_FALLBACK_2 }}
+          GROQ_API_KEY_FALLBACK_3: ${{ secrets.GROQ_API_KEY_FALLBACK_3 }}
+          GROQ_API_KEYS: ${{ secrets.GROQ_API_KEY }},${{ secrets.GROQ_API_KEY_FALLBACK_1 }},${{ secrets.GROQ_API_KEY_FALLBACK_2 }},${{ secrets.GROQ_API_KEY_FALLBACK_3 }}
         run: |
           pytest backend/tests/
 

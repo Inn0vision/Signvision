@@ -22,15 +22,15 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_CORE_API_URL": "http://35.154.167.249/core",
-        "EXPO_PUBLIC_VIDEO_API_URL": "http://35.154.167.249/video"
+        "EXPO_PUBLIC_CORE_API_URL": "https://signvision.work.gd/core",
+        "EXPO_PUBLIC_VIDEO_API_URL": "https://signvision.work.gd/video"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_CORE_API_URL": "http://35.154.167.249/core",
-        "EXPO_PUBLIC_VIDEO_API_URL": "http://35.154.167.249/video"
+        "EXPO_PUBLIC_CORE_API_URL": "https://signvision.work.gd/core",
+        "EXPO_PUBLIC_VIDEO_API_URL": "https://signvision.work.gd/video"
       }
     }
   },

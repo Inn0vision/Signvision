@@ -1,20 +1,49 @@
 import re
 import json
 import logging
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Union
+from pydantic import BaseModel, Field
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s | %(message)s")
+logger = logging.getLogger("nlp_engine")
+
+
+class SemanticFrame(BaseModel):
+    """
+    Validated, shared semantic representation for Indian Sign Language (ISL) generation.
+    Shared identically across local spaCy rule extraction, Groq fallback, and Indic extraction.
+    """
+    subject: Optional[str] = None
+    object: Optional[Union[str, List[str]]] = None
+    tense: str = "PRESENT"  # "PAST", "PRESENT", "FUTURE"
+    negation: bool = False
+    sentence_type: str = "statement"  # "statement", "yes_no_question", "wh_question"
+    normalized_verb: Optional[str] = None
+    adjective: Optional[str] = None
+    question_word: Optional[str] = None
+    important_phrases: List[Dict[str, Any]] = Field(default_factory=list)
+    has_explicit_time_word: bool = False
+    requires_time_marker: bool = False
+    confidence: int = 100
+    extraction_source: str = "local_rule"  # "local_rule" | "groq" | "offline_dict"
+
+    def to_dict(self) -> Dict[str, Any]:
+        return self.model_dump()
 
 try:
     import spacy
     nlp = spacy.load("en_core_web_sm")
-except Exception:
+    logger.info("spaCy English model 'en_core_web_sm' loaded successfully.")
+except Exception as e:
+    logger.warning(
+        f"spaCy English model 'en_core_web_sm' could not be loaded: {e}. "
+        "Falling back to lightweight tokenizer/tagger."
+    )
     nlp = None
 
 from groq import Groq
 
 from .config import settings
-
-logging.basicConfig(level=logging.INFO, format="%(levelname)s | %(message)s")
-logger = logging.getLogger("nlp_engine")
 
 
 def _mask_key(key: str) -> str:
@@ -432,6 +461,173 @@ def _parse_llm_json(response_text: str) -> Dict[str, Any]:
     raise ValueError(f"Could not parse valid JSON from LLM response: {text[:200]}")
 
 
+def extract_local_frame(doc: Any, sentence: str) -> Optional[SemanticFrame]:
+    """
+    Deterministic local semantic extraction using spaCy grammatical annotations.
+    Analyzes dependency parse, POS tags, and morphology.
+    Returns SemanticFrame(extraction_source="local_rule") if covered reliably.
+    Returns None if the construction is complex, ambiguous, or unsupported (triggering Groq Route B).
+    """
+    if doc is None or len(doc) == 0:
+        return None
+
+    # Check for unsupported complex clauses (e.g., subordinating conjunctions)
+    # Interrogatives ('where', 'when', 'why', 'how', etc.) in WH-questions are not subordinate clauses
+    for token in doc:
+        if token.lower_ in WH_WORDS:
+            continue
+        if token.pos_ == "SCONJ" or token.lower_ in {
+            "although", "whereas", "unless", "whenever", "wherever", "provided", "despite", "while", "since"
+        }:
+            logger.info("Local extraction deferred to Groq: complex subordinate clause detected")
+            return None
+
+    # Check for multiple conjoined verb clauses
+    conj_verbs = [t for t in doc if t.dep_ == "conj" and t.pos_ in ("VERB", "AUX")]
+    if len(conj_verbs) > 1:
+        logger.info("Local extraction deferred to Groq: multiple conjoined verb clauses detected")
+        return None
+
+    clean_sentence = sentence.strip().lower()
+
+    # 1. Negation
+    negation = any(
+        t.dep_ == "neg"
+        or t.lower_ in ("not", "never", "no", "n't", "dont", "cant", "wont", "didnt", "isnt", "arent", "wasnt", "werent")
+        for t in doc
+    )
+
+    # 2. Sentence Type & WH Question
+    sentence_type = "statement"
+    question_word = None
+    for t in doc:
+        if t.lower_ in WH_WORDS:
+            sentence_type = "wh_question"
+            question_word = t.lower_
+            break
+
+    if sentence_type == "statement":
+        # Inverted auxiliary or trailing question mark -> yes_no_question
+        if clean_sentence.endswith("?") or (
+            len(doc) > 1 and doc[0].lower_ in AUXILIARY_VERBS and any(t.dep_ in ("nsubj", "nsubjpass") for t in doc[1:])
+        ):
+            sentence_type = "yes_no_question"
+
+    # 3. Explicit Time Word
+    temporal_keywords = {
+        "yesterday", "today", "tomorrow", "tonight", "morning",
+        "afternoon", "evening", "night", "now", "later", "soon"
+    }
+    has_explicit_time_word = any(t.lower_ in temporal_keywords for t in doc)
+
+    # 4. Tense
+    tense = "PRESENT"
+    if any(t.lower_ in ("will", "shall", "tomorrow", "gonna") for t in doc) or (
+        any(t.lower_ == "going" for t in doc) and any(t.lower_ == "to" for t in doc)
+    ):
+        tense = "FUTURE"
+    elif any(t.tag_ in ("VBD", "VBN") or t.lower_ in ("did", "was", "were", "had", "yesterday", "last") for t in doc):
+        tense = "PAST"
+
+    # 5. Subject
+    subject = None
+    nsubj_tokens = [t for t in doc if t.dep_ in ("nsubj", "nsubjpass")]
+    if nsubj_tokens:
+        subject = nsubj_tokens[0].text.lower()
+        if subject in ARTICLES:
+            subject = None
+
+    # Handle possessive constructions e.g. "what is your name", "my book"
+    poss_tokens = [t for t in doc if t.dep_ == "poss"]
+    poss_obj = None
+    if poss_tokens:
+        poss_word = poss_tokens[0].lower_
+        poss_map = {"your": "you", "my": "i", "his": "he", "her": "she", "our": "we", "their": "they"}
+        if poss_word in poss_map:
+            if not subject or subject in ("what", "where", "this", "that", "it") or (
+                nsubj_tokens and nsubj_tokens[0].head == poss_tokens[0].head
+            ):
+                subject = poss_map[poss_word]
+                poss_obj = poss_tokens[0].head.lemma_.lower()
+
+    # 6. Action Verb, Predicate Adjective, and Object
+    roots = [t for t in doc if t.dep_ == "ROOT"]
+    if not roots:
+        return None
+    root = roots[0]
+
+    normalized_verb = None
+    adjective = None
+    obj = poss_obj
+
+    # Check if root is state/copula verb
+    if root.lemma_.lower() in STATE_VERBS or root.lower_ in AUXILIARY_VERBS:
+        acomps = [t for t in doc if t.dep_ in ("acomp", "attr")]
+        for ac in acomps:
+            if ac.pos_ == "ADJ":
+                adjective = ac.lemma_.lower()
+            elif ac.pos_ in ("NOUN", "PROPN") and not obj:
+                obj = ac.lemma_.lower()
+        if not obj and not adjective:
+            pobjs = [t for t in doc if t.dep_ == "pobj" and t.lower_ not in temporal_keywords]
+            if pobjs:
+                obj = pobjs[0].lemma_.lower()
+    else:
+        normalized_verb = root.lemma_.lower()
+        if normalized_verb in AUXILIARY_VERBS:
+            normalized_verb = None
+
+        if not obj:
+            dobjs = [t for t in doc if t.dep_ == "dobj"]
+            if dobjs:
+                obj = dobjs[0].lemma_.lower()
+            else:
+                pobjs = [t for t in doc if t.dep_ == "pobj" and t.lower_ not in temporal_keywords]
+                if pobjs:
+                    obj = pobjs[0].lemma_.lower()
+                else:
+                    attrs = [t for t in doc if t.dep_ == "attr"]
+                    if attrs:
+                        obj = attrs[0].lemma_.lower()
+
+        xcomps = [t for t in doc if t.dep_ == "xcomp" and t.pos_ in ("VERB", "AUX")]
+        if xcomps:
+            if xcomps[0].lower_ not in AUXILIARY_VERBS:
+                normalized_verb = xcomps[0].lemma_.lower()
+            x_dobjs = [t for t in xcomps[0].children if t.dep_ == "dobj"]
+            if x_dobjs and not obj:
+                obj = x_dobjs[0].lemma_.lower()
+
+    if obj and obj in ARTICLES:
+        obj = None
+
+    requires_time_marker = bool(
+        normalized_verb
+        and normalized_verb not in STATE_VERBS
+        and not has_explicit_time_word
+        and tense in ("PAST", "FUTURE")
+    )
+
+    if not any([normalized_verb, adjective, obj, subject]):
+        return None
+
+    return SemanticFrame(
+        subject=subject,
+        object=obj,
+        tense=tense,
+        negation=negation,
+        sentence_type=sentence_type,
+        normalized_verb=normalized_verb,
+        adjective=adjective,
+        question_word=question_word,
+        important_phrases=[],
+        has_explicit_time_word=has_explicit_time_word,
+        requires_time_marker=requires_time_marker,
+        confidence=95,
+        extraction_source="local_rule",
+    )
+
+
 def detect_phrases_llm(sentence: str, analysis: Dict[str, List[str]]) -> Dict[str, Any]:
     norm_key = re.sub(r"\s+", " ", sentence.strip().lower())
     if norm_key in _LLM_EXTRACTION_CACHE:
@@ -471,18 +667,22 @@ def detect_phrases_llm(sentence: str, analysis: Dict[str, List[str]]) -> Dict[st
     if not isinstance(important_phrases, list):
         important_phrases = []
 
-    result = {
-        "subject": subject,
-        "object": obj,
-        "tense": tense,
-        "negation": bool(parsed.get("negation", False)),
-        "sentence_type": sentence_type,
-        "normalized_verb": normalized_verb,
-        "adjective": adjective,
-        "important_phrases": important_phrases,
-        "has_explicit_time_word": bool(parsed.get("has_explicit_time_word", False)),
-        "requires_time_marker": bool(parsed.get("requires_time_marker", False)),
-    }
+    frame = SemanticFrame(
+        subject=subject,
+        object=obj,
+        tense=tense,
+        negation=bool(parsed.get("negation", False)),
+        sentence_type=sentence_type,
+        normalized_verb=normalized_verb,
+        adjective=adjective,
+        question_word=parsed.get("question_word"),
+        important_phrases=important_phrases,
+        has_explicit_time_word=bool(parsed.get("has_explicit_time_word", False)),
+        requires_time_marker=bool(parsed.get("requires_time_marker", False)),
+        confidence=int(parsed.get("confidence", 90)) if isinstance(parsed.get("confidence"), (int, float)) else 90,
+        extraction_source="groq",
+    )
+    result = frame.to_dict()
 
     logger.info(f"LLM semantic extraction: {result}")
 
@@ -493,7 +693,10 @@ def detect_phrases_llm(sentence: str, analysis: Dict[str, List[str]]) -> Dict[st
     return result
 
 
-def apply_isl_rules(parsed_data: Dict[str, Any], tokens: List[str]) -> Dict[str, Any]:
+def apply_isl_rules(parsed_data: Union[SemanticFrame, Dict[str, Any]], tokens: List[str]) -> Dict[str, Any]:
+    if isinstance(parsed_data, SemanticFrame):
+        parsed_data = parsed_data.to_dict()
+
     subject = parsed_data.get("subject")
     obj = parsed_data.get("object")
     verb = parsed_data.get("normalized_verb")
@@ -843,9 +1046,12 @@ _PROCESS_TEXT_CACHE: Dict[str, List[Dict[str, Any]]] = {}
 _MAX_PROCESS_TEXT_CACHE_SIZE: int = 1000
 
 
-def process_text(text: str) -> List[Dict[str, Any]]:
+def process_text(
+    text: str,
+    pre_extracted_frame: Optional[Dict[str, Any]] = None,
+) -> List[Dict[str, Any]]:
     norm_text = re.sub(r"\s+", " ", text.strip().lower())
-    if norm_text in _PROCESS_TEXT_CACHE:
+    if pre_extracted_frame is None and norm_text in _PROCESS_TEXT_CACHE:
         logger.info(f'Process_text cache hit for: "{text}"')
         return [dict(item) for item in _PROCESS_TEXT_CACHE[norm_text]]
 
@@ -867,15 +1073,52 @@ def process_text(text: str) -> List[Dict[str, Any]]:
             all_results.append(fixed_result)
             continue
 
-        analysis = analyze_text(sentence)
+        doc = None
+        if nlp is not None:
+            try:
+                doc = nlp(sentence)
+                tokens = [t.text for t in doc]
+                pos_tags = [t.pos_ for t in doc]
+                analysis = {"tokens": tokens, "pos": pos_tags}
+            except Exception as e:
+                logger.warning(f"spaCy parsing failed: {e}")
+                analysis = analyze_text(sentence)
+                tokens = analysis["tokens"]
+        else:
+            analysis = analyze_text(sentence)
+            tokens = analysis["tokens"]
 
-        try:
-            llm_data = detect_phrases_llm(sentence, analysis)
-        except Exception as e:
-            logger.error(f"LLM extraction failed: {e}. Using fallback.")
-            llm_data = _fallback_extraction(sentence, analysis)
+        frame_data: Dict[str, Any]
 
-        transformed = apply_isl_rules(llm_data, analysis["tokens"])
+        if pre_extracted_frame is not None:
+            # Route C: Pre-extracted semantic frame from combined Indic Groq call
+            logger.info(f'Routing: Route C (Indic combined extraction) for "{sentence}"')
+            try:
+                validated_frame = SemanticFrame(**pre_extracted_frame)
+                frame_data = validated_frame.to_dict()
+            except Exception as e:
+                logger.warning(f"Failed to validate pre_extracted_frame: {e}, using local extraction")
+                local_frame = extract_local_frame(doc, sentence) if doc is not None else None
+                if local_frame is not None:
+                    frame_data = local_frame.to_dict()
+                else:
+                    frame_data = _fallback_extraction(sentence, analysis)
+        else:
+            # Try Route A: Deterministic local spaCy rule extraction (0 Groq calls)
+            local_frame = extract_local_frame(doc, sentence) if doc is not None else None
+            if local_frame is not None:
+                logger.info(f'Routing: Route A (Local spaCy rule, 0 Groq calls) for "{sentence}"')
+                frame_data = local_frame.to_dict()
+            else:
+                # Route B: Complex or ambiguous English construction -> Groq fallback (1 Groq call)
+                logger.info(f'Routing: Route B (Groq semantic extraction fallback) for "{sentence}"')
+                try:
+                    frame_data = detect_phrases_llm(sentence, analysis)
+                except Exception as e:
+                    logger.error(f"LLM extraction failed: {e}. Using Route D local fallback.")
+                    frame_data = _fallback_extraction(sentence, analysis)
+
+        transformed = apply_isl_rules(frame_data, tokens)
         gloss_output = build_gloss_output(transformed)
 
         logger.info(f"Final gloss: {gloss_output['gloss']}")
@@ -883,7 +1126,7 @@ def process_text(text: str) -> List[Dict[str, Any]]:
 
     logger.info(f"Processing complete: {len(all_results)} result(s)")
 
-    if all_results:
+    if all_results and pre_extracted_frame is None:
         if len(_PROCESS_TEXT_CACHE) >= _MAX_PROCESS_TEXT_CACHE_SIZE:
             _PROCESS_TEXT_CACHE.pop(next(iter(_PROCESS_TEXT_CACHE)))
         _PROCESS_TEXT_CACHE[norm_text] = all_results

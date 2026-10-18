@@ -6,6 +6,8 @@ import tempfile
 from typing import List, Dict, Any, Optional, Tuple
 from datetime import datetime
 
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, File, HTTPException, UploadFile, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -43,10 +45,23 @@ from .services.multilingual_service import multilingual_service
 logging.basicConfig(level=logging.INFO, format="%(levelname)s | %(message)s")
 logger = logging.getLogger("main")
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.info("Initializing SignVision backend services...")
+    translation_cache.connect()
+    word_lookup_service.initialize()
+    semantic_search_service.initialize()
+    logger.info(f"Loaded {word_lookup_service.get_word_count()} sign entries")
+    yield
+    logger.info("Shutting down SignVision backend services...")
+    translation_cache.close()
+
+
 app = FastAPI(
     title="SignVision API",
     description="API for converting speech/text to Indian Sign Language (ISL)",
     version="1.0.0",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -128,9 +143,11 @@ def _recognize_audio(wav_bytes: bytes) -> str:
 
 
 def _process_and_lookup(
-    text: str, use_semantic_fallback: bool = True
+    text: str,
+    use_semantic_fallback: bool = True,
+    pre_extracted_frame: Optional[Dict[str, Any]] = None,
 ) -> List[Dict[str, Any]]:
-    gloss_results = process_text(text)
+    gloss_results = process_text(text, pre_extracted_frame=pre_extracted_frame)
 
     output = []
     for gloss_result in gloss_results:
@@ -150,19 +167,7 @@ def _process_and_lookup(
     return output
 
 
-@app.on_event("startup")
-async def startup_event():
-    logger.info("Initializing services...")
-    translation_cache.connect()
-    word_lookup_service.initialize()
-    semantic_search_service.initialize()
-    logger.info(f"Loaded {word_lookup_service.get_word_count()} sign entries")
 
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    logger.info("Shutting down services...")
-    translation_cache.close()
 
 
 @app.post("/process")
@@ -224,8 +229,11 @@ async def process_endpoint(payload: TextPayload, response: Response):
             detected_lang = trans_result.detected_language
 
             # 4. English NLP Engine and Sign Lookup
+            pre_extracted_frame = getattr(trans_result, "semantic_frame", None)
             results = _process_and_lookup(
-                english_text, use_semantic_fallback=payload.use_semantic_fallback
+                english_text,
+                use_semantic_fallback=payload.use_semantic_fallback,
+                pre_extracted_frame=pre_extracted_frame,
             )
             response_data = {
                 "success": True,
@@ -274,7 +282,8 @@ async def process_text_endpoint(payload: TextPayload):
             source_lang=payload.language if payload.language != "auto" else None,
         )
         english_text = trans_result.translated_text
-        results = process_text(english_text)
+        pre_extracted_frame = getattr(trans_result, "semantic_frame", None)
+        results = process_text(english_text, pre_extracted_frame=pre_extracted_frame)
         return {
             "success": True,
             "text": english_text,
@@ -403,9 +412,39 @@ async def semantic_search_endpoint(query: str, top_k: int = 5):
 
 @app.get("/health")
 async def health_check():
+    if not word_lookup_service._initialized:
+        word_lookup_service.initialize()
+    if not semantic_search_service._initialized:
+        semantic_search_service.initialize()
+
+    nlp_ready = False
+    try:
+        from .core.nlp_engine import nlp
+        nlp_ready = nlp is not None
+    except Exception:
+        pass
+
+    chroma_ready = False
+    try:
+        chroma_ready = (
+            semantic_search_service._collection is not None
+            and semantic_search_service._collection.count() > 0
+        )
+    except Exception:
+        pass
+
+    cache_ready = bool(translation_cache.enabled and translation_cache._client is not None)
+    is_degraded = not nlp_ready or not chroma_ready
+    status = "degraded" if is_degraded else "healthy"
+
     return {
-        "status": "healthy",
+        "status": status,
         "word_count": word_lookup_service.get_word_count(),
+        "services": {
+            "nlp_spacy": "ready" if nlp_ready else "degraded",
+            "semantic_search": "ready" if chroma_ready else "degraded",
+            "translation_cache": "connected" if cache_ready else "disabled_or_offline",
+        },
     }
 
 

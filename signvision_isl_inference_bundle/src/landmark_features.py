@@ -266,6 +266,13 @@ class HandLandmarkerExtractor:
         if not cap.isOpened():
             raise IOError(f"Could not open video file: {video_path}")
 
+        # Ensure mobile portrait recordings with orientation metadata are decoded right-side up
+        if hasattr(cv2, "CAP_PROP_ORIENTATION_AUTO"):
+            try:
+                cap.set(cv2.CAP_PROP_ORIENTATION_AUTO, 1)
+            except Exception:
+                pass
+
         total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         fps = float(cap.get(cv2.CAP_PROP_FPS))
         if fps <= 0:

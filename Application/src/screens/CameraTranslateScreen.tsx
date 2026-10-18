@@ -277,7 +277,11 @@ export default function CameraTranslateScreen({ onBack, onSignRecognized }: Came
     recordingStateRef.current = 'UPLOADING';
     setRecordingState('UPLOADING');
     try {
-      const isMirrored = Platform.OS === 'web' ? false : facing === 'front';
+      // Both Web (MediaRecorder) and Mobile (CameraView.recordAsync) record raw unflipped
+      // sensor video frames. The ML model was trained on horizontally flipped selfie frames
+      // (cv2.flip(frame, 1)). Setting isMirrored to false instructs the backend to apply
+      // this required horizontal flip, aligning mobile hand coordinates with the model.
+      const isMirrored = false;
       const response = await translateVideoClip(videoData, {
         isMirrored,
         facingMode: facing,
@@ -389,7 +393,10 @@ export default function CameraTranslateScreen({ onBack, onSignRecognized }: Came
     } else {
       if (!cameraRef.current) return;
       try {
-        const data = await cameraRef.current.recordAsync({ maxDuration: MAX_RECORDING_SECONDS + 1 });
+        const data = await cameraRef.current.recordAsync({
+          maxDuration: MAX_RECORDING_SECONDS + 1,
+          maxFileSize: 15 * 1024 * 1024,
+        });
         if (data && data.uri) {
           processVideo(data.uri);
         }

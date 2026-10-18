@@ -24,6 +24,38 @@ HINDI_DEVANAGARI_MARKERS = {
     "गया", "गयी", "गए", "आप", "तुम", "हम", "मैं", "नहीं", "सेब"
 }
 
+# Romanized Hindi & Marathi vocabulary / grammatical markers
+ROMANIZED_INDIC_TOKENS = {
+    # Hindi question & auxiliary words
+    "kya", "kyun", "kyu", "kaise", "kahan", "kab", "kisko", "kiske",
+    "hai", "hain", "ho", "hu", "hoon", "tha", "thi",
+    "raha", "rahi", "rahe", "gaya", "gayi", "gaye", "aaya", "aayi", "aaye",
+    "kar", "karna", "karo", "kare", "karenge", "karta", "karti",
+    # Hindi pronouns & possessives
+    "aap", "aapne", "aapka", "aapki", "aapke", "apne", "tum", "tumne", "tumhara",
+    "tumhari", "hum", "humne", "hamara", "mai", "mera", "meri", "mere",
+    "mujhe", "usne", "unhone", "iska", "uska",
+    # Hindi vocabulary
+    "khana", "khaya", "khayi", "khaye", "khya", "kha", "seb", "paani", "pani", "ghar",
+    "naam", "thik", "theek", "shukriya", "dhanyawad", "dhanyavad", "namaste", "chalo", "jao",
+    # Marathi question & auxiliary words
+    "ka", "kase", "kasa", "kashi", "kuthe", "kadhi",
+    "ahe", "ahat", "ahes", "ahot", "ahet", "nahi", "nahit",
+    "kela", "kele", "keli", "zhala", "zhale", "zhali", "gela", "geli", "gele",
+    # Marathi pronouns & possessives
+    "tumhi", "amhi", "apan", "majhe", "tujhe", "tyanche", "tiche", "mala", "tula",
+    # Marathi vocabulary
+    "jevan", "jeven", "jevla", "jevli", "bhaau", "bahin", "mulga", "mulgi",
+    "shala", "paaus", "aabhar", "namaskar",
+}
+
+MARATHI_ROMANIZED_MARKERS = {
+    "ka", "kase", "kasa", "kashi", "kuthe", "kadhi", "ahe", "ahat", "ahes",
+    "ahot", "ahet", "nahi", "kela", "kele", "keli", "zhala", "zhale", "zhali",
+    "tumhi", "amhi", "apan", "majhe", "tujhe", "mala", "tula", "jevan", "jeven",
+    "jevla", "jevli", "shala", "aabhar", "namaskar",
+}
+
 # English fixed expressions that require no translation
 FIXED_ENGLISH_EXPRESSIONS = {
     "thank you", "thank you very much", "thanks", "how are you",
@@ -124,26 +156,30 @@ class TranslationResult:
     confidence: float
     is_english: bool
     translated_text: str
+    semantic_frame: Optional[Dict[str, Any]] = None
 
     def to_dict(self) -> Dict[str, Any]:
-        return {
+        d: Dict[str, Any] = {
             "original_text": self.original_text,
             "detected_language": self.detected_language,
             "confidence": self.confidence,
             "is_english": self.is_english,
             "translated_text": self.translated_text,
         }
+        if self.semantic_frame:
+            d["semantic_frame"] = self.semantic_frame
+        return d
 
 
 class MultilingualService:
     """
     Multilingual detection and translation service for SignVision ISL.
     Supports:
-      - English (en)
-      - Hindi Devanagari (hi)
-      - Hindi Romanized / Hinglish (hi-Latn)
-      - Marathi Devanagari (mr)
-      - Marathi Romanized / Marathish (mr-Latn)
+      - English (en) -> 0 Groq calls (Local spaCy fast path)
+      - Hindi Devanagari (hi) -> 1 Groq call (Single combined translation + extraction)
+      - Hindi Romanized / Hinglish (hi-Latn) -> 1 Groq call (Single combined translation + extraction)
+      - Marathi Devanagari (mr) -> 1 Groq call (Single combined translation + extraction)
+      - Marathi Romanized / Marathish (mr-Latn) -> 1 Groq call (Single combined translation + extraction)
     """
 
     def __init__(self):
@@ -192,6 +228,8 @@ class MultilingualService:
         """
         Detect language of text and translate into English if needed.
         Preserves meaning, tense, questions, negation, and entities.
+        For English: bypasses Groq translation entirely (0 Groq calls).
+        For Indic: combines translation and semantic extraction in 1 Groq call.
         """
         stripped = text.strip()
         if not stripped:
@@ -209,11 +247,12 @@ class MultilingualService:
                 confidence=1.0,
                 is_english=True,
                 translated_text=stripped,
+                semantic_frame=None,
             )
             self._save_cache(cache_key, result)
             return result
 
-        # 3. Fast-path: Common offline translation dictionary
+        # 2. Fast-path: Common offline translation dictionary
         normalized_lookup = stripped.lower().strip()
         if normalized_lookup in OFFLINE_TRANSLATIONS:
             trans_text, lang = OFFLINE_TRANSLATIONS[normalized_lookup]
@@ -223,6 +262,7 @@ class MultilingualService:
                 confidence=0.98,
                 is_english=False,
                 translated_text=trans_text,
+                semantic_frame=None,
             )
             self._save_cache(cache_key, result)
             return result
@@ -237,11 +277,35 @@ class MultilingualService:
                 confidence=0.98,
                 is_english=False,
                 translated_text=trans_text,
+                semantic_frame=None,
             )
             self._save_cache(cache_key, result)
             return result
 
-        # 4. LLM Translation via Groq
+        # 3. Detect if text is definitely English without Indic characters or Romanized Indic tokens
+        is_explicit_english = (source_lang == "en")
+        is_explicit_indic = (source_lang in ("hi", "mr", "hi-Latn", "mr-Latn"))
+        has_indic_script = self.has_devanagari(stripped)
+
+        # Check for Romanized Indic words in Latin script
+        words = re.findall(r"\b[a-zA-Z]+\b", stripped.lower())
+        has_romanized_indic = any(w in ROMANIZED_INDIC_TOKENS for w in words)
+
+        if not is_explicit_indic and not has_indic_script and not has_romanized_indic:
+            # Normal English input! Do NOT call Groq to translate English into English.
+            logger.info("Language detected as English: bypassing Groq multilingual translation (0 calls)")
+            result = TranslationResult(
+                original_text=stripped,
+                detected_language="en",
+                confidence=0.98,
+                is_english=True,
+                translated_text=stripped,
+                semantic_frame=None,
+            )
+            self._save_cache(cache_key, result)
+            return result
+
+        # 4. Indic input: LLM Single Combined Translation + Semantic Extraction via Groq
         try:
             result = self._translate_with_llm(stripped, source_lang)
             self._save_cache(cache_key, result)
@@ -255,17 +319,12 @@ class MultilingualService:
                     f"Translation service unavailable for Indic text: '{stripped}'. Please check network or try again."
                 )
 
-            # For Latin script where LLM failed:
-            # Check if it looks like English words
-            words = stripped.split()
             # If explicit non-English was requested, raise error
             if source_lang in ("hi", "mr", "hi-Latn", "mr-Latn"):
                 raise ValueError(
                     f"Translation service unavailable for {source_lang} text. Please try again."
                 )
 
-            # If source_lang was auto, and LLM failed, fail safely with informative message
-            # rather than silently feeding Hindi/Marathi Romanized slang into English NLP
             raise ValueError(
                 f"Could not translate or verify language for: '{stripped}'. Please check your input or connection."
             )
@@ -273,11 +332,15 @@ class MultilingualService:
     def _translate_with_llm(
         self, text: str, source_lang: Optional[str] = None
     ) -> TranslationResult:
-        from ..core.nlp_engine import call_llm
+        """
+        Performs single combined Groq request:
+        Translates Hindi/Marathi/Romanized Indic to normalized English AND extracts structured SemanticFrame.
+        """
+        from ..core.nlp_engine import call_llm, SemanticFrame
 
         lang_hint = f" The user explicitly specified source language: '{source_lang}'." if source_lang and source_lang != 'auto' else ""
 
-        prompt = f"""You are a multilingual language detector and translator for an Indian Sign Language (ISL) system.
+        prompt = f"""You are a multilingual language detector, translator, and semantic extraction engine for an Indian Sign Language (ISL) system.
 Supported languages:
 - 'en': English
 - 'hi': Hindi (Devanagari script)
@@ -288,31 +351,46 @@ Supported languages:
 Task instructions:{lang_hint}
 1. Detect the language code ('en', 'hi', 'hi-Latn', 'mr', 'mr-Latn').
 2. If the input is in English ('en'), set is_english to true and translated_text to the exact English sentence.
-3. If the input is in Hindi or Marathi (in Devanagari OR Romanized Latin script), translate its meaning accurately into natural, clear, concise English suitable for Indian Sign Language parsing.
-   Examples:
-   - 'kya apne khana khya' -> 'Have you eaten food?'
-   - 'kya aapne khana khaya?' -> 'Have you eaten food?'
-   - 'क्या आपने खाना खाया?' -> 'Have you eaten food?'
-   - 'jeven kela ka' -> 'Have you eaten food?'
-   - 'tumhi jevan kela ka?' -> 'Have you eaten food?'
-   - 'तुम्ही जेवण केले का?' -> 'Have you eaten food?'
-   - 'I am eating an apple' -> 'I am eating an apple'
-   - 'Rahul went to school' -> 'Rahul went to school'
-4. Critical translation preservation rules:
-   - Questions MUST remain questions (e.g. 'Have you eaten?', 'Where is the hospital?').
+3. If the input is in Hindi or Marathi (in Devanagari OR Romanized Latin script):
+   - Translate its meaning accurately into natural, clear, concise English suitable for Indian Sign Language parsing.
+   - Questions MUST remain questions (e.g. 'Have you eaten food?', 'Where is the hospital?').
    - Negations MUST remain negative ('not', 'never').
    - Tense MUST be preserved (past, present, future).
    - Proper names, nouns, and entities MUST be preserved ('Rahul', 'Delhi').
-5. Validate output: translated_text MUST be natural English. Never return apologies, explanations, or quotes.
+4. Extract the structured "semantic_frame" for ISL gloss generation:
+   - "subject": main subject pronoun or entity (e.g. "you", "i", "he", "she", "we", "rahul"). For possessives, extract possessor pronoun ("you", "i").
+   - "object": real entity receiving action, identity complement, or possessed noun. Never include WH-words. If none, null.
+   - "tense": "PAST", "PRESENT", or "FUTURE".
+   - "negation": true if negative (not, never, no), else false.
+   - "sentence_type": "statement", "yes_no_question", or "wh_question".
+   - "normalized_verb": base root action verb (e.g. "eat", "go", "read", "come"). Never auxiliary verbs (is, am, are, was, were). For state sentences ("I am sick", "She is happy"), set to null.
+   - "adjective": predicative adjective describing state (e.g. "sick", "happy", "tired", "hungry"), else null.
+   - "important_phrases": list of objects with "phrase" and "meaning" if relevant, else [].
+   - "has_explicit_time_word": true if explicit time words (e.g. yesterday, today, tomorrow, now), else false.
+   - "requires_time_marker": true for action sentences needing temporal markers, false for state/greeting/continuous questions.
+   - "confidence": integer (0-100).
 
 Input: "{text}"
 
-Return ONLY a valid JSON object matching this exact schema:
+Return ONLY a valid JSON object matching this exact schema with NO extra commentary or explanation:
 {{
-  "detected_language": "en|hi|hi-Latn|mr|mr-Latn",
+  "detected_language": "hi|hi-Latn|mr|mr-Latn|en",
   "confidence": 0.95,
   "is_english": false,
-  "translated_text": "..."
+  "translated_text": "Have you eaten food?",
+  "semantic_frame": {{
+    "subject": "you",
+    "object": "food",
+    "tense": "PAST",
+    "negation": false,
+    "sentence_type": "yes_no_question",
+    "normalized_verb": "eat",
+    "adjective": null,
+    "important_phrases": [],
+    "has_explicit_time_word": false,
+    "requires_time_marker": false,
+    "confidence": 95
+  }}
 }}"""
 
         parsed = call_llm(prompt, max_tokens=512)
@@ -341,12 +419,37 @@ Return ONLY a valid JSON object matching this exact schema:
         if detected_lang == "en":
             is_english = True
 
+        # Extract and validate semantic frame if present
+        raw_frame = parsed.get("semantic_frame")
+        semantic_frame_dict = None
+        if isinstance(raw_frame, dict):
+            try:
+                frame = SemanticFrame(
+                    subject=raw_frame.get("subject"),
+                    object=raw_frame.get("object"),
+                    tense=str(raw_frame.get("tense", "PRESENT")).upper(),
+                    negation=bool(raw_frame.get("negation", False)),
+                    sentence_type=str(raw_frame.get("sentence_type", "statement")),
+                    normalized_verb=raw_frame.get("normalized_verb"),
+                    adjective=raw_frame.get("adjective"),
+                    question_word=raw_frame.get("question_word"),
+                    important_phrases=raw_frame.get("important_phrases") or [],
+                    has_explicit_time_word=bool(raw_frame.get("has_explicit_time_word", False)),
+                    requires_time_marker=bool(raw_frame.get("requires_time_marker", False)),
+                    confidence=int(raw_frame.get("confidence", 90)) if isinstance(raw_frame.get("confidence"), (int, float)) else 90,
+                    extraction_source="groq",
+                )
+                semantic_frame_dict = frame.to_dict()
+            except Exception as e:
+                logger.warning(f"Could not parse semantic_frame from LLM: {e}")
+
         return TranslationResult(
             original_text=text,
             detected_language=detected_lang,
             confidence=confidence,
             is_english=is_english,
             translated_text=translated_text,
+            semantic_frame=semantic_frame_dict,
         )
 
     def _save_cache(self, key: str, result: TranslationResult) -> None:

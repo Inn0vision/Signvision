@@ -460,9 +460,10 @@ class TestISLGrammarRules:
         mock_completion.usage = MagicMock(prompt_tokens=150, completion_tokens=80, total_tokens=230)
 
         with patch("app.core.nlp_engine.llm_client.chat.completions.create", return_value=mock_completion) as mock_create:
-            # 1 sentence -> exactly 1 Groq API call
-            results = process_text("I eat apple")
-            assert len(results) == 1
+            # Groq semantic extraction -> exactly 1 Groq API call
+            from app.core.nlp_engine import detect_phrases_llm
+            result = detect_phrases_llm("I eat apple", {"tokens": ["i", "eat", "apple"], "pos": ["PRON", "VERB", "NOUN"]})
+            assert result["subject"] == "i"
             assert mock_create.call_count == 1
 
             # Verify call parameters

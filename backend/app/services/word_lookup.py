@@ -4,9 +4,15 @@ import logging
 from typing import Dict, List, Optional
 from pathlib import Path
 from dataclasses import dataclass
+from urllib.parse import urlparse
 
 from ..core.config import settings
 from .semantic_search import semantic_search_service
+
+try:
+    from ..core.nlp_engine import nlp
+except Exception:
+    nlp = None
 
 logger = logging.getLogger("word_lookup")
 
@@ -34,6 +40,8 @@ class WordLookupResult:
 class WordLookupService:
     def __init__(self):
         self._sign_data: Dict = {}
+        self._canonical_map: Dict[str, str] = {}
+        self._alias_map: Dict[str, str] = {}
         self._initialized = False
         self._letter_cache: Dict[str, str] = {}
         self._digit_cache: Dict[str, str] = {}
@@ -52,6 +60,39 @@ class WordLookupService:
         logger.info(f"Loading sign language data from: {data_file}")
         with open(data_file, "r", encoding="utf-8") as f:
             self._sign_data = json.load(f)
+
+        # Build canonical and alias lookup maps
+        for canonical_key, entry in self._sign_data.items():
+            if not self._has_valid_url(entry):
+                continue
+
+            canonical_clean = canonical_key.strip().upper()
+            self._canonical_map[canonical_clean] = canonical_key
+
+            # Normalized representation without hyphens/underscores
+            norm_space = " ".join(re.split(r"[-_\s]+", canonical_clean)).strip()
+            if norm_space and norm_space not in self._canonical_map:
+                self._canonical_map[norm_space] = canonical_key
+
+            clean_alnum = re.sub(r"[^\w\s]", "", norm_space).strip()
+            if clean_alnum and clean_alnum not in self._canonical_map:
+                self._canonical_map[clean_alnum] = canonical_key
+
+            # Map approved anchors/aliases
+            for anchor in entry.get("anchors", []):
+                anchor_upper = anchor.strip().upper()
+                if not anchor_upper:
+                    continue
+                if anchor_upper not in self._alias_map:
+                    self._alias_map[anchor_upper] = canonical_key
+
+                norm_anchor = " ".join(re.split(r"[-_\s]+", anchor_upper)).strip()
+                if norm_anchor and norm_anchor not in self._alias_map:
+                    self._alias_map[norm_anchor] = canonical_key
+
+                clean_anchor = re.sub(r"[^\w\s]", "", norm_anchor).strip()
+                if clean_anchor and clean_anchor not in self._alias_map:
+                    self._alias_map[clean_anchor] = canonical_key
 
         # Cache verified letter assets (A-Z)
         for char_code in range(ord('A'), ord('Z') + 1):
@@ -77,43 +118,85 @@ class WordLookupService:
                 self._digit_cache[digit] = self._sign_data[word_name]["s3_url"]
 
         logger.info(
-            f"Loaded {len(self._sign_data)} sign entries with "
-            f"{len(self._letter_cache)} letters and {len(self._digit_cache)} digits verified"
+            f"Loaded {len(self._sign_data)} sign entries with {len(self._canonical_map)} canonical keys, "
+            f"{len(self._alias_map)} approved aliases, {len(self._letter_cache)} letters, and {len(self._digit_cache)} digits"
         )
         self._initialized = True
 
     def _normalize_word(self, word: str) -> str:
-        cleaned = re.sub(r"[^\w\s]", "", word)
+        cleaned = re.sub(r"[^\w\s-]", "", word)
         return " ".join(cleaned.strip().upper().split())
 
     def _has_valid_url(self, entry: Dict) -> bool:
-        return bool(entry.get("s3_url"))
+        url = entry.get("s3_url")
+        if not url or not isinstance(url, str):
+            return False
+        parsed = urlparse(url)
+        return bool(parsed.scheme in ("http", "https") and parsed.netloc and parsed.path.endswith(".sigml"))
+
+    def _resolve_canonical(self, term: str) -> Optional[str]:
+        if not term:
+            return None
+        upper = term.strip().upper()
+        if upper in self._canonical_map:
+            return self._canonical_map[upper]
+        norm = " ".join(re.split(r"[-_\s]+", upper)).strip()
+        if norm in self._canonical_map:
+            return self._canonical_map[norm]
+        clean = re.sub(r"[^\w\s]", "", norm).strip()
+        if clean in self._canonical_map:
+            return self._canonical_map[clean]
+        if upper in self._sign_data and self._has_valid_url(self._sign_data[upper]):
+            return upper
+        return None
 
     def _morphological_match(self, normalized: str, original: str) -> Optional[WordLookupResult]:
-        """Safe, verified morphological root matching (e.g. plurals and standard verb endings)."""
+        """Safe morphological normalization using spaCy lemma when available, with conservative rule fallbacks."""
+        # 1. spaCy lemmatization
+        if nlp is not None:
+            try:
+                doc = nlp(original.strip())
+                if doc and len(doc) == 1:
+                    lemma_upper = doc[0].lemma_.strip().upper()
+                    if lemma_upper and lemma_upper != normalized:
+                        canon = self._resolve_canonical(lemma_upper)
+                        if canon and self._has_valid_url(self._sign_data[canon]):
+                            return WordLookupResult(
+                                word=canon,
+                                original_query=original,
+                                found=True,
+                                s3_url=self._sign_data[canon]["s3_url"],
+                                match_type="partial",
+                            )
+            except Exception:
+                pass
+
+        # 2. Conservative inflectional rule fallbacks
+        clean = re.sub(r"[^\w\s]", "", normalized).strip()
         candidates = []
-        if normalized.endswith("IES") and len(normalized) > 4:
-            candidates.append(normalized[:-3] + "Y")
-        if normalized.endswith("ES") and len(normalized) > 3:
-            candidates.append(normalized[:-2])
-        if normalized.endswith("S") and len(normalized) > 2 and not normalized.endswith("SS"):
-            candidates.append(normalized[:-1])
-        if normalized.endswith("ING") and len(normalized) > 4:
-            candidates.append(normalized[:-3])
+        if clean.endswith("IES") and len(clean) > 4:
+            candidates.append(clean[:-3] + "Y")
+        if clean.endswith("ES") and len(clean) > 3:
+            candidates.append(clean[:-2])
+        if clean.endswith("S") and len(clean) > 2 and not clean.endswith("SS"):
+            candidates.append(clean[:-1])
+        if clean.endswith("ING") and len(clean) > 4:
+            candidates.append(clean[:-3])
             # e.g., RUNNING -> RUN
-            if len(normalized) > 5 and normalized[-4] == normalized[-5]:
-                candidates.append(normalized[:-4])
-        if normalized.endswith("ED") and len(normalized) > 3:
-            candidates.append(normalized[:-2])
-            candidates.append(normalized[:-1])  # e.g., LIKED -> LIKE
+            if len(clean) > 5 and clean[-4] == clean[-5]:
+                candidates.append(clean[:-4])
+        if clean.endswith("ED") and len(clean) > 3:
+            candidates.append(clean[:-2])
+            candidates.append(clean[:-1])  # e.g., LIKED -> LIKE
 
         for cand in candidates:
-            if cand in self._sign_data and self._has_valid_url(self._sign_data[cand]):
+            canon = self._resolve_canonical(cand)
+            if canon and self._has_valid_url(self._sign_data[canon]):
                 return WordLookupResult(
-                    word=cand,
+                    word=canon,
                     original_query=original,
                     found=True,
-                    s3_url=self._sign_data[cand]["s3_url"],
+                    s3_url=self._sign_data[canon]["s3_url"],
                     match_type="partial",
                 )
         return None
@@ -127,7 +210,6 @@ class WordLookupService:
             self.initialize()
 
         results: List[WordLookupResult] = []
-        # Split on whitespace to handle multiword inputs safely
         words = query.strip().split()
         for word_idx, w in enumerate(words):
             for ch in w:
@@ -153,7 +235,6 @@ class WordLookupService:
                         )
                     )
                 elif ch.isalnum():
-                    # Alphanumeric character without asset
                     results.append(
                         WordLookupResult(
                             word=ch_upper,
@@ -169,17 +250,18 @@ class WordLookupService:
         self, query: str, use_semantic_fallback: bool = False, allow_fingerspell: bool = False
     ) -> WordLookupResult:
         """
-        Strict 4-stage resolution policy:
-        1. Exact dictionary match
+        Strict 5-stage lookup hierarchy:
+        1. Exact canonical dictionary match
         2. Approved alias/anchor match
-        3. Safe, verified morphological match
-        4. Fingerspelling (when allow_fingerspell=True) or structured not-found
+        3. Safe morphological & compound normalization
+        4. Conservative semantic vector retrieval (ChromaDB)
+        5. Fingerspelling / structured not-found
         """
         if not self._initialized:
             self.initialize()
 
-        normalized = self._normalize_word(query)
         original = query.strip()
+        normalized = self._normalize_word(original)
 
         if not normalized:
             return WordLookupResult(
@@ -190,68 +272,58 @@ class WordLookupService:
                 match_type="none",
             )
 
-        # 1. Exact dictionary match
-        if normalized in self._sign_data:
-            entry = self._sign_data[normalized]
+        # 1. Exact canonical dictionary match
+        canonical_key = self._resolve_canonical(normalized)
+        if canonical_key and canonical_key in self._sign_data:
+            entry = self._sign_data[canonical_key]
             if self._has_valid_url(entry):
                 return WordLookupResult(
-                    word=normalized,
+                    word=canonical_key,
                     original_query=original,
                     found=True,
                     s3_url=entry["s3_url"],
                     match_type="exact",
                 )
 
-        # 2. Approved alias match
-        for word, entry in self._sign_data.items():
-            anchors = entry.get("anchors", [])
-            if normalized in [a.upper() for a in anchors]:
-                if self._has_valid_url(entry):
-                    return WordLookupResult(
-                        word=word,
-                        original_query=original,
-                        found=True,
-                        s3_url=entry["s3_url"],
-                        match_type="anchor",
-                    )
+        # 2. Approved alias/anchor match
+        clean_key = re.sub(r"[^\w\s]", "", normalized).strip()
+        alias_target = self._alias_map.get(normalized) or self._alias_map.get(clean_key)
+        if alias_target and alias_target in self._sign_data:
+            entry = self._sign_data[alias_target]
+            if self._has_valid_url(entry):
+                return WordLookupResult(
+                    word=alias_target,
+                    original_query=original,
+                    found=True,
+                    s3_url=entry["s3_url"],
+                    match_type="anchor",
+                )
 
-        # 3. Safe, verified morphological match
+        # 3. Morphological normalization
         morph_match = self._morphological_match(normalized, original)
         if morph_match:
             return morph_match
 
-        # Substring partial match for compounds (only if length > 2)
-        for word, entry in self._sign_data.items():
-            if len(word) > 2 and len(normalized) > 2:
-                if normalized in word or word in normalized:
-                    if self._has_valid_url(entry):
-                        return WordLookupResult(
-                            word=word,
-                            original_query=original,
-                            found=True,
-                            s3_url=entry["s3_url"],
-                            match_type="partial",
-                        )
-
-        # 4. Optional semantic search fallback for explicit semantic requests only
+        # 4. Conservative semantic vector retrieval
         if use_semantic_fallback:
-            similar = semantic_search_service.search(query, top_k=5)
+            similar = semantic_search_service.search(query, top_k=settings.SEMANTIC_SEARCH_TOP_K)
             for similar_word, score in similar:
-                normalized_similar = self._normalize_word(similar_word)
-                if normalized_similar in self._sign_data:
-                    entry = self._sign_data[normalized_similar]
-                    if self._has_valid_url(entry):
-                        return WordLookupResult(
-                            word=normalized_similar,
-                            original_query=original,
-                            found=True,
-                            s3_url=entry["s3_url"],
-                            match_type="semantic",
-                            similar_words=[w for w, _ in similar],
-                        )
+                if score >= settings.SEMANTIC_SEARCH_MIN_SIMILARITY:
+                    canon = self._resolve_canonical(similar_word)
+                    if canon and canon in self._sign_data:
+                        entry = self._sign_data[canon]
+                        if self._has_valid_url(entry):
+                            return WordLookupResult(
+                                word=canon,
+                                original_query=original,
+                                found=True,
+                                s3_url=entry["s3_url"],
+                                match_type="semantic",
+                                similar_words=[w for w, _ in similar],
+                            )
 
             return WordLookupResult(
-                word=normalized,
+                word=clean_key,
                 original_query=original,
                 found=False,
                 s3_url=None,
@@ -259,18 +331,18 @@ class WordLookupService:
                 similar_words=[w for w, _ in similar] if similar else [],
             )
 
-        # Fingerspelling fallback for single letter query if present
-        if len(normalized) == 1 and normalized in self._letter_cache:
+        # 5. Single letter / digit check
+        if len(clean_key) == 1 and clean_key in self._letter_cache:
             return WordLookupResult(
-                word=normalized,
+                word=clean_key,
                 original_query=original,
                 found=True,
-                s3_url=self._letter_cache[normalized],
+                s3_url=self._letter_cache[clean_key],
                 match_type="partial",
             )
 
         return WordLookupResult(
-            word=normalized,
+            word=clean_key,
             original_query=original,
             found=False,
             s3_url=None,

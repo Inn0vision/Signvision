@@ -2,7 +2,7 @@
 // Using ADB reverse proxy: run `adb reverse tcp:8000 tcp:8000`
 const API_CONFIG = {
   baseUrl: process.env.EXPO_PUBLIC_CORE_API_URL || (__DEV__ 
-    ? 'http://10.99.60.213:8000'
+    ? 'http://10.36.211.213:8000'
     : 'https://your-production-api.com'),
   timeout: 60000,
   retries: 3,
@@ -290,7 +290,7 @@ export function getApiBaseUrl(): string {
 
 export const VIDEO_API_CONFIG = {
   baseUrl: process.env.EXPO_PUBLIC_VIDEO_API_URL || (__DEV__ 
-    ? 'http://10.99.60.213:8001'
+    ? 'http://10.36.211.213:8001'
     : 'https://your-video-api.com'),
   timeout: 60000,
   retries: 3,
@@ -309,7 +309,8 @@ export interface TranslateVideoOptions {
 
 export async function translateVideoClip(
   videoData: string | Blob,
-  options?: TranslateVideoOptions
+  options?: TranslateVideoOptions,
+  retriesLeft: number = VIDEO_API_CONFIG.retries
 ): Promise<TranslateVideoResponse> {
   const formData = new FormData();
   
@@ -353,17 +354,25 @@ export async function translateVideoClip(
 
     if (!response.ok) {
       const errorBody = await response.text();
+      const isRetryable = response.status >= 500 || response.status === 429;
       throw new ApiError(
         `Video translation failed: ${response.statusText}`,
         response.status,
         errorBody,
-        response.status >= 500
+        isRetryable
       );
     }
 
     return await response.json();
   } catch (error) {
     clearTimeout(timeoutId);
+
+    if (retriesLeft > 0 && isRetryableError(error)) {
+      console.log(`[Video API] Retry ${VIDEO_API_CONFIG.retries - retriesLeft + 1}/${VIDEO_API_CONFIG.retries} for video upload`);
+      await sleep(VIDEO_API_CONFIG.retryDelay * (VIDEO_API_CONFIG.retries - retriesLeft + 1));
+      return translateVideoClip(videoData, options, retriesLeft - 1);
+    }
+
     if (error instanceof ApiError) throw error;
     if (error instanceof Error) {
       throw new ApiError(`Video upload error: ${error.message}`, undefined, undefined, false);

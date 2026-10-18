@@ -48,12 +48,49 @@ def test_anchor_lookup():
     assert result.s3_url is not None
 
 
-def test_partial_lookup():
-    # Partial match for longer words (> 2 chars)
-    result = word_lookup_service.lookup("DAILY")
-    assert result.found is True
-    assert "DAILY" in result.word
-    assert result.s3_url is not None
+def test_compound_and_hyphen_normalization():
+    # Hyphen and space normalization: 'DAILY BREAD' and 'DAILY-BREAD' resolve to canonical 'DAILY-BREAD'
+    res1 = word_lookup_service.lookup("DAILY-BREAD")
+    res2 = word_lookup_service.lookup("DAILY BREAD")
+    assert res1.found is True
+    assert res2.found is True
+    assert res1.word == "DAILY-BREAD"
+    assert res2.word == "DAILY-BREAD"
+    assert res1.s3_url is not None
+
+
+def test_substring_false_positives_eliminated():
+    # Verify strict elimination of broad substring traps
+    assert word_lookup_service.lookup("CARPET", use_semantic_fallback=False).found is False
+    assert word_lookup_service.lookup("CAT", use_semantic_fallback=False).found is False
+    assert word_lookup_service.lookup("CARE", use_semantic_fallback=False).found is False
+
+
+def test_unplayable_entries_handled_honestly():
+    # Records missing valid S3 URLs are not reported as playable
+    assert word_lookup_service.lookup("TWELVE").found is False
+    assert word_lookup_service.lookup("MARRIAGE").found is False
+
+
+def test_approved_synonyms_resolve_correctly():
+    # PC -> COMPUTER, PLEASANT -> NICE
+    pc_res = word_lookup_service.lookup("PC")
+    assert pc_res.found is True
+    assert pc_res.word == "COMPUTER"
+    assert pc_res.match_type == "anchor"
+
+    pleasant_res = word_lookup_service.lookup("PLEASANT")
+    assert pleasant_res.found is True
+    assert pleasant_res.word == "NICE"
+    assert pleasant_res.match_type == "anchor"
+
+
+def test_calibrated_semantic_retrieval():
+    # AUTOMOBILE -> CAR via calibrated semantic retrieval
+    res = word_lookup_service.lookup("AUTOMOBILE", use_semantic_fallback=True)
+    assert res.found is True
+    assert res.word == "CAR"
+    assert res.s3_url is not None
 
 
 def test_lookup_result_contract_dict():

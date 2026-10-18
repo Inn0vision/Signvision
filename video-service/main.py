@@ -186,12 +186,17 @@ async def translate_video(
 
     # Determine mirror requirement:
     # Training data was recorded with cv2.flip(frame, 1) (mirrored selfie view).
-    # Mobile CameraView with mirror={facing === 'front'} produces ALREADY-MIRRORED video -> needs_mirror = False.
-    # Web MediaRecorder produces UNMIRRORED video stream -> needs_mirror = True.
-    # Back-camera third-person video is UNMIRRORED -> needs_mirror = True.
+    # Live camera recordings (both Web MediaRecorder and Mobile CameraView.recordAsync)
+    # record raw unmirrored sensor frames.
+    # When is_mirrored is provided:
+    #   is_mirrored=False -> video is raw unmirrored, needs_mirror = True (flip to match training convention).
+    #   is_mirrored=True -> video is already flipped (e.g. pre-processed clips), needs_mirror = False.
+    # When is_mirrored is omitted:
+    #   If facing_mode is set ('front', 'user', 'back', 'environment'), it's a camera clip -> needs_mirror = True.
+    #   Otherwise, webm implies web camera feed -> needs_mirror = True; raw mp4 defaults to False for test clips.
     if is_mirrored is not None:
         needs_mirror = not is_mirrored
-    elif facing_mode in ("back", "environment"):
+    elif facing_mode in ("front", "user", "back", "environment"):
         needs_mirror = True
     else:
         needs_mirror = fname_lower.endswith(".webm")

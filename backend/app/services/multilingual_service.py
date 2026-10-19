@@ -368,6 +368,7 @@ Task instructions:{lang_hint}
    - "important_phrases": list of objects with "phrase" and "meaning" if relevant, else [].
    - "has_explicit_time_word": true if explicit time words (e.g. yesterday, today, tomorrow, now), else false.
    - "requires_time_marker": true for action sentences needing temporal markers, false for state/greeting/continuous questions.
+   - "raw_gloss_tokens": list of uppercase words in ISL grammatical order (Time -> Subject/Topic/Pronouns -> Objects/Modifiers -> Adjectives -> Verbs -> Negation -> Question). Preserve ALL content words without artificially reducing to 3 words.
    - "confidence": integer (0-100).
 
 Input: "{text}"
@@ -389,7 +390,8 @@ Return ONLY a valid JSON object matching this exact schema with NO extra comment
     "important_phrases": [],
     "has_explicit_time_word": false,
     "requires_time_marker": false,
-    "confidence": 95
+    "confidence": 95,
+    "raw_gloss_tokens": ["YOU", "FOOD", "EAT", "Q"]
   }}
 }}"""
 
@@ -424,6 +426,12 @@ Return ONLY a valid JSON object matching this exact schema with NO extra comment
         semantic_frame_dict = None
         if isinstance(raw_frame, dict):
             try:
+                raw_gloss = raw_frame.get("raw_gloss_tokens")
+                if isinstance(raw_gloss, list):
+                    raw_gloss = [str(t).upper().strip() for t in raw_gloss if str(t).strip()]
+                else:
+                    raw_gloss = None
+
                 frame = SemanticFrame(
                     subject=raw_frame.get("subject"),
                     object=raw_frame.get("object"),
@@ -438,6 +446,7 @@ Return ONLY a valid JSON object matching this exact schema with NO extra comment
                     requires_time_marker=bool(raw_frame.get("requires_time_marker", False)),
                     confidence=int(raw_frame.get("confidence", 90)) if isinstance(raw_frame.get("confidence"), (int, float)) else 90,
                     extraction_source="groq",
+                    raw_gloss_tokens=raw_gloss,
                 )
                 semantic_frame_dict = frame.to_dict()
             except Exception as e:

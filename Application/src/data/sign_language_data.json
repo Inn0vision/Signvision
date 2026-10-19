@@ -2789,6 +2789,18 @@
     "category": "",
     "s3_url": "https://signvision-data-741452524968-bucket.s3.ap-south-1.amazonaws.com/sigml-files/friday.sigml"
   },
+  "FRIEND": {
+    "anchors": [
+      "FRIENDS",
+      "FRIENDLY",
+      "FRIENDSHIP",
+      "PAL",
+      "COMPANION",
+      "BUDDY"
+    ],
+    "category": "noun",
+    "s3_url": "https://signvision-data-741452524968-bucket.s3.ap-south-1.amazonaws.com/sigml-files/you.sigml"
+  },
   "FROM": {
     "anchors": [
       "STARTING AT",

@@ -92,6 +92,7 @@ export interface HistoryItem {
   word: string;
   timestamp: number;
   found: boolean;
+  signCount?: number;
 }
 
 export interface SearchHistoryItem {

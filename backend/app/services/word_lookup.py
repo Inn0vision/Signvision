@@ -358,11 +358,35 @@ class WordLookupService:
         """
         results: List[WordLookupResult] = []
         for token in gloss_tokens:
+            sub_words = token.strip().split()
+            # If multi-word token, check if it is an exact/anchor phrase (e.g. "THANK YOU", "GOOD MORNING")
+            # If not an exact phrase, resolve each sub-word directly (e.g. "P SIGN" -> "P", "SIGN")
+            if len(sub_words) > 1:
+                exact_unit = self.lookup(token, use_semantic_fallback=False)
+                if exact_unit.found and exact_unit.s3_url and exact_unit.match_type in ("exact", "anchor"):
+                    results.append(exact_unit)
+                    continue
+
+                sub_results: List[WordLookupResult] = []
+                for sub_w in sub_words:
+                    sub_res = self.lookup(sub_w, use_semantic_fallback=use_semantic_fallback)
+                    if sub_res.found and sub_res.s3_url:
+                        sub_results.append(sub_res)
+                    else:
+                        letter_res = self.lookup_fingerspell(sub_w)
+                        if letter_res:
+                            sub_results.extend(letter_res)
+                        else:
+                            sub_results.append(sub_res)
+                if sub_results and any(r.found for r in sub_results):
+                    results.extend(sub_results)
+                    continue
+
             res = self.lookup(token, use_semantic_fallback=use_semantic_fallback)
             if res.found and res.s3_url:
                 results.append(res)
             else:
-                # 4. Fingerspelling fallback for unresolved words
+                # Fingerspelling fallback for unresolved words
                 letter_results = self.lookup_fingerspell(token)
                 if letter_results:
                     results.extend(letter_results)

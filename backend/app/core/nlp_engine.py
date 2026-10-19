@@ -17,7 +17,7 @@ class SemanticFrame(BaseModel):
     object: Optional[Union[str, List[str]]] = None
     tense: str = "PRESENT"  # "PAST", "PRESENT", "FUTURE"
     negation: bool = False
-    sentence_type: str = "statement"  # "statement", "yes_no_question", "wh_question"
+    sentence_type: str = "statement"  # "statement", "yes_no_question", "wh_question", "imperative"
     normalized_verb: Optional[str] = None
     adjective: Optional[str] = None
     question_word: Optional[str] = None
@@ -26,6 +26,9 @@ class SemanticFrame(BaseModel):
     requires_time_marker: bool = False
     confidence: int = 100
     extraction_source: str = "local_rule"  # "local_rule" | "groq" | "offline_dict"
+    condition: Optional[Union[Dict[str, Any], str]] = None
+    secondary_clauses: List[Dict[str, Any]] = Field(default_factory=list)
+    raw_gloss_tokens: Optional[List[str]] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return self.model_dump()
@@ -103,13 +106,14 @@ llm_client = Groq(
 )
 
 AUXILIARY_VERBS = {
+    "do",
+    "does",
+    "did",
     "is",
     "am",
     "are",
     "was",
     "were",
-    "does",
-    "did",
     "have",
     "has",
     "had",
@@ -310,19 +314,21 @@ Tokens: {tokens}
 POS Tags: {pos_tags}
 
 Instructions:
-1. "subject": main subject pronoun or entity (e.g. "i", "you", "he", "she", "we"). For possessive phrases (e.g. "your name", "my book"), extract the possessor pronoun ("you", "i") as subject. For identity sentences ("this is...", "she is my friend"), subject is the first entity.
-2. "object": real entity receiving action, identity complement, or possessed noun. Never include WH-words. If none, null.
-3. "tense": "PAST", "PRESENT", or "FUTURE" ("going to" indicates FUTURE).
+1. "subject": main subject pronoun or entity. For possessives ("your name"), extract possessor ("you"). For imperative commands, "you".
+2. "object": entity receiving action or possessed noun. Never WH-words. For compounds ("sign of P"), extract list or phrase.
+3. "tense": "PAST", "PRESENT", or "FUTURE".
 4. "negation": true if negative (not, never, no), else false.
-5. "sentence_type": "statement", "yes_no_question", or "wh_question".
-6. "normalized_verb": base root action verb (e.g. "eat", "go", "like", "do"). Never auxiliary verbs (is, am, are, was, were). For state sentences ("I am sick", "She is happy") or greetings, set to null.
-7. "adjective": predicative adjective describing state (e.g. "sick", "happy", "tired", "hungry"), else null.
-8. "important_phrases": list of objects with "phrase" and "meaning" if relevant, else [].
-9. "has_explicit_time_word": true if explicit time words (e.g. yesterday, today, tomorrow, now), else false.
-10. "requires_time_marker": true for action sentences needing temporal markers, false for state/greeting/continuous questions.
-11. "confidence": integer (0-100).
+5. "sentence_type": "statement", "yes_no_question", "wh_question", or "imperative".
+6. "normalized_verb": base root action verb ("eat", "go", "make"). Null for state/copula.
+7. "adjective": predicative adjective ("sick", "happy"), else null.
+8. "condition": if conditional clause exists ("if you need help"), extract {{"mark": "if", "subject": "you", "object": "help", "verb": "need", "negation": false}}, else null.
+9. "important_phrases": list of objects with "phrase" and "meaning" if relevant, else [].
+10. "has_explicit_time_word": true if explicit temporal word present, else false.
+11. "requires_time_marker": true only if tense is PAST or FUTURE and no explicit time word.
+12. "confidence": integer (0-100).
+13. "raw_gloss_tokens": list of uppercase words in ISL grammatical order (Time -> Subject/Topic/Pronouns -> Objects/Modifiers -> Adjectives -> Verbs -> Negation -> Question). Preserve ALL content words without artificially reducing to 3 words.
 
-Return ONLY a valid JSON object matching this schema with NO extra commentary or explanation:
+Return ONLY valid JSON matching this schema:
 {{
   "subject": "...",
   "object": null,
@@ -331,10 +337,12 @@ Return ONLY a valid JSON object matching this schema with NO extra commentary or
   "sentence_type": "statement",
   "normalized_verb": "...",
   "adjective": null,
+  "condition": null,
   "important_phrases": [],
   "has_explicit_time_word": false,
   "requires_time_marker": false,
-  "confidence": 98
+  "confidence": 98,
+  "raw_gloss_tokens": []
 }}"""
 
 
@@ -367,13 +375,21 @@ def call_llm(prompt: str, max_tokens: int = 256) -> Dict[str, Any]:
         logger.info(f"LLM call attempt {attempt}/{max_network_attempts} (key: {current_key_display})")
         start_time = time.perf_counter()
 
+        attempt_tokens = max_tokens if attempt == 1 else max(max_tokens, 1024)
+
         try:
             kwargs: Dict[str, Any] = {
                 "model": settings.GROQ_MODEL,
-                "messages": [{"role": "user", "content": prompt}],
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "You are a specialized linguistic semantic extraction engine for Indian Sign Language (ISL). You extract structured semantic slots into valid JSON matching the requested schema. Output valid JSON only.",
+                    },
+                    {"role": "user", "content": prompt},
+                ],
                 "temperature": 0.1,
                 "top_p": 0.95,
-                "max_tokens": max_tokens,
+                "max_tokens": attempt_tokens,
                 "stream": False,
             }
             # Attempt structured JSON mode if supported by model/client and not previously failed
@@ -398,6 +414,10 @@ def call_llm(prompt: str, max_tokens: int = 256) -> Dict[str, Any]:
             )
 
             response_text = completion.choices[0].message.content or ""
+            if not response_text.strip():
+                reasoning = getattr(completion.choices[0].message, "reasoning", None)
+                if reasoning:
+                    response_text = reasoning
             return _parse_llm_json(response_text)
 
         except Exception as e:
@@ -461,6 +481,137 @@ def _parse_llm_json(response_text: str) -> Dict[str, Any]:
     raise ValueError(f"Could not parse valid JSON from LLM response: {text[:200]}")
 
 
+CONDITIONAL_MARKS = {"if", "when", "unless", "whenever", "suppose", "providing", "provided"}
+
+
+def extract_isl_gloss_sequence(
+    doc: Any, sentence: str, condition_clause: Optional[Dict[str, Any]] = None
+) -> List[str]:
+    """
+    Extracts complete, rich ISL gloss sequence according to authentic Indian Sign Language grammar:
+    Time / Condition -> Subject / Topic Pronouns & Entities -> Objects / Modifiers -> Adjectives -> Action Verbs -> Negation -> Question Markers.
+    Preserves ALL meaningful content words from long sentences without artificially compressing into 3 words.
+    """
+    time_tokens: List[str] = []
+    subject_tokens: List[str] = []
+    object_tokens: List[str] = []
+    adj_tokens: List[str] = []
+    verb_tokens: List[str] = []
+    neg_tokens: List[str] = []
+    wh_tokens: List[str] = []
+
+    if condition_clause:
+        if condition_clause.get("mark"):
+            time_tokens.append(str(condition_clause["mark"]).upper())
+        if condition_clause.get("subject"):
+            time_tokens.append(str(condition_clause["subject"]).upper())
+        if condition_clause.get("object"):
+            time_tokens.append(str(condition_clause["object"]).upper())
+        if condition_clause.get("verb"):
+            time_tokens.append(str(condition_clause["verb"]).upper())
+        if condition_clause.get("negation"):
+            time_tokens.append("NOT")
+
+    clean = sentence.strip().lower()
+    is_wh = any(t.lower_ in WH_WORDS for t in doc)
+    is_q = clean.endswith("?") or is_wh
+
+    PRONOUNS_TOPIC = {
+        "they", "those", "these", "this", "that", "you", "i", "we", "he", "she",
+        "it", "me", "them", "us", "him", "her", "my", "your", "his", "her", "our", "their"
+    }
+    POSS_MAP = {"my": "I", "your": "YOU", "his": "HE", "her": "SHE", "our": "WE", "their": "THEY"}
+    CONNECTORS = {"but", "and", "or", "so", "if", "because", "then"}
+
+    skip_indices = set()
+    tokens_list = list(doc)
+    for idx, t in enumerate(tokens_list):
+        w = t.lower_
+        if w in {"last", "next", "this", "every"} and idx + 1 < len(tokens_list):
+            next_t = tokens_list[idx + 1]
+            if next_t.lower_ in {"yesterday", "today", "tomorrow", "tonight", "morning", "afternoon", "evening", "night", "week", "month", "year"}:
+                time_tokens.append(f"{w} {next_t.lemma_}".upper())
+                skip_indices.add(idx)
+                skip_indices.add(idx + 1)
+
+    for idx, t in enumerate(tokens_list):
+        if idx in skip_indices:
+            continue
+        w = t.lower_
+        lemma = t.lemma_.lower()
+        pos = t.pos_
+        dep = t.dep_
+
+        if pos == "PUNCT" or w in ARTICLES:
+            continue
+
+        if w == "to" and t.head.pos_ == "VERB":
+            continue
+
+        if w in {"not", "never", "no", "n't", "dont", "cant", "wont", "didnt", "isnt", "arent", "wasnt", "werent"} or dep == "neg":
+            if "NOT" not in neg_tokens:
+                neg_tokens.append("NOT")
+            continue
+
+        if w in {"yesterday", "today", "tomorrow", "tonight", "morning", "afternoon", "evening", "night", "now", "later", "soon"}:
+            time_tokens.append(lemma.upper())
+            continue
+
+        if w in WH_WORDS:
+            wh_tokens.append(w.upper())
+            continue
+
+        if w in AUXILIARY_VERBS:
+            if w in {"going", "gonna"} and (pos == "VERB" or dep == "ROOT"):
+                has_to_verb = any(c.lower_ == "to" or c.dep_ == "xcomp" for c in t.children)
+                if not has_to_verb:
+                    verb_tokens.append("GO")
+                    continue
+            continue
+
+        if w in {"will", "would", "shall", "should", "may", "might", "can", "could", "must"}:
+            continue
+
+        if w in POSS_MAP and dep == "poss":
+            subject_tokens.append(POSS_MAP[w])
+            continue
+
+        if w in PRONOUNS_TOPIC or dep in ("nsubj", "nsubjpass", "nmod"):
+            pron_val = POSS_MAP.get(w, lemma.upper())
+            if pron_val == "THEY" or w == "they":
+                pron_val = "THEY"
+            subject_tokens.append(pron_val)
+            continue
+
+        if pos == "VERB" and w not in AUXILIARY_VERBS:
+            verb_tokens.append(lemma.upper())
+            continue
+
+        if pos == "ADJ":
+            adj_tokens.append(lemma.upper())
+            continue
+
+        if pos in ("NOUN", "PROPN") or dep in ("dobj", "pobj", "attr", "acomp"):
+            object_tokens.append(lemma.upper())
+            continue
+
+        if w in CONNECTORS:
+            subject_tokens.insert(0, w.upper())
+        elif pos not in ("AUX", "PUNCT", "SPACE"):
+            object_tokens.append(lemma.upper())
+
+    gloss: List[str] = []
+    for grp in [time_tokens, subject_tokens, object_tokens, adj_tokens, verb_tokens, neg_tokens, wh_tokens]:
+        for token in grp:
+            if not gloss or gloss[-1] != token:
+                gloss.append(token)
+
+    if is_q and not wh_tokens and "Q" not in gloss:
+        gloss.append("Q")
+
+    return gloss
+
+
 def extract_local_frame(doc: Any, sentence: str) -> Optional[SemanticFrame]:
     """
     Deterministic local semantic extraction using spaCy grammatical annotations.
@@ -471,36 +622,77 @@ def extract_local_frame(doc: Any, sentence: str) -> Optional[SemanticFrame]:
     if doc is None or len(doc) == 0:
         return None
 
-    # Check for unsupported complex clauses (e.g., subordinating conjunctions)
-    # Interrogatives ('where', 'when', 'why', 'how', etc.) in WH-questions are not subordinate clauses
+    # Detect conditional / adverbial clauses
+    condition_clause: Optional[Dict[str, Any]] = None
+    cond_verbs = []
+    cond_tokens = set()
+
     for token in doc:
+        if token.dep_ in ("mark", "advmod") and token.lower_ in CONDITIONAL_MARKS:
+            head_verb = token.head
+            cond_verbs.append((token, head_verb))
+
+    if cond_verbs:
+        mark_tok, cond_head = cond_verbs[0]
+        # Collect tokens in the condition subtree
+        cond_subtree = list(cond_head.subtree)
+        cond_tokens = set(cond_subtree)
+
+        c_mark = mark_tok.lower_
+        c_subj = None
+        c_obj = None
+        c_verb = cond_head.lemma_.lower()
+        if c_verb in AUXILIARY_VERBS:
+            c_verb = None
+        c_neg = any(t.dep_ == "neg" for t in cond_subtree)
+
+        for t in cond_subtree:
+            if t.dep_ in ("nsubj", "nsubjpass") and t.head == cond_head:
+                c_subj = t.text.lower()
+            elif t.dep_ in ("dobj", "pobj", "attr") and t.head == cond_head:
+                if t.lower_ not in ARTICLES:
+                    c_obj = t.lemma_.lower()
+
+        condition_clause = {
+            "mark": c_mark,
+            "subject": c_subj,
+            "object": c_obj,
+            "verb": c_verb,
+            "negation": c_neg,
+        }
+
+    # Check for unsupported complex clauses (e.g., non-conditional subordinating conjunctions)
+    for token in doc:
+        if token in cond_tokens:
+            continue
         if token.lower_ in WH_WORDS:
             continue
         if token.pos_ == "SCONJ" or token.lower_ in {
-            "although", "whereas", "unless", "whenever", "wherever", "provided", "despite", "while", "since"
+            "although", "whereas", "wherever", "despite", "while", "since", "because"
         }:
             logger.info("Local extraction deferred to Groq: complex subordinate clause detected")
             return None
 
-    # Check for multiple conjoined verb clauses
-    conj_verbs = [t for t in doc if t.dep_ == "conj" and t.pos_ in ("VERB", "AUX")]
+    # Check for multiple conjoined verb clauses outside the condition
+    main_doc_tokens = [t for t in doc if t not in cond_tokens]
+    conj_verbs = [t for t in main_doc_tokens if t.dep_ == "conj" and t.pos_ in ("VERB", "AUX")]
     if len(conj_verbs) > 1:
         logger.info("Local extraction deferred to Groq: multiple conjoined verb clauses detected")
         return None
 
     clean_sentence = sentence.strip().lower()
 
-    # 1. Negation
+    # 1. Negation (in main clause)
     negation = any(
         t.dep_ == "neg"
         or t.lower_ in ("not", "never", "no", "n't", "dont", "cant", "wont", "didnt", "isnt", "arent", "wasnt", "werent")
-        for t in doc
+        for t in main_doc_tokens
     )
 
     # 2. Sentence Type & WH Question
     sentence_type = "statement"
     question_word = None
-    for t in doc:
+    for t in main_doc_tokens:
         if t.lower_ in WH_WORDS:
             sentence_type = "wh_question"
             question_word = t.lower_
@@ -509,36 +701,38 @@ def extract_local_frame(doc: Any, sentence: str) -> Optional[SemanticFrame]:
     if sentence_type == "statement":
         # Inverted auxiliary or trailing question mark -> yes_no_question
         if clean_sentence.endswith("?") or (
-            len(doc) > 1 and doc[0].lower_ in AUXILIARY_VERBS and any(t.dep_ in ("nsubj", "nsubjpass") for t in doc[1:])
+            len(main_doc_tokens) > 1
+            and main_doc_tokens[0].lower_ in AUXILIARY_VERBS
+            and any(t.dep_ in ("nsubj", "nsubjpass") for t in main_doc_tokens[1:])
         ):
             sentence_type = "yes_no_question"
 
-    # 3. Explicit Time Word
+    # 3. Explicit Time Word (in main clause)
     temporal_keywords = {
         "yesterday", "today", "tomorrow", "tonight", "morning",
         "afternoon", "evening", "night", "now", "later", "soon"
     }
-    has_explicit_time_word = any(t.lower_ in temporal_keywords for t in doc)
+    has_explicit_time_word = any(t.lower_ in temporal_keywords for t in main_doc_tokens)
 
-    # 4. Tense
+    # 4. Tense (in main clause)
     tense = "PRESENT"
-    if any(t.lower_ in ("will", "shall", "tomorrow", "gonna") for t in doc) or (
-        any(t.lower_ == "going" for t in doc) and any(t.lower_ == "to" for t in doc)
+    if any(t.lower_ in ("will", "shall", "tomorrow", "gonna") for t in main_doc_tokens) or (
+        any(t.lower_ == "going" for t in main_doc_tokens) and any(t.lower_ == "to" for t in main_doc_tokens)
     ):
         tense = "FUTURE"
-    elif any(t.tag_ in ("VBD", "VBN") or t.lower_ in ("did", "was", "were", "had", "yesterday", "last") for t in doc):
+    elif any(t.tag_ in ("VBD", "VBN") or t.lower_ in ("did", "was", "were", "had", "yesterday", "last") for t in main_doc_tokens):
         tense = "PAST"
 
-    # 5. Subject
+    # 5. Subject (in main clause)
     subject = None
-    nsubj_tokens = [t for t in doc if t.dep_ in ("nsubj", "nsubjpass")]
+    nsubj_tokens = [t for t in main_doc_tokens if t.dep_ in ("nsubj", "nsubjpass")]
     if nsubj_tokens:
         subject = nsubj_tokens[0].text.lower()
         if subject in ARTICLES:
             subject = None
 
     # Handle possessive constructions e.g. "what is your name", "my book"
-    poss_tokens = [t for t in doc if t.dep_ == "poss"]
+    poss_tokens = [t for t in main_doc_tokens if t.dep_ == "poss"]
     poss_obj = None
     if poss_tokens:
         poss_word = poss_tokens[0].lower_
@@ -556,20 +750,27 @@ def extract_local_frame(doc: Any, sentence: str) -> Optional[SemanticFrame]:
         return None
     root = roots[0]
 
+    # Detect imperative: root is base verb, no explicit subject
+    is_imperative = False
+    if not subject and root.tag_ in ("VB", "VBP") and not clean_sentence.endswith("?"):
+        is_imperative = True
+        subject = "you"
+        sentence_type = "imperative"
+
     normalized_verb = None
     adjective = None
     obj = poss_obj
 
     # Check if root is state/copula verb
     if root.lemma_.lower() in STATE_VERBS or root.lower_ in AUXILIARY_VERBS:
-        acomps = [t for t in doc if t.dep_ in ("acomp", "attr")]
+        acomps = [t for t in main_doc_tokens if t.dep_ in ("acomp", "attr")]
         for ac in acomps:
             if ac.pos_ == "ADJ":
                 adjective = ac.lemma_.lower()
             elif ac.pos_ in ("NOUN", "PROPN") and not obj:
                 obj = ac.lemma_.lower()
         if not obj and not adjective:
-            pobjs = [t for t in doc if t.dep_ == "pobj" and t.lower_ not in temporal_keywords]
+            pobjs = [t for t in main_doc_tokens if t.dep_ == "pobj" and t.lower_ not in temporal_keywords]
             if pobjs:
                 obj = pobjs[0].lemma_.lower()
     else:
@@ -578,19 +779,45 @@ def extract_local_frame(doc: Any, sentence: str) -> Optional[SemanticFrame]:
             normalized_verb = None
 
         if not obj:
-            dobjs = [t for t in doc if t.dep_ == "dobj"]
+            dobjs = [t for t in main_doc_tokens if t.dep_ == "dobj" and t.head == root]
             if dobjs:
-                obj = dobjs[0].lemma_.lower()
+                dobj_head = dobjs[0]
+                # Check for prepositional complement (e.g. "sign of P") or compound ("phone number")
+                pobjs_under_dobj = [
+                    p
+                    for prep in dobj_head.children
+                    if prep.dep_ == "prep"
+                    for p in prep.children
+                    if p.dep_ == "pobj" and p.lower_ not in ARTICLES
+                ]
+                compounds_under_dobj = [
+                    c for c in dobj_head.children if c.dep_ == "compound" and c.lower_ not in ARTICLES
+                ]
+                if pobjs_under_dobj:
+                    obj = [pobjs_under_dobj[0].lemma_.lower(), dobj_head.lemma_.lower()]
+                elif compounds_under_dobj:
+                    obj = [compounds_under_dobj[0].lemma_.lower(), dobj_head.lemma_.lower()]
+                else:
+                    obj = dobj_head.lemma_.lower()
             else:
-                pobjs = [t for t in doc if t.dep_ == "pobj" and t.lower_ not in temporal_keywords]
+                pobjs = [t for t in main_doc_tokens if t.dep_ == "pobj" and t.lower_ not in temporal_keywords]
                 if pobjs:
                     obj = pobjs[0].lemma_.lower()
                 else:
-                    attrs = [t for t in doc if t.dep_ == "attr"]
+                    attrs = [t for t in main_doc_tokens if t.dep_ == "attr"]
                     if attrs:
                         obj = attrs[0].lemma_.lower()
+                    else:
+                        npadvs = [
+                            t for t in main_doc_tokens
+                            if t.dep_ in ("advmod", "npadvmod", "dative")
+                            and t.pos_ in ("NOUN", "PROPN")
+                            and t.lower_ not in temporal_keywords
+                        ]
+                        if npadvs:
+                            obj = npadvs[0].lemma_.lower()
 
-        xcomps = [t for t in doc if t.dep_ == "xcomp" and t.pos_ in ("VERB", "AUX")]
+        xcomps = [t for t in main_doc_tokens if t.dep_ == "xcomp" and t.pos_ in ("VERB", "AUX")]
         if xcomps:
             if xcomps[0].lower_ not in AUXILIARY_VERBS:
                 normalized_verb = xcomps[0].lemma_.lower()
@@ -598,7 +825,7 @@ def extract_local_frame(doc: Any, sentence: str) -> Optional[SemanticFrame]:
             if x_dobjs and not obj:
                 obj = x_dobjs[0].lemma_.lower()
 
-    if obj and obj in ARTICLES:
+    if obj and isinstance(obj, str) and obj in ARTICLES:
         obj = None
 
     requires_time_marker = bool(
@@ -608,7 +835,9 @@ def extract_local_frame(doc: Any, sentence: str) -> Optional[SemanticFrame]:
         and tense in ("PAST", "FUTURE")
     )
 
-    if not any([normalized_verb, adjective, obj, subject]):
+    raw_gloss_tokens = extract_isl_gloss_sequence(doc, sentence, condition_clause)
+
+    if not any([normalized_verb, adjective, obj, subject, condition_clause, raw_gloss_tokens]):
         return None
 
     return SemanticFrame(
@@ -625,6 +854,8 @@ def extract_local_frame(doc: Any, sentence: str) -> Optional[SemanticFrame]:
         requires_time_marker=requires_time_marker,
         confidence=95,
         extraction_source="local_rule",
+        condition=condition_clause,
+        raw_gloss_tokens=raw_gloss_tokens,
     )
 
 
@@ -655,7 +886,7 @@ def detect_phrases_llm(sentence: str, analysis: Dict[str, List[str]]) -> Dict[st
     tense = raw_tense if raw_tense in ("PAST", "PRESENT", "FUTURE") else "PRESENT"
 
     raw_type = str(parsed.get("sentence_type", "statement")).lower()
-    sentence_type = raw_type if raw_type in ("statement", "yes_no_question", "wh_question") else "statement"
+    sentence_type = raw_type if raw_type in ("statement", "yes_no_question", "wh_question", "imperative") else "statement"
 
     raw_verb = parsed.get("normalized_verb")
     normalized_verb = str(raw_verb).strip().lower() if raw_verb and isinstance(raw_verb, str) else None
@@ -666,6 +897,16 @@ def detect_phrases_llm(sentence: str, analysis: Dict[str, List[str]]) -> Dict[st
     important_phrases = parsed.get("important_phrases", [])
     if not isinstance(important_phrases, list):
         important_phrases = []
+
+    condition_val = parsed.get("condition")
+    if not isinstance(condition_val, (dict, str)) or not condition_val:
+        condition_val = None
+
+    raw_gloss_tokens = parsed.get("raw_gloss_tokens")
+    if not isinstance(raw_gloss_tokens, list):
+        raw_gloss_tokens = None
+    elif raw_gloss_tokens:
+        raw_gloss_tokens = [str(t).upper().strip() for t in raw_gloss_tokens if str(t).strip()]
 
     frame = SemanticFrame(
         subject=subject,
@@ -681,6 +922,8 @@ def detect_phrases_llm(sentence: str, analysis: Dict[str, List[str]]) -> Dict[st
         requires_time_marker=bool(parsed.get("requires_time_marker", False)),
         confidence=int(parsed.get("confidence", 90)) if isinstance(parsed.get("confidence"), (int, float)) else 90,
         extraction_source="groq",
+        condition=condition_val,
+        raw_gloss_tokens=raw_gloss_tokens,
     )
     result = frame.to_dict()
 
@@ -696,6 +939,37 @@ def detect_phrases_llm(sentence: str, analysis: Dict[str, List[str]]) -> Dict[st
 def apply_isl_rules(parsed_data: Union[SemanticFrame, Dict[str, Any]], tokens: List[str]) -> Dict[str, Any]:
     if isinstance(parsed_data, SemanticFrame):
         parsed_data = parsed_data.to_dict()
+
+    condition = parsed_data.get("condition")
+    condition_gloss: List[str] = []
+    if condition:
+        if isinstance(condition, dict):
+            c_mark = condition.get("mark")
+            c_subj = condition.get("subject")
+            c_obj = condition.get("object")
+            c_verb = condition.get("verb")
+            c_neg = condition.get("negation", False)
+            if c_mark:
+                condition_gloss.append(str(c_mark).upper())
+            if c_subj:
+                condition_gloss.append(str(c_subj).upper())
+            if c_obj:
+                if isinstance(c_obj, list):
+                    for co in c_obj:
+                        if str(co).lower() not in ARTICLES:
+                            condition_gloss.append(str(co).upper())
+                else:
+                    for co in str(c_obj).split():
+                        if co.lower() not in ARTICLES:
+                            condition_gloss.append(co.upper())
+            if c_verb:
+                condition_gloss.append(str(c_verb).upper())
+            if c_neg:
+                condition_gloss.append("NOT")
+        elif isinstance(condition, str):
+            for co in condition.split():
+                if co.lower() not in ARTICLES:
+                    condition_gloss.append(co.upper())
 
     subject = parsed_data.get("subject")
     obj = parsed_data.get("object")
@@ -760,7 +1034,7 @@ def apply_isl_rules(parsed_data: Union[SemanticFrame, Dict[str, Any]], tokens: L
         is_question = True
 
     time_marker = None
-    if requires_time and not has_explicit_time and not is_state_sentence:
+    if requires_time and not has_explicit_time and not is_state_sentence and tense in ("PAST", "FUTURE"):
         time_marker = TIME_MARKER_MAP.get(tense)
 
     explicit_time_words = []
@@ -807,6 +1081,8 @@ def apply_isl_rules(parsed_data: Union[SemanticFrame, Dict[str, Any]], tokens: L
         "time_marker": time_marker,
         "explicit_time_words": explicit_time_words,
         "is_state_sentence": is_state_sentence,
+        "condition_gloss": condition_gloss,
+        "raw_gloss_tokens": parsed_data.get("raw_gloss_tokens"),
     }
 
     logger.info(f"ISL rule transformation: {result}")
@@ -814,7 +1090,7 @@ def apply_isl_rules(parsed_data: Union[SemanticFrame, Dict[str, Any]], tokens: L
 
 
 def build_gloss_output(transformed: Dict[str, Any]) -> Dict[str, Any]:
-    gloss_tokens = []
+    raw_gloss = transformed.get("raw_gloss_tokens")
 
     subject = transformed.get("subject")
     obj = transformed.get("object")
@@ -826,6 +1102,28 @@ def build_gloss_output(transformed: Dict[str, Any]) -> Dict[str, Any]:
     question_word = transformed.get("question_word")
     time_marker = transformed.get("time_marker")
     explicit_time_words = transformed.get("explicit_time_words", [])
+    sentence_type = transformed.get("sentence_type", "statement")
+
+    obj_str = " ".join([str(o).upper() for o in obj]) if isinstance(obj, list) else (obj.upper() if obj else None)
+
+    if raw_gloss and isinstance(raw_gloss, list) and len(raw_gloss) > 0:
+        output = {
+            "subject": subject.upper() if subject else None,
+            "object": obj_str,
+            "verb": verb.upper() if verb else None,
+            "tense": tense,
+            "negation": negation,
+            "question": is_question,
+            "gloss": [str(t).upper().strip() for t in raw_gloss if str(t).strip()],
+        }
+        logger.info(f"Gloss output (from raw_gloss_tokens): {output}")
+        return output
+
+    gloss_tokens = []
+
+    condition_gloss = transformed.get("condition_gloss", [])
+    if condition_gloss:
+        gloss_tokens.extend(condition_gloss)
 
     if explicit_time_words:
         for tw in explicit_time_words:
@@ -834,7 +1132,9 @@ def build_gloss_output(transformed: Dict[str, Any]) -> Dict[str, Any]:
         gloss_tokens.append(time_marker.upper())
 
     if subject:
-        gloss_tokens.append(subject.upper())
+        # Avoid duplicate subject pronoun if condition clause already established it in imperative
+        if not (condition_gloss and sentence_type == "imperative" and subject.upper() in condition_gloss):
+            gloss_tokens.append(subject.upper())
 
     if obj:
         gloss_tokens.append(obj.upper())
@@ -856,7 +1156,7 @@ def build_gloss_output(transformed: Dict[str, Any]) -> Dict[str, Any]:
 
     output = {
         "subject": subject.upper() if subject else None,
-        "object": obj.upper() if obj else None,
+        "object": obj_str,
         "verb": verb.upper() if verb else None,
         "tense": tense,
         "negation": negation,
@@ -896,27 +1196,55 @@ def _fallback_extraction(sentence: str, analysis: Dict) -> Dict[str, Any]:
         try:
             doc = nlp(sentence)
             subject = None
-            obj = None
+            extracted_objs = []
             verb = None
             negation = False
             sentence_type = "statement"
-
             adjective = None
+            condition_clause = None
+            cond_tokens = set()
+
             for token in doc:
+                if token.dep_ in ("mark", "advmod") and token.lower_ in CONDITIONAL_MARKS:
+                    head_verb = token.head
+                    c_subtree = list(head_verb.subtree)
+                    cond_tokens = set(c_subtree)
+                    c_subj = next((t.text.lower() for t in c_subtree if t.dep_ in ("nsubj", "nsubjpass")), None)
+                    c_obj = next((t.lemma_.lower() for t in c_subtree if t.dep_ in ("dobj", "pobj") and t.lower_ not in ARTICLES), None)
+                    condition_clause = {
+                        "mark": token.lower_,
+                        "subject": c_subj,
+                        "object": c_obj,
+                        "verb": head_verb.lemma_.lower() if head_verb.lemma_.lower() not in AUXILIARY_VERBS else None,
+                        "negation": any(t.dep_ == "neg" for t in c_subtree),
+                    }
+                    break
+
+            for token in doc:
+                if token in cond_tokens:
+                    continue
                 if token.dep_ in ("nsubj", "nsubjpass") and not subject:
                     subject = token.text.lower()
                 elif token.dep_ == "ROOT" and token.pos_ in ("VERB", "AUX"):
                     if token.lower_ not in AUXILIARY_VERBS:
                         verb = token.lemma_.lower()
-                elif token.dep_ in ("dobj", "pobj"):
+                elif token.dep_ == "dobj":
                     if token.lower_ not in ARTICLES and token.lower_ not in AUXILIARY_VERBS:
-                        obj = token.lemma_.lower()
+                        extracted_objs.append(token.lemma_.lower())
+                        for prep in token.children:
+                            if prep.dep_ == "prep":
+                                for p in prep.children:
+                                    if p.dep_ == "pobj" and p.lower_ not in ARTICLES:
+                                        extracted_objs.insert(0, p.lemma_.lower())
+                elif token.dep_ == "pobj" and not extracted_objs:
+                    if token.lower_ not in ARTICLES and token.lower_ not in AUXILIARY_VERBS:
+                        extracted_objs.append(token.lemma_.lower())
                 elif token.dep_ == "attr":
                     if token.lower_ not in ARTICLES and token.lower_ not in AUXILIARY_VERBS:
                         if token.pos_ == "ADJ":
                             adjective = token.lemma_.lower()
                         else:
-                            obj = token.lemma_.lower()
+                            extracted_objs.append(token.lemma_.lower())
                 elif token.dep_ == "acomp":
                     adjective = token.lemma_.lower()
                 elif token.dep_ == "neg":
@@ -924,6 +1252,8 @@ def _fallback_extraction(sentence: str, analysis: Dict) -> Dict[str, Any]:
                 elif token.dep_ == "xcomp" and token.pos_ == "VERB":
                     if not verb:
                         verb = token.lemma_.lower()
+
+            obj = extracted_objs if len(extracted_objs) > 1 else (extracted_objs[0] if extracted_objs else None)
 
             lower_tokens = [t.lower() for t in analysis.get("tokens", [])]
             for w in lower_tokens:
@@ -954,9 +1284,10 @@ def _fallback_extraction(sentence: str, analysis: Dict) -> Dict[str, Any]:
                 "sentence_type": sentence_type,
                 "normalized_verb": verb,
                 "adjective": adjective,
+                "condition": condition_clause,
                 "important_phrases": [],
                 "has_explicit_time_word": has_explicit_time,
-                "requires_time_marker": verb is not None and verb not in STATE_VERBS,
+                "requires_time_marker": bool(verb is not None and verb not in STATE_VERBS and not has_explicit_time and tense in ("PAST", "FUTURE")),
             }
         except Exception:
             pass
@@ -1038,7 +1369,7 @@ def _fallback_extraction(sentence: str, analysis: Dict) -> Dict[str, Any]:
         "adjective": adjective,
         "important_phrases": [],
         "has_explicit_time_word": has_explicit_time,
-        "requires_time_marker": verb is not None and verb not in STATE_VERBS,
+        "requires_time_marker": bool(verb is not None and verb not in STATE_VERBS and not has_explicit_time and tense in ("PAST", "FUTURE")),
     }
 
 

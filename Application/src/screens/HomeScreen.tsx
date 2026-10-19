@@ -13,6 +13,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  TextInput,
 } from 'react-native';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -39,10 +40,60 @@ import { useResponsive } from '../hooks/useResponsive';
 import { COLORS, RADII, TYPOGRAPHY, SHADOWS } from '../theme/tokens';
 import type { PlaybackStatus, HistoryItem, SignQueueItem, ProcessingMode, SearchHistoryItem, AvatarName } from '../types';
 import { AVATAR_OPTIONS } from '../types';
+import {
+  CharacterSwitchIcon,
+  ClockIcon,
+  ChevronRightIcon,
+  ArrowRightIcon,
+  PlayIcon,
+  PauseIcon,
+  PreviousSignIcon,
+  NextSignIcon,
+  ChevronDownIcon,
+  CloseIcon,
+  SearchMagnifyIcon,
+} from '../components/ui/AppIcons';
 
 const HISTORY_STORAGE_KEY = '@signvision_history';
 const AVATAR_STORAGE_KEY = '@signvision_selected_avatar';
 const MAX_HISTORY_ITEMS = 30;
+
+const INITIAL_DEMO_SIGNS: SignQueueItem[] = [
+  { word: 'WHO', url: 'https://signvision-data-741452524968-bucket.s3.ap-south-1.amazonaws.com/sigml-files/who.sigml', matchType: 'exact' },
+  { word: 'FRIEND', url: 'https://signvision-data-741452524968-bucket.s3.ap-south-1.amazonaws.com/sigml-files/you.sigml', matchType: 'exact' },
+  { word: 'WHO', url: 'https://signvision-data-741452524968-bucket.s3.ap-south-1.amazonaws.com/sigml-files/who.sigml', matchType: 'exact' },
+];
+
+const INITIAL_DEMO_HISTORY: HistoryItem[] = [
+  {
+    word: 'who are they are those are you friends',
+    timestamp: 1792300320000,
+    found: true,
+    signCount: 3,
+  },
+  {
+    word: 'but i can help you',
+    timestamp: 1792295700000,
+    found: true,
+    signCount: 4,
+  },
+];
+
+const formatRecentMeta = (item: HistoryItem): string => {
+  const signs = item.signCount ?? Math.max(1, item.word.trim().split(/\s+/).length);
+  const date = new Date(item.timestamp);
+  const day = date.getDate();
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const month = months[date.getMonth()] || 'Oct';
+  const year = date.getFullYear();
+  let hours = date.getHours();
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours ? hours : 12;
+  const timeStr = `${hours}:${minutes} ${ampm}`;
+  return `${signs} signs · ${day} ${month} ${year}, ${timeStr}`;
+};
 
 const AVATAR_LABELS: Record<AvatarName, string> = {
   luna: '👩 Luna',
@@ -56,20 +107,21 @@ export const HomeScreen: React.FC = () => {
   const responsive = useResponsive();
 
   const [isCameraActive, setIsCameraActive] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState('who are they are those are you friends');
   const [currentWord, setCurrentWord] = useState<string | null>(null);
   const [playbackStatus, setPlaybackStatus] = useState<PlaybackStatus>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isAvatarReady, setIsAvatarReady] = useState(false);
-  const [searchHistory, setSearchHistory] = useState<HistoryItem[]>([]);
+  const [searchHistory, setSearchHistory] = useState<HistoryItem[]>(INITIAL_DEMO_HISTORY);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isHistorySheetOpen, setIsHistorySheetOpen] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState<AvatarName>('luna');
   const [isAvatarSheetOpen, setIsAvatarSheetOpen] = useState(false);
 
   // Sentence processing state
-  const [processingMode, setProcessingMode] = useState<ProcessingMode>('word');
-  const [signQueue, setSignQueue] = useState<SignQueueItem[]>([]);
+  const [selectedLanguage, setSelectedLanguage] = useState<'en' | 'hi' | 'mr'>('en');
+  const [processingMode, setProcessingMode] = useState<ProcessingMode>('sentence');
+  const [signQueue, setSignQueue] = useState<SignQueueItem[]>(INITIAL_DEMO_SIGNS);
   const [currentQueueIndex, setCurrentQueueIndex] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
   const [rawGlossTokens, setRawGlossTokens] = useState<string[]>([]);
@@ -78,10 +130,16 @@ export const HomeScreen: React.FC = () => {
 
   const avatarRef = useRef<AvatarWebViewRef>(null);
 
-  // Refs to avoid stale closures in event listeners
-  const signQueueRef = useRef<SignQueueItem[]>([]);
+  // Refs for robust sequence playback and avoiding stale closures
+  const signQueueRef = useRef<SignQueueItem[]>(INITIAL_DEMO_SIGNS);
   const currentQueueIndexRef = useRef(0);
-  const processingModeRef = useRef<ProcessingMode>('word');
+  const processingModeRef = useRef<ProcessingMode>('sentence');
+  const isPlayingRef = useRef<boolean>(false);
+  const isSequenceModeRef = useRef<boolean>(false);
+  const isContinuousSequenceRef = useRef<boolean>(false);
+  const lastFinishedTimeRef = useRef<number>(0);
+  const lastFinishedIndexRef = useRef<number>(-1);
+  const playbackTimerRef = useRef<NodeJS.Timeout | null>(null);
   const playbackSessionRef = useRef<number>(0);
   const pendingSentenceRef = useRef<{ queue: SignQueueItem[]; startIndex: number } | null>(null);
 
@@ -92,6 +150,11 @@ export const HomeScreen: React.FC = () => {
   useEffect(() => {
     loadHistory();
     loadAvatarPreference();
+    return () => {
+      if (playbackTimerRef.current) {
+        clearTimeout(playbackTimerRef.current);
+      }
+    };
   }, []);
 
   const loadAvatarPreference = async () => {
@@ -120,63 +183,111 @@ export const HomeScreen: React.FC = () => {
     }
   }, [selectedAvatar, playbackStatus]);
 
+  // Plays a single sign; if isSequence is false, stops immediately after playing once (NO looping)
+  const playSignAtIndex = useCallback((index: number, queue?: SignQueueItem[], isSequence = false) => {
+    const activeQueue = queue || signQueueRef.current;
+    if (!activeQueue || activeQueue.length === 0 || index < 0 || index >= activeQueue.length) return;
+
+    if (playbackTimerRef.current) {
+      clearTimeout(playbackTimerRef.current);
+      playbackTimerRef.current = null;
+    }
+
+    if (!isSequence) {
+      isContinuousSequenceRef.current = false;
+    }
+    isSequenceModeRef.current = isSequence;
+    isPlayingRef.current = true;
+    currentQueueIndexRef.current = index;
+    lastFinishedIndexRef.current = -1;
+    setCurrentQueueIndex(index);
+    setCurrentWord(activeQueue[index].word);
+    setPlaybackStatus('playing');
+
+    avatarRef.current?.play(activeQueue[index].url, activeQueue[index].word);
+  }, []);
+
+  // Plays ONLY ONCE a single sign (e.g. when tapping a tile) and stops
+  const playSingleSign = useCallback((index: number, queue?: SignQueueItem[]) => {
+    isContinuousSequenceRef.current = false;
+    playSignAtIndex(index, queue, false);
+  }, [playSignAtIndex]);
+
+  // Plays a full sequence once through from startIndex to end, then stops (NO looping)
+  // For multi-sign sentences, preloads all SiGML assets upfront so playback flows continuously without per-word buffering
   const startSentencePlayback = useCallback(async (queue: SignQueueItem[], startIndex = 0) => {
     if (!queue || queue.length === 0 || startIndex >= queue.length) return;
+    signQueueRef.current = queue;
+    setSignQueue(queue);
 
-    const sessionId = ++playbackSessionRef.current;
-    setCurrentQueueIndex(startIndex);
-    setCurrentWord(queue[startIndex].word);
-    setPlaybackStatus('loading');
+    if (playbackTimerRef.current) {
+      clearTimeout(playbackTimerRef.current);
+      playbackTimerRef.current = null;
+    }
 
     if (!isAvatarReady) {
       pendingSentenceRef.current = { queue, startIndex };
       return;
     }
 
-    try {
-      const compileTarget = queue.slice(startIndex);
-      const compiled = await compileSentenceSiGML(compileTarget);
+    const currentSession = ++playbackSessionRef.current;
 
-      // Discard stale response if a newer action occurred
-      if (playbackSessionRef.current !== sessionId) return;
-
-      if (compiled && compiled.combinedSigml) {
-        avatarRef.current?.playSequence?.(
-          compiled.combinedSigml,
-          compiled.validSigns.map(s => s.word),
-          startIndex
-        );
-      } else {
-        // Fallback: instruct WebView to fetch & compile from URLs
-        avatarRef.current?.playSequenceUrls?.(
-          compileTarget.map(s => s.url),
-          compileTarget.map(s => s.word),
-          startIndex
-        );
-      }
-    } catch (err) {
-      console.error('[startSentencePlayback] Error initiating sequence playback:', err);
-      if (playbackSessionRef.current === sessionId) {
-        setPlaybackStatus('error');
-        setErrorMessage('Failed to start sentence playback');
-      }
+    // For single-sign sentence, play directly
+    if (queue.length === 1) {
+      isContinuousSequenceRef.current = false;
+      playSignAtIndex(0, queue, false);
+      return;
     }
-  }, [isAvatarReady]);
+
+    // Preload all signs in parallel upfront into memory/HTTP cache
+    // This eliminates any per-word network buffering and ensures exact 1:1 synchronization with cards 1, 2, 3...
+    setPlaybackStatus('loading');
+    setCurrentQueueIndex(startIndex);
+    currentQueueIndexRef.current = startIndex;
+    setCurrentWord(queue[startIndex].word);
+
+    try {
+      await Promise.all(
+        queue.map(sign =>
+          fetch(sign.url)
+            .then(res => res.text())
+            .catch(err => console.warn(`[HomeScreen] Preload failed for ${sign.word}:`, err))
+        )
+      );
+    } catch (err) {
+      console.warn('[HomeScreen] Preload error (non-fatal):', err);
+    }
+
+    if (playbackSessionRef.current !== currentSession) return;
+
+    isContinuousSequenceRef.current = false;
+    isSequenceModeRef.current = true;
+    isPlayingRef.current = true;
+    playSignAtIndex(startIndex, queue, true);
+  }, [isAvatarReady, playSignAtIndex]);
 
   const loadHistory = async () => {
     try {
       const stored = await AsyncStorage.getItem(HISTORY_STORAGE_KEY);
       if (stored) {
-        setSearchHistory(JSON.parse(stored));
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setSearchHistory(parsed);
+          return;
+        }
       }
+      setSearchHistory(INITIAL_DEMO_HISTORY);
+      await AsyncStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(INITIAL_DEMO_HISTORY));
     } catch (error) {
       console.error('Failed to load history:', error);
+      setSearchHistory(INITIAL_DEMO_HISTORY);
     }
   };
 
-  const saveToHistory = async (word: string, found: boolean) => {
+  const saveToHistory = async (word: string, found: boolean, signCount?: number) => {
     try {
-      const newItem: HistoryItem = { word, timestamp: Date.now(), found };
+      const count = signCount ?? (word.trim().includes(' ') ? word.trim().split(/\s+/).length : 1);
+      const newItem: HistoryItem = { word, timestamp: Date.now(), found, signCount: count };
       const filtered = searchHistory.filter(h => h.word.toLowerCase() !== word.toLowerCase());
       const updated = [newItem, ...filtered].slice(0, MAX_HISTORY_ITEMS);
       setSearchHistory(updated);
@@ -189,6 +300,7 @@ export const HomeScreen: React.FC = () => {
   const resetPlaybackState = () => {
     playbackSessionRef.current++;
     pendingSentenceRef.current = null;
+    lastFinishedIndexRef.current = -1;
     setSignQueue([]);
     setCurrentQueueIndex(0);
     setRawGlossTokens([]);
@@ -197,8 +309,15 @@ export const HomeScreen: React.FC = () => {
     setSuggestions([]);
   };
 
-  const handleSearch = useCallback(async (input: string) => {
+  const handleSearch = useCallback(async (input: string, lang = selectedLanguage) => {
     if (!input.trim()) return;
+
+    if (playbackTimerRef.current) {
+      clearTimeout(playbackTimerRef.current);
+      playbackTimerRef.current = null;
+    }
+    isPlayingRef.current = false;
+    isContinuousSequenceRef.current = false;
 
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     avatarRef.current?.stop();
@@ -209,7 +328,7 @@ export const HomeScreen: React.FC = () => {
       setPlaybackStatus('loading');
 
       try {
-        const response = await processSentence(input);
+        const response = await processSentence(input, lang);
 
         if (!response.success || response.results.length === 0) {
           setPlaybackStatus('error');
@@ -246,8 +365,9 @@ export const HomeScreen: React.FC = () => {
           saveToHistory(input, false);
         } else {
           setSignQueue(queue);
-          setCurrentQueueIndex(0);
-          saveToHistory(input, true);
+          signQueueRef.current = queue;
+          currentQueueIndexRef.current = 0;
+          saveToHistory(input, true, queue.length);
           startSentencePlayback(queue, 0);
         }
       } catch (error) {
@@ -268,7 +388,18 @@ export const HomeScreen: React.FC = () => {
 
       if (result.found && result.url) {
         setCurrentWord(result.word);
-        saveToHistory(result.word, true);
+        saveToHistory(result.word, true, 1);
+        const singleQueue: SignQueueItem[] = [{
+          word: result.word,
+          url: result.url,
+          matchType: result.matchType || 'exact',
+        }];
+        setSignQueue(singleQueue);
+        signQueueRef.current = singleQueue;
+        setCurrentQueueIndex(0);
+        currentQueueIndexRef.current = 0;
+        isSequenceModeRef.current = false;
+        isPlayingRef.current = true;
         avatarRef.current?.play(result.url, result.word);
       } else {
         setPlaybackStatus('error');
@@ -277,7 +408,7 @@ export const HomeScreen: React.FC = () => {
         saveToHistory(input, false);
       }
     }
-  }, [searchHistory, processingMode, startSentencePlayback]);
+  }, [searchHistory, processingMode, selectedLanguage, startSentencePlayback]);
 
   const handleAvatarReady = useCallback(() => {
     setIsAvatarReady(true);
@@ -292,14 +423,61 @@ export const HomeScreen: React.FC = () => {
   const handlePlaying = useCallback((word: string, signIndex?: number) => {
     setPlaybackStatus('playing');
     setCurrentWord(word);
-    if (typeof signIndex === 'number' && signIndex >= 0) {
+    // Only allow WebView to set queue index when continuous single-text SiGML compile is active
+    // For sequential playback, currentQueueIndexRef is exclusively governed by playSignAtIndex
+    if (isContinuousSequenceRef.current && typeof signIndex === 'number' && signIndex >= 0) {
+      currentQueueIndexRef.current = signIndex;
       setCurrentQueueIndex(signIndex);
     }
   }, []);
 
   const handleFinished = useCallback((word: string) => {
-    setPlaybackStatus('finished');
-  }, []);
+    const now = Date.now();
+    if (now - lastFinishedTimeRef.current < 250) return;
+    lastFinishedTimeRef.current = now;
+
+    if (!isPlayingRef.current) {
+      setPlaybackStatus('finished');
+      return;
+    }
+
+    // Continuous compiled sequence finished playing completely
+    if (isContinuousSequenceRef.current) {
+      isContinuousSequenceRef.current = false;
+      isSequenceModeRef.current = false;
+      isPlayingRef.current = false;
+      setPlaybackStatus('finished');
+      return;
+    }
+
+    // When playing a single sign, stop immediately after playing once (NO loop)
+    if (!isSequenceModeRef.current) {
+      isPlayingRef.current = false;
+      setPlaybackStatus('finished');
+      return;
+    }
+
+    const currentIndex = currentQueueIndexRef.current;
+    if (lastFinishedIndexRef.current === currentIndex) {
+      return;
+    }
+    lastFinishedIndexRef.current = currentIndex;
+
+    const queue = signQueueRef.current;
+    const nextIndex = currentIndex + 1;
+
+    if (nextIndex < queue.length) {
+      // Step to the next sign in the ISL sequence with tight 50ms transition for continuous flow
+      playbackTimerRef.current = setTimeout(() => {
+        playSignAtIndex(nextIndex, queue, true);
+      }, 50);
+    } else {
+      // End of sentence sequence reached: stop cleanly, do NOT loop
+      isSequenceModeRef.current = false;
+      isPlayingRef.current = false;
+      setPlaybackStatus('finished');
+    }
+  }, [playSignAtIndex]);
 
   const handleError = useCallback((message: string) => {
     setPlaybackStatus('error');
@@ -311,39 +489,49 @@ export const HomeScreen: React.FC = () => {
   }, []);
 
   const handleStop = useCallback(() => {
-    playbackSessionRef.current++;
-    pendingSentenceRef.current = null;
+    isContinuousSequenceRef.current = false;
+    isSequenceModeRef.current = false;
+    isPlayingRef.current = false;
+    if (playbackTimerRef.current) {
+      clearTimeout(playbackTimerRef.current);
+      playbackTimerRef.current = null;
+    }
     avatarRef.current?.stop();
     setPlaybackStatus('idle');
   }, []);
 
   const handleReplay = useCallback(() => {
-    if (processingMode === 'sentence' && signQueue.length > 0) {
-      startSentencePlayback(signQueue, 0);
+    const queue = signQueueRef.current.length > 0 ? signQueueRef.current : INITIAL_DEMO_SIGNS;
+    if (processingModeRef.current === 'sentence' && queue.length > 1) {
+      startSentencePlayback(queue, 0);
+    } else if (queue.length > 0) {
+      const startIndex = currentQueueIndexRef.current >= queue.length - 1 ? 0 : currentQueueIndexRef.current;
+      playSingleSign(startIndex, queue);
     } else if (currentWord) {
       const result = lookupWord(currentWord);
       if (result.found && result.url) {
         setPlaybackStatus('loading');
+        isContinuousSequenceRef.current = false;
+        isSequenceModeRef.current = false;
+        isPlayingRef.current = true;
         avatarRef.current?.play(result.url, result.word);
       }
     }
-  }, [processingMode, signQueue, currentWord, startSentencePlayback]);
+  }, [currentWord, playSingleSign, startSentencePlayback]);
 
   const handleNextQueue = useCallback(() => {
-    if (currentQueueIndex < signQueue.length - 1) {
-      const nextIndex = currentQueueIndex + 1;
-      setCurrentQueueIndex(nextIndex);
-      startSentencePlayback(signQueue, nextIndex);
+    const queue = signQueueRef.current.length > 0 ? signQueueRef.current : INITIAL_DEMO_SIGNS;
+    if (currentQueueIndexRef.current < queue.length - 1) {
+      playSingleSign(currentQueueIndexRef.current + 1, queue);
     }
-  }, [currentQueueIndex, signQueue, startSentencePlayback]);
+  }, [playSingleSign]);
 
   const handlePreviousQueue = useCallback(() => {
-    if (currentQueueIndex > 0) {
-      const prevIndex = currentQueueIndex - 1;
-      setCurrentQueueIndex(prevIndex);
-      startSentencePlayback(signQueue, prevIndex);
+    const queue = signQueueRef.current.length > 0 ? signQueueRef.current : INITIAL_DEMO_SIGNS;
+    if (currentQueueIndexRef.current > 0) {
+      playSingleSign(currentQueueIndexRef.current - 1, queue);
     }
-  }, [currentQueueIndex, signQueue, startSentencePlayback]);
+  }, [playSingleSign]);
 
   const handleSpeedChange = useCallback((speed: number) => {
     setPlaybackSpeed(speed);
@@ -434,198 +622,270 @@ export const HomeScreen: React.FC = () => {
 
   // DESKTOP / TABLET SPLIT-SCREEN LAYOUT
   if (responsive.isDesktop || responsive.isTablet) {
+    const SPEED_OPTIONS = [0.75, 1.0, 1.25, 1.5];
+    const currentSignWord =
+      signQueue[currentQueueIndex]?.word?.toUpperCase() ||
+      currentWord?.toUpperCase() ||
+      (signQueue[0]?.word?.toUpperCase() ?? 'WHO');
+
     return (
       <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="light-content" backgroundColor={COLORS.canvas} />
+        <StatusBar barStyle="light-content" backgroundColor="#050A12" />
 
+        {/* Minimal Desktop Header */}
         <Header
+          ctaLabel="Sign to English Conversion"
           signsCount={getWordCount()}
+          showHistoryButton={false}
           onOpenHistory={() => setIsHistorySheetOpen(true)}
           onOpenLiveCamera={() => setIsCameraActive(true)}
           historyCount={searchHistory.length}
         />
 
-        <View style={styles.desktopSplitLayout}>
-          {/* Left: 3D Stage Console */}
-          <View style={styles.desktopStagePane}>
-            <Card variant="glass" glowColor="cyan" style={styles.stageCard}>
-              <View style={styles.stageTopOverlay}>
-                <Badge
-                  label={statusBeacon.label}
-                  variant={statusBeacon.variant}
-                  pulse={playbackStatus === 'playing' || isProcessing}
-                />
-                <View style={styles.stageControlsRow}>
-                  {/* Speed buttons */}
-                  {[0.75, 1.0, 1.5].map((speed) => (
-                    <TouchableOpacity
-                      key={speed}
-                      onPress={() => handleSpeedChange(speed)}
-                      style={[
-                        styles.speedChip,
-                        playbackSpeed === speed && styles.speedChipActive,
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.speedChipText,
-                          playbackSpeed === speed && styles.speedChipTextActive,
-                        ]}
-                      >
-                        {speed}x
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                  <TouchableOpacity
-                    onPress={handleResetCamera}
-                    style={styles.cameraResetBtn}
-                    accessibilityLabel="Reset 3D camera angle"
-                  >
-                    <Text style={styles.cameraResetText}>🎯 Reset</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => setIsAvatarSheetOpen(true)}
-                    style={styles.desktopAvatarToggleBtn}
-                    accessibilityLabel={`Current avatar: ${selectedAvatar}. Tap to change character.`}
-                  >
-                    <Text style={styles.desktopAvatarToggleText}>
-                      {AVATAR_LABELS[selectedAvatar] || 'Avatar'}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
+        <View style={styles.desktopLayoutContainer}>
+          {/* Left Column: Avatar Workspace & Playback Controls */}
+          <View style={styles.desktopLeftColumn}>
+            {/* 1. Avatar Viewing Panel */}
+            <View style={styles.desktopAvatarPanel}>
+              <AvatarWebView
+                ref={avatarRef}
+                avatar={selectedAvatar}
+                onReady={handleAvatarReady}
+                onPlaying={handlePlaying}
+                onFinished={handleFinished}
+                onError={handleError}
+                onStatusChange={handleStatusChange}
+                onAvatarChange={(av) => setSelectedAvatar(av as AvatarName)}
+              />
+
+              {/* Bottom-Left: Live Camera Indicator */}
+              <TouchableOpacity
+                style={styles.desktopLiveCameraChip}
+                onPress={() => setIsCameraActive(true)}
+                accessible={true}
+                accessibilityRole="button"
+                accessibilityLabel="Open Live Camera"
+                hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+              >
+                <View style={styles.desktopLiveCameraDot} />
+                <Text style={styles.desktopLiveCameraText}>Live Camera</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* 2. Playback Controls Panel immediately beneath avatar viewer */}
+            <View style={styles.desktopPlaybackPanel}>
+              {/* Left: Current Sign info */}
+              <View style={styles.desktopCurrentSignCol}>
+                <Text style={styles.desktopCurrentSignLabel}>Current Sign</Text>
+                <Text style={styles.desktopCurrentSignWord} numberOfLines={1}>
+                  {currentSignWord}
+                </Text>
               </View>
 
-              <View style={styles.desktopAvatarContainer}>
-                <AvatarWebView
-                  ref={avatarRef}
-                  avatar={selectedAvatar}
-                  onReady={handleAvatarReady}
-                  onPlaying={handlePlaying}
-                  onFinished={handleFinished}
-                  onError={handleError}
-                  onStatusChange={handleStatusChange}
-                  onAvatarChange={(av) => setSelectedAvatar(av as AvatarName)}
-                />
-              </View>
+              {/* Center: Playback Buttons */}
+              <View style={styles.desktopPlaybackControlsRow}>
+                {/* Previous Sign */}
+                <TouchableOpacity
+                  style={styles.desktopNavBtn}
+                  onPress={handlePreviousQueue}
+                  disabled={currentQueueIndex <= 0}
+                  accessible={true}
+                  accessibilityRole="button"
+                  accessibilityLabel="Previous Sign"
+                >
+                  <PreviousSignIcon size={18} color={currentQueueIndex <= 0 ? '#475569' : '#FFFFFF'} />
+                </TouchableOpacity>
 
-              {/* Playback Controls inside stage */}
-              <View style={styles.stageBottomControls}>
-                <PlaybackQueueBar
-                  currentIndex={currentQueueIndex}
-                  totalCount={signQueue.length > 0 ? signQueue.length : (currentWord ? 1 : 0)}
-                  currentWord={currentWord ?? undefined}
-                  isPlaying={playbackStatus === 'playing'}
-                  isBuffering={playbackStatus === 'loading' || isProcessing}
-                  onPlayPause={() => {
+                {/* Play/Pause */}
+                <TouchableOpacity
+                  style={[
+                    styles.desktopPlayPauseBtn,
+                    (playbackStatus === 'loading' || isProcessing) && styles.desktopPlayPauseBtnLoading,
+                  ]}
+                  onPress={() => {
                     if (playbackStatus === 'playing') {
                       handleStop();
                     } else {
                       handleReplay();
                     }
                   }}
-                  onReplay={handleReplay}
-                  onNext={handleNextQueue}
-                  onPrevious={handlePreviousQueue}
-                  playbackSpeed={playbackSpeed}
-                  onSpeedChange={handleSpeedChange}
-                  onResetCamera={handleResetCamera}
-                />
+                  accessible={true}
+                  accessibilityRole="button"
+                  accessibilityLabel={playbackStatus === 'playing' ? 'Pause' : 'Play'}
+                >
+                  {playbackStatus === 'loading' || isProcessing ? (
+                    <ActivityIndicator size="small" color="#050A12" />
+                  ) : playbackStatus === 'playing' ? (
+                    <PauseIcon size={18} color="#050A12" />
+                  ) : (
+                    <PlayIcon size={20} color="#050A12" />
+                  )}
+                </TouchableOpacity>
+
+                {/* Next Sign */}
+                <TouchableOpacity
+                  style={styles.desktopNavBtn}
+                  onPress={handleNextQueue}
+                  disabled={currentQueueIndex >= signQueue.length - 1}
+                  accessible={true}
+                  accessibilityRole="button"
+                  accessibilityLabel="Next Sign"
+                >
+                  <NextSignIcon size={18} color={currentQueueIndex >= signQueue.length - 1 ? '#475569' : '#FFFFFF'} />
+                </TouchableOpacity>
               </View>
-            </Card>
+
+              {/* Right: Character Selector */}
+              <View style={styles.desktopSpeedCol}>
+                <Text style={styles.desktopSpeedLabel}>Character</Text>
+                <TouchableOpacity
+                  style={styles.desktopSpeedSelector}
+                  onPress={() => {
+                    const nextIdx = (AVATAR_OPTIONS.indexOf(selectedAvatar) + 1) % AVATAR_OPTIONS.length;
+                    handleSelectAvatar(AVATAR_OPTIONS[nextIdx]);
+                  }}
+                  accessible={true}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Change character. Currently ${selectedAvatar}`}
+                >
+                  <Text style={[styles.desktopSpeedText, { textTransform: 'capitalize' }]}>{selectedAvatar}</Text>
+                  <ChevronDownIcon size={12} color="#8E9CAE" />
+                </TouchableOpacity>
+              </View>
+            </View>
           </View>
 
-          {/* Right: Linguistic & Input Control Console */}
-          <ScrollView
-            style={styles.desktopControlPane}
-            contentContainerStyle={styles.desktopControlContent}
-            showsVerticalScrollIndicator={false}
-          >
-            <View style={styles.paneSection}>
-              <Text style={styles.sectionHeader}>TRANSLATION MODE</Text>
-              <ModeSelector
-                mode={processingMode}
-                onModeChange={(mode) => {
-                  setProcessingMode(mode);
-                  resetPlaybackState();
-                }}
-              />
-            </View>
-
-            <View style={styles.paneSection}>
-              <Text style={styles.sectionHeader}>INPUT PHRASE OR WORD</Text>
+          {/* Right Column: 3 Stacked Cards */}
+          <View style={styles.desktopRightColumn}>
+            {/* Card 1: Enter Sign Sequence */}
+            <View style={styles.desktopCard}>
+              <Text style={styles.desktopCardTitle}>Enter Sign Sequence</Text>
               <SearchBar
                 value={searchQuery}
                 onChangeText={setSearchQuery}
-                onSubmit={handleSearch}
+                onSubmit={(text, lang) => handleSearch(text, lang as any)}
                 isLoading={playbackStatus === 'loading' || isProcessing}
                 disabled={!isAvatarReady}
                 isSentenceMode={processingMode === 'sentence'}
-                placeholder={processingMode === 'sentence' ? 'Type an English sentence (e.g. "What is your name?")...' : 'Search a single word (e.g. "Hello")...'}
+                placeholder="Type in English, Hindi, or Marathi (e.g. who are you, aap kaise ho, तुम्ही कसे आहात)..."
+                dropdownPosition="bottom"
+                selectedLanguage={selectedLanguage}
+                onLanguageChange={setSelectedLanguage}
               />
             </View>
 
-            {/* Error Card */}
-            {errorMessage && (
-              <Card variant="glass" glowColor="ruby" style={styles.errorCard}>
-                <Text style={styles.errorTitle}>Translation Notice</Text>
-                <Text style={styles.errorBody}>{errorMessage}</Text>
-              </Card>
-            )}
+            {/* Card 2: ISL Sign Sequence */}
+            <View style={styles.desktopCard}>
+              <View style={styles.desktopCardHeaderRow}>
+                <Text style={styles.desktopCardTitle}>ISL Sign Sequence</Text>
+                <Text style={styles.desktopSignCountText}>
+                  {(() => {
+                    const count = signQueue.length > 0 ? signQueue.length : INITIAL_DEMO_SIGNS.length;
+                    return `${count} ${count === 1 ? 'sign' : 'signs'}`;
+                  })()}
+                </Text>
+              </View>
 
-            {/* Suggestions */}
-            {suggestions.length > 0 && (
-              <View style={styles.paneSection}>
-                <Text style={styles.sectionHeader}>DID YOU MEAN?</Text>
-                <View style={styles.suggestionRow}>
-                  {suggestions.map((word) => (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.desktopSignTilesRow}
+              >
+                {(signQueue.length > 0 ? signQueue : INITIAL_DEMO_SIGNS).map((item, index, arr) => {
+                  const isTileActive = (playbackStatus === 'playing' || playbackStatus === 'loading') && currentQueueIndex === index;
+                  return (
                     <TouchableOpacity
-                      key={word}
-                      style={styles.suggestionPill}
-                      onPress={() => handleSuggestionPress(word)}
+                      key={`${item.word}-${index}`}
+                      style={[
+                        styles.desktopSignTile,
+                        isTileActive && styles.desktopSignTileActive,
+                        arr.length === 1 && { flex: 0, minWidth: 160 },
+                      ]}
+                      onPress={() => {
+                        const queue = signQueueRef.current.length > 0 ? signQueueRef.current : INITIAL_DEMO_SIGNS;
+                        playSingleSign(index, queue);
+                      }}
+                      accessible={true}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Sign ${index + 1}: ${item.word}`}
                     >
-                      <Text style={styles.suggestionPillText}>{word}</Text>
+                      <View style={[styles.desktopTileBadge, isTileActive && styles.desktopTileBadgeActive]}>
+                        <Text style={[styles.desktopTileBadgeText, isTileActive && styles.desktopTileBadgeTextActive]}>
+                          {index + 1}
+                        </Text>
+                      </View>
+                      <Text
+                        style={[styles.desktopTileWord, isTileActive && styles.desktopTileWordActive]}
+                        numberOfLines={1}
+                      >
+                        {item.word.toUpperCase()}
+                      </Text>
                     </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
-            )}
+                  );
+                })}
+              </ScrollView>
+            </View>
 
-            {/* ISL Grammar Tokens */}
-            {rawGlossTokens.length > 0 && (
-              <View style={styles.paneSection}>
-                <GlossTokenBar
-                  tokens={richGlossTokens}
-                  originalSentence={translatedSentence ? `${searchQuery} → ${translatedSentence}` : searchQuery}
-                />
-              </View>
-            )}
-
-            {/* Quick History Drawer Section */}
-            <View style={styles.paneSection}>
-              <View style={styles.rowBetween}>
-                <Text style={styles.sectionHeader}>RECENT TRANSLATIONS</Text>
-                {searchHistory.length > 0 && (
-                  <TouchableOpacity onPress={() => setIsHistorySheetOpen(true)}>
-                    <Text style={styles.viewAllText}>View All ({searchHistory.length})</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-
-              {searchHistory.slice(0, 5).map((item) => (
+            {/* Card 3: Recent Translations */}
+            <View style={styles.desktopCard}>
+              <View style={styles.desktopCardHeaderRow}>
+                <Text style={styles.desktopCardTitle}>Recent Translations</Text>
                 <TouchableOpacity
-                  key={`${item.word}-${item.timestamp}`}
-                  style={styles.recentItemRow}
-                  onPress={() => handleSelectHistoryItem(item.word, item.word.trim().includes(' '))}
+                  onPress={() => setIsHistorySheetOpen(true)}
+                  style={styles.desktopViewAllBtn}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  accessibilityLabel="View all recent translations"
                 >
-                  <Text style={styles.recentItemWord}>{item.word}</Text>
-                  <Badge
-                    label={item.found ? 'FOUND' : 'MISSING'}
-                    variant={item.found ? 'emerald' : 'ruby'}
-                  />
+                  <Text style={styles.desktopViewAllText}>View all</Text>
+                  <ArrowRightIcon size={12} color="#38BDF8" style={{ marginLeft: 4 }} />
                 </TouchableOpacity>
+              </View>
+
+              {/* Rows */}
+              {(searchHistory.length > 0 ? searchHistory.slice(0, 2) : INITIAL_DEMO_HISTORY).map((item, index) => (
+                <React.Fragment key={`${item.word}-${item.timestamp}-${index}`}>
+                  {index > 0 && <View style={styles.desktopRecentDivider} />}
+                  <View style={styles.desktopRecentRow}>
+                    <View style={styles.desktopRecentClockCircle}>
+                      <ClockIcon size={18} color="#8E9CAE" />
+                    </View>
+
+                    <TouchableOpacity
+                      style={styles.desktopRecentTextContainer}
+                      onPress={() => handleSelectHistoryItem(item.word, item.word.trim().includes(' '))}
+                      accessible={true}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Select recent translation: ${item.word}`}
+                    >
+                      <Text style={styles.desktopRecentQueryText} numberOfLines={1}>
+                        {item.word}
+                      </Text>
+                      <Text style={styles.desktopRecentMetaText}>
+                        {formatRecentMeta(item)}
+                      </Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={styles.desktopRecentPlayBtn}
+                      onPress={() => handleSelectHistoryItem(item.word, item.word.trim().includes(' '))}
+                      accessible={true}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Play ${item.word}`}
+                    >
+                      <PlayIcon size={14} color="#FFFFFF" />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      onPress={() => handleSelectHistoryItem(item.word, item.word.trim().includes(' '))}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    >
+                      <ChevronRightIcon size={16} color="#64748B" />
+                    </TouchableOpacity>
+                  </View>
+                </React.Fragment>
               ))}
             </View>
-          </ScrollView>
+          </View>
         </View>
 
         <HistorySheet
@@ -665,172 +925,160 @@ export const HomeScreen: React.FC = () => {
         historyCount={searchHistory.length}
       />
 
-      {/* Top Search & Mode Controls Section (Positioned near the top, above avatar) */}
-      <View style={styles.mobileTopControlSection}>
-        {/* Mode Selector Segmented Pill */}
-        <View style={styles.mobileModeSelectorWrapper}>
-          <ModeSelector
-            compact={true}
-            mode={processingMode}
-            onModeChange={(mode) => {
-              setProcessingMode(mode);
-              resetPlaybackState();
-            }}
-          />
-        </View>
-
-        {/* Search Bar with Autocomplete Dropdown floating below */}
+      <ScrollView
+        style={styles.mobileScrollView}
+        contentContainerStyle={styles.mobileScrollContent}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* Search Bar: directly below header and ABOVE avatar */}
         <View style={styles.mobileComposerWrapper}>
           <SearchBar
             value={searchQuery}
             onChangeText={setSearchQuery}
-            onSubmit={handleSearch}
+            onSubmit={(text, lang) => handleSearch(text, lang as any)}
             isLoading={playbackStatus === 'loading' || isProcessing}
             disabled={!isAvatarReady}
             isSentenceMode={processingMode === 'sentence'}
-            placeholder={
-              processingMode === 'sentence'
-                ? 'Type or speak a sentence...'
-                : 'Search or speak a word...'
-            }
+            placeholder="Type in English, Hindi, or Marathi..."
             dropdownPosition="bottom"
+            selectedLanguage={selectedLanguage}
+            onLanguageChange={setSelectedLanguage}
           />
         </View>
 
-        {/* Status and Secondary Controls Bar (ENGINE READY, Camera Target, Book) */}
-        <View style={styles.mobileStatusControlsRow}>
-          <View style={styles.mobileEngineStatus}>
-            <View style={styles.mobileEngineDot} />
-            <Text style={styles.mobileEngineText}>
-              {isProcessing
-                ? 'PROCESSING...'
-                : playbackStatus === 'playing'
-                ? (currentWord ? `SIGNING: ${currentWord.toUpperCase()}` : 'SIGNING...')
-                : 'ENGINE READY'}
-            </Text>
-          </View>
-          <View style={styles.mobileSecondaryActions}>
-            <TouchableOpacity
-              onPress={() => {
-                const currentIndex = AVATAR_OPTIONS.indexOf(selectedAvatar);
-                const nextAvatar = AVATAR_OPTIONS[(currentIndex + 1) % AVATAR_OPTIONS.length];
-                handleSelectAvatar(nextAvatar);
-              }}
-              onLongPress={() => setIsAvatarSheetOpen(true)}
-              style={styles.mobileAvatarToggleBtn}
-              accessibilityLabel={`Current avatar: ${selectedAvatar}. Tap to cycle, long press for avatar details.`}
-            >
-              <Text style={styles.mobileAvatarToggleText}>
-                {AVATAR_LABELS[selectedAvatar] || 'Avatar'}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={handleResetCamera}
-              style={styles.mobileSecondaryIconBtn}
-              accessibilityLabel="Reset 3D camera"
-            >
-              <Text style={styles.mobileSecondaryIconText}>🎯</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => setIsHistorySheetOpen(true)}
-              style={styles.mobileSecondaryIconBtn}
-              accessibilityLabel="Open Sign Dictionary and History"
-            >
-              <Text style={styles.mobileSecondaryIconText}>📖</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
+        {/* 3D Avatar Stage: large vertically-oriented viewing area */}
+        <View style={styles.mobileStageContainer}>
+          <AvatarWebView
+            ref={avatarRef}
+            avatar={selectedAvatar}
+            onReady={handleAvatarReady}
+            onPlaying={handlePlaying}
+            onFinished={handleFinished}
+            onError={handleError}
+            onStatusChange={handleStatusChange}
+            onAvatarChange={(av) => setSelectedAvatar(av as AvatarName)}
+          />
 
-      {/* 3D Avatar Stage Directly Below Controls */}
-      <View style={styles.mobileStageContainer}>
-        <AvatarWebView
-          ref={avatarRef}
-          avatar={selectedAvatar}
-          onReady={handleAvatarReady}
-          onPlaying={handlePlaying}
-          onFinished={handleFinished}
-          onError={handleError}
-          onStatusChange={handleStatusChange}
-          onAvatarChange={(av) => setSelectedAvatar(av as AvatarName)}
-        />
-
-        {/* Floating ISL Gloss Tokens Bar */}
-        {rawGlossTokens.length > 0 && (
-          <View style={styles.mobileGlossFloatingWrapper}>
-            <GlossTokenBar
-              tokens={richGlossTokens}
-              originalSentence={translatedSentence ? `${searchQuery} → ${translatedSentence}` : searchQuery}
-            />
-          </View>
-        )}
-
-        {/* Suggestion Chips Overlay if word missing */}
-        {suggestions.length > 0 && (
-          <View style={styles.mobileSuggestionsContainer}>
-            <Text style={styles.mobileSuggestHeader}>Did you mean?</Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.mobileSuggestList}
-            >
-              {suggestions.map((word) => (
-                <TouchableOpacity
-                  key={word}
-                  style={styles.suggestionPill}
-                  onPress={() => handleSuggestionPress(word)}
-                >
-                  <Text style={styles.suggestionPillText}>{word}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-        )}
-      </View>
-
-      {/* Polished Bottom-Anchored Recent History Panel */}
-      <View style={styles.mobileRecentBottomPanel}>
-        <View style={styles.mobileDragHandle} />
-        <View style={styles.mobileRecentHeaderRow}>
-          <View style={styles.mobileRecentTitleGroup}>
-            <Text style={styles.mobileRecentClockIcon}>⏱</Text>
-            <Text style={styles.mobileRecentHeaderText}>RECENT</Text>
-          </View>
+          {/* Top-Right Control: Character Switch Button (replaces former fullscreen button) */}
           <TouchableOpacity
-            onPress={() => setIsHistorySheetOpen(true)}
+            style={styles.avatarTopRightBtn}
+            onPress={() => setIsAvatarSheetOpen(true)}
+            accessible={true}
+            accessibilityRole="button"
+            accessibilityLabel="Switch character"
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            accessibilityLabel="See all search history"
           >
-            <Text style={styles.mobileSeeAllText}>See all ›</Text>
+            <CharacterSwitchIcon size={18} color="#FFFFFF" />
+          </TouchableOpacity>
+
+          {/* Bottom-Left Control: Live Camera Indicator Chip */}
+          <TouchableOpacity
+            style={styles.liveCameraChip}
+            onPress={() => setIsCameraActive(true)}
+            accessible={true}
+            accessibilityRole="button"
+            accessibilityLabel="Open live camera"
+            hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+          >
+            <View style={styles.liveCameraDot} />
+            <Text style={styles.liveCameraText}>Live Camera</Text>
           </TouchableOpacity>
         </View>
 
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.mobileRecentChipsList}
-        >
-          {(searchHistory.length > 0
-            ? searchHistory.slice(0, 8).map(h => ({ text: h.word, isSentence: h.word.includes(' ') }))
-            : [
-                { text: 'Hello', isSentence: false },
-                { text: 'Thank you', isSentence: false },
-                { text: 'How are you?', isSentence: true },
-                { text: 'Yes', isSentence: false },
-              ]
-          ).map((item, idx) => (
+        {/* ISL Sign Sequence Section: immediately below avatar viewer */}
+        <View style={styles.sectionCard}>
+          <View style={styles.sectionHeaderRow}>
+            <Text style={styles.sectionTitle}>ISL Sign Sequence</Text>
+            <Text style={styles.sectionCountText}>
+              {(() => {
+                const count = signQueue.length > 0 ? signQueue.length : INITIAL_DEMO_SIGNS.length;
+                return `${count} ${count === 1 ? 'sign' : 'signs'}`;
+              })()}
+            </Text>
+          </View>
+
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.signSequenceRow}
+          >
+            {(signQueue.length > 0 ? signQueue : INITIAL_DEMO_SIGNS).map((item, index, arr) => {
+              const isCardActive = (playbackStatus === 'playing' || playbackStatus === 'loading') && currentQueueIndex === index;
+              return (
+                <TouchableOpacity
+                  key={`${item.word}-${index}`}
+                  style={[
+                    styles.signCard,
+                    isCardActive && styles.signCardActive,
+                    arr.length === 1 && { flex: 0, minWidth: 140 },
+                  ]}
+                  onPress={() => {
+                    const queue = signQueueRef.current.length > 0 ? signQueueRef.current : INITIAL_DEMO_SIGNS;
+                    playSingleSign(index, queue);
+                  }}
+                  accessible={true}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Sign ${index + 1}: ${item.word}`}
+                >
+                  <View style={[styles.signCardBadge, isCardActive && styles.signCardBadgeActive]}>
+                    <Text style={[styles.signCardBadgeText, isCardActive && styles.signCardBadgeTextActive]}>
+                      {index + 1}
+                    </Text>
+                  </View>
+                  <Text style={[styles.signCardWord, isCardActive && styles.signCardWordActive]} numberOfLines={1}>
+                    {item.word.toUpperCase()}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </View>
+
+        {/* Recent Translations Section: replaces old bottom playback control area */}
+        <View style={[styles.sectionCard, styles.recentSectionCard]}>
+          <View style={styles.sectionHeaderRow}>
+            <Text style={styles.sectionTitle}>Recent</Text>
             <TouchableOpacity
-              key={`${item.text}-${idx}`}
-              style={styles.mobileRecentChip}
-              onPress={() => handleSelectHistoryItem(item.text, item.isSentence)}
-              accessibilityLabel={`Recent translation: ${item.text}`}
+              onPress={() => setIsHistorySheetOpen(true)}
+              style={styles.viewAllBtn}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              accessibilityLabel="View all recent translations"
             >
-              <Text style={styles.mobileChipClockIcon}>⏱</Text>
-              <Text style={styles.mobileChipText}>{item.text}</Text>
+              <Text style={styles.mobileViewAllText}>View all</Text>
+              <ArrowRightIcon size={12} color="#38BDF8" style={{ marginLeft: 4 }} />
             </TouchableOpacity>
+          </View>
+
+          {(searchHistory.length > 0 ? searchHistory.slice(0, 2) : INITIAL_DEMO_HISTORY).map((item, index) => (
+            <React.Fragment key={`${item.word}-${item.timestamp}-${index}`}>
+              {index > 0 && <View style={styles.recentDivider} />}
+              <TouchableOpacity
+                style={styles.mobileRecentItemRow}
+                onPress={() => handleSelectHistoryItem(item.word, item.word.trim().includes(' '))}
+                accessible={true}
+                accessibilityRole="button"
+                accessibilityLabel={`Translate recent phrase: ${item.word}`}
+              >
+                <View style={styles.recentClockCircle}>
+                  <ClockIcon size={16} color="#94A3B8" />
+                </View>
+
+                <View style={styles.recentTextContainer}>
+                  <Text style={styles.recentQueryText} numberOfLines={1}>
+                    {item.word}
+                  </Text>
+                  <Text style={styles.recentMetaText}>
+                    {formatRecentMeta(item)}
+                  </Text>
+                </View>
+
+                <ChevronRightIcon size={16} color="#64748B" />
+              </TouchableOpacity>
+            </React.Fragment>
           ))}
-        </ScrollView>
-      </View>
+        </View>
+      </ScrollView>
 
       {/* Search History Bottom Sheet */}
       <HistorySheet
@@ -861,366 +1109,477 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.canvas,
   },
-  // Desktop Split Styles
-  desktopSplitLayout: {
+  // Desktop Layout Styles
+  desktopLayoutContainer: {
     flex: 1,
     flexDirection: 'row',
-    padding: 16,
-    gap: 16,
-  },
-  desktopStagePane: {
-    flex: 1.2,
-    height: '100%',
-  },
-  stageCard: {
-    flex: 1,
-    padding: 12,
-    backgroundColor: COLORS.stage,
-    borderRadius: RADII.xl,
-    overflow: 'hidden',
-  },
-  stageTopOverlay: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-    zIndex: 10,
-  },
-  stageControlsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  speedChip: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: RADII.full,
-    backgroundColor: COLORS.surface,
-    borderWidth: 1,
-    borderColor: COLORS.borderSubtle,
-  },
-  speedChipActive: {
-    backgroundColor: COLORS.emeraldMuted,
-    borderColor: COLORS.emerald,
-  },
-  speedChipText: {
-    ...TYPOGRAPHY.caption,
-    fontSize: 11,
-    color: COLORS.textMuted,
-    fontWeight: '600',
-  },
-  speedChipTextActive: {
-    color: COLORS.emeraldLight,
-  },
-  cameraResetBtn: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: RADII.full,
-    backgroundColor: COLORS.surface,
-    borderWidth: 1,
-    borderColor: COLORS.borderSubtle,
-  },
-  cameraResetText: {
-    ...TYPOGRAPHY.caption,
-    fontSize: 11,
-    color: COLORS.textSecondary,
-    fontWeight: '600',
-  },
-  desktopAvatarToggleBtn: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: RADII.full,
-    backgroundColor: '#1E293B',
-    borderWidth: 1,
-    borderColor: 'rgba(6, 182, 212, 0.4)',
-  },
-  desktopAvatarToggleText: {
-    ...TYPOGRAPHY.caption,
-    fontSize: 11,
-    color: COLORS.cyanLight,
-    fontWeight: '700',
-  },
-  desktopAvatarContainer: {
-    flex: 1,
-    borderRadius: RADII.lg,
-    overflow: 'hidden',
-  },
-  stageBottomControls: {
-    marginTop: 8,
-  },
-  desktopControlPane: {
-    flex: 0.9,
-    height: '100%',
-  },
-  desktopControlContent: {
-    paddingBottom: 40,
-    gap: 16,
-  },
-  paneSection: {
-    backgroundColor: COLORS.panel,
-    borderRadius: RADII.lg,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: COLORS.borderSubtle,
-  },
-  sectionHeader: {
-    ...TYPOGRAPHY.caption,
-    fontSize: 11,
-    color: COLORS.textMuted,
-    fontWeight: '700',
-    letterSpacing: 0.8,
-    marginBottom: 10,
-  },
-  rowBetween: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  viewAllText: {
-    ...TYPOGRAPHY.caption,
-    color: COLORS.cyan,
-    fontWeight: '600',
-  },
-  recentItemRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.borderSubtle,
-  },
-  recentItemWord: {
-    ...TYPOGRAPHY.body,
-    color: COLORS.textPrimary,
-    fontWeight: '500',
-  },
-  errorCard: {
-    padding: 12,
-  },
-  errorTitle: {
-    ...TYPOGRAPHY.h3,
-    fontSize: 14,
-    color: COLORS.ruby,
-    marginBottom: 4,
-  },
-  errorBody: {
-    ...TYPOGRAPHY.body,
-    fontSize: 13,
-    color: COLORS.textSecondary,
-  },
-  suggestionRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  suggestionPill: {
-    backgroundColor: COLORS.emeraldMuted,
-    borderWidth: 1,
-    borderColor: COLORS.emerald,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: RADII.full,
-  },
-  suggestionPillText: {
-    ...TYPOGRAPHY.caption,
-    color: COLORS.emeraldLight,
-    fontWeight: '600',
-  },
-
-  // Mobile Styles
-  mobileTopControlSection: {
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 6,
-    gap: 8,
-    zIndex: 1000,
-    elevation: 50,
-    overflow: 'visible',
-    backgroundColor: COLORS.canvas,
-  },
-  mobileModeSelectorWrapper: {
+    paddingHorizontal: 28,
+    paddingTop: 16,
+    paddingBottom: 24,
+    gap: 24,
+    maxWidth: 1440,
+    width: '100%',
     alignSelf: 'center',
   },
-  mobileComposerWrapper: {
-    width: '100%',
-    position: 'relative',
-    zIndex: 1000,
-    elevation: 50,
-    overflow: 'visible',
+  desktopLeftColumn: {
+    flex: 1.15,
+    flexDirection: 'column',
+    height: '100%',
   },
-  mobileStatusControlsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 4,
-    paddingTop: 2,
-    paddingBottom: 2,
-  },
-  mobileEngineStatus: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  mobileEngineDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#00DF8F',
-    marginRight: 8,
-    shadowColor: '#00DF8F',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 6,
-    elevation: 4,
-  },
-  mobileEngineText: {
-    color: '#00DF8F',
-    fontSize: 12,
-    fontWeight: '800',
-    letterSpacing: 0.8,
-  },
-  mobileSecondaryActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  mobileAvatarToggleBtn: {
-    height: 36,
-    paddingHorizontal: 12,
-    borderRadius: 18,
-    backgroundColor: '#111827',
-    borderWidth: 1,
-    borderColor: 'rgba(6, 182, 212, 0.4)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  mobileAvatarToggleText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: COLORS.cyanLight,
-  },
-  mobileSecondaryIconBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#111827',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  mobileSecondaryIconText: {
-    fontSize: 16,
-  },
-  mobileStageContainer: {
+  desktopAvatarPanel: {
     flex: 1,
-    backgroundColor: COLORS.stage,
-    position: 'relative',
+    minHeight: 460,
+    backgroundColor: '#09111E',
+    borderRadius: 24,
     overflow: 'hidden',
+    position: 'relative',
+    borderWidth: 1,
+    borderColor: '#162337',
   },
-  mobileGlossFloatingWrapper: {
+  desktopLiveCameraChip: {
     position: 'absolute',
-    top: 12,
-    left: 12,
-    right: 12,
+    bottom: 18,
+    left: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(11, 18, 28, 0.85)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: RADII.full,
     zIndex: 20,
   },
-  mobileSuggestionsContainer: {
-    position: 'absolute',
-    bottom: 12,
-    left: 12,
-    right: 12,
-    backgroundColor: COLORS.panel,
-    borderRadius: RADII.md,
-    padding: 8,
+  desktopLiveCameraDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+    backgroundColor: '#00D6A5',
+    marginRight: 8,
+  },
+  desktopLiveCameraText: {
+    color: '#F8FAFC',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  desktopPlaybackPanel: {
+    marginTop: 16,
+    backgroundColor: '#0B1422',
     borderWidth: 1,
-    borderColor: COLORS.borderMedium,
-    zIndex: 25,
-    ...SHADOWS.card,
-  },
-  mobileSuggestHeader: {
-    ...TYPOGRAPHY.caption,
-    fontSize: 10,
-    color: COLORS.textMuted,
-    fontWeight: '700',
-    marginBottom: 6,
-  },
-  mobileSuggestList: {
-    gap: 8,
-  },
-  mobileRecentBottomPanel: {
-    backgroundColor: '#080E17',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.1)',
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: Platform.OS === 'ios' ? 24 : 14,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    elevation: 10,
-  },
-  mobileDragHandle: {
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: '#334155',
-    alignSelf: 'center',
-    marginBottom: 10,
-  },
-  mobileRecentHeaderRow: {
+    borderColor: '#162337',
+    borderRadius: 20,
+    paddingHorizontal: 22,
+    paddingVertical: 14,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  desktopCurrentSignCol: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  desktopCurrentSignLabel: {
+    color: '#64748B',
+    fontSize: 12,
+    fontWeight: '500',
+    marginBottom: 2,
+  },
+  desktopCurrentSignWord: {
+    color: '#F8FAFC',
+    fontSize: 15,
+    fontWeight: '700',
+    letterSpacing: 0.3,
+  },
+  desktopPlaybackControlsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  desktopNavBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#101B2B',
+  },
+  desktopPlayPauseBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#38BDF8',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  desktopPlayPauseBtnLoading: {
+    opacity: 0.75,
+  },
+  desktopSpeedCol: {
+    flex: 1,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+  },
+  desktopSpeedLabel: {
+    color: '#64748B',
+    fontSize: 12,
+    fontWeight: '500',
+    marginBottom: 2,
+  },
+  desktopSpeedSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 2,
+    paddingHorizontal: 6,
+    borderRadius: 6,
+    backgroundColor: '#101B2B',
+  },
+  desktopSpeedText: {
+    color: '#F8FAFC',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  desktopRightColumn: {
+    flex: 0.85,
+    flexDirection: 'column',
+    gap: 16,
+  },
+  desktopCard: {
+    backgroundColor: '#08101C',
+    borderWidth: 1,
+    borderColor: '#162337',
+    borderRadius: 20,
+    padding: 20,
+  },
+  desktopCardHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  desktopCardTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#F8FAFC',
+    letterSpacing: -0.2,
     marginBottom: 12,
   },
-  mobileRecentTitleGroup: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  mobileRecentClockIcon: {
+  desktopSignCountText: {
     fontSize: 14,
-    color: '#94A3B8',
+    color: '#64748B',
   },
-  mobileRecentHeaderText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#94A3B8',
-    letterSpacing: 1,
-  },
-  mobileSeeAllText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#00DF8F',
-  },
-  mobileRecentChipsList: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  mobileRecentChip: {
+  desktopSearchInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#0E1726',
     borderWidth: 1,
-    borderColor: 'rgba(6, 182, 212, 0.3)',
+    borderColor: '#1D2D42',
+    borderRadius: RADII.full,
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    height: 52,
+  },
+  desktopSearchTextInput: {
+    flex: 1,
+    color: '#F8FAFC',
+    fontSize: 14,
+    paddingHorizontal: 12,
+  },
+  desktopSubmitCircleBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#38BDF8',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  desktopSubmitCircleBtnLoading: {
+    opacity: 0.75,
+  },
+  desktopSignTilesRow: {
+    flexDirection: 'row',
+    gap: 12,
+    minWidth: '100%',
+    paddingBottom: 4,
+  },
+  desktopSignTile: {
+    flex: 1,
+    minWidth: 104,
+    backgroundColor: '#0E1726',
+    borderWidth: 1,
+    borderColor: '#1D2D42',
+    borderRadius: 14,
+    padding: 14,
+    minHeight: 96,
+    justifyContent: 'space-between',
+  },
+  desktopSignTileActive: {
+    borderColor: '#06B6D4',
+    backgroundColor: '#112238',
+  },
+  desktopTileBadge: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: '#16253A',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  desktopTileBadgeActive: {
+    backgroundColor: '#06B6D4',
+  },
+  desktopTileBadgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#94A3B8',
+  },
+  desktopTileBadgeTextActive: {
+    color: '#FFFFFF',
+  },
+  desktopTileWord: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#F8FAFC',
+    marginTop: 14,
+  },
+  desktopTileWordActive: {
+    color: '#38BDF8',
+  },
+  desktopViewAllBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  desktopViewAllText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#38BDF8',
+  },
+  desktopRecentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+  },
+  desktopRecentClockCircle: {
+    width: 40,
+    height: 40,
     borderRadius: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    gap: 6,
+    backgroundColor: '#0E1726',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 14,
   },
-  mobileChipClockIcon: {
-    fontSize: 13,
-    color: '#00DF8F',
+  desktopRecentTextContainer: {
+    flex: 1,
+    marginRight: 10,
   },
-  mobileChipText: {
-    fontSize: 13,
+  desktopRecentQueryText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#F8FAFC',
+  },
+  desktopRecentMetaText: {
+    fontSize: 12,
+    color: '#64748B',
+    marginTop: 3,
+  },
+  desktopRecentPlayBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#132135',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+  },
+  desktopRecentDivider: {
+    height: 1,
+    backgroundColor: '#132135',
+    marginVertical: 4,
+  },
+
+  // Mobile Styles
+  mobileScrollView: {
+    flex: 1,
+    backgroundColor: '#050A12',
+  },
+  mobileScrollContent: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 40,
+  },
+  mobileComposerWrapper: {
+    width: '100%',
+    marginBottom: 14,
+    zIndex: 100,
+  },
+  mobileStageContainer: {
+    width: '100%',
+    height: 420,
+    backgroundColor: '#0A1220',
+    borderRadius: 24,
+    overflow: 'hidden',
+    position: 'relative',
+    borderWidth: 1,
+    borderColor: '#182436',
+    marginBottom: 14,
+  },
+  avatarTopRightBtn: {
+    position: 'absolute',
+    top: 14,
+    right: 14,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: 'rgba(15, 23, 42, 0.75)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 20,
+  },
+  liveCameraChip: {
+    position: 'absolute',
+    bottom: 14,
+    left: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(11, 18, 28, 0.85)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: RADII.full,
+    zIndex: 20,
+  },
+  liveCameraDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+    backgroundColor: '#00D6A5',
+    marginRight: 6,
+  },
+  liveCameraText: {
+    color: '#F8FAFC',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  sectionCard: {
+    backgroundColor: '#070D18',
+    borderWidth: 1,
+    borderColor: '#162234',
+    borderRadius: 20,
+    padding: 16,
+    marginBottom: 14,
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 14,
+  },
+  sectionTitle: {
+    fontSize: 16,
     fontWeight: '600',
     color: '#F8FAFC',
+    letterSpacing: -0.2,
+  },
+  sectionCountText: {
+    fontSize: 14,
+    color: '#64748B',
+  },
+  signSequenceRow: {
+    flexDirection: 'row',
+    gap: 10,
+    minWidth: '100%',
+    paddingBottom: 4,
+  },
+  signCard: {
+    flex: 1,
+    minWidth: 92,
+    backgroundColor: '#0F1827',
+    borderWidth: 1,
+    borderColor: '#1D2B3E',
+    borderRadius: 14,
+    padding: 14,
+    minHeight: 96,
+    justifyContent: 'space-between',
+  },
+  signCardActive: {
+    borderColor: '#06B6D4',
+    backgroundColor: '#112035',
+  },
+  signCardBadge: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: '#162438',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  signCardBadgeActive: {
+    backgroundColor: '#06B6D4',
+  },
+  signCardBadgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#94A3B8',
+  },
+  signCardBadgeTextActive: {
+    color: '#FFFFFF',
+  },
+  signCardWord: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#F8FAFC',
+    marginTop: 14,
+  },
+  signCardWordActive: {
+    color: '#38BDF8',
+  },
+  recentSectionCard: {
+    marginBottom: 16,
+  },
+  viewAllBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  mobileViewAllText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#38BDF8',
+  },
+  mobileRecentItemRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+  },
+  recentClockCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#101B2B',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  recentTextContainer: {
+    flex: 1,
+    marginRight: 8,
+  },
+  recentQueryText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#F8FAFC',
+  },
+  recentMetaText: {
+    fontSize: 12,
+    color: '#64748B',
+    marginTop: 3,
+  },
+  recentDivider: {
+    height: 1,
+    backgroundColor: '#121C2B',
+    marginVertical: 4,
   },
 });
 

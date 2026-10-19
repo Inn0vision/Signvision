@@ -10,6 +10,7 @@ import {
   FlatList,
   Platform,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { Button } from './ui/Button';
 import { autocomplete } from '../services/s3Service';
@@ -19,36 +20,51 @@ import {
   type ExpoSpeechRecognitionErrorEvent,
   type ExpoSpeechRecognitionResultEvent,
 } from 'expo-speech-recognition';
+import { SearchMagnifyIcon, ArrowRightIcon, MicIcon } from './ui/AppIcons';
 
 export interface SearchBarProps {
   value: string;
   onChangeText: (text: string) => void;
-  onSubmit: (word: string) => void;
+  onSubmit: (word: string, language?: string) => void;
   placeholder?: string;
   isLoading?: boolean;
   disabled?: boolean;
   isSentenceMode?: boolean;
   onToggleSentenceMode?: () => void;
   dropdownPosition?: 'top' | 'bottom';
+  selectedLanguage?: 'en' | 'hi' | 'mr';
+  onLanguageChange?: (lang: 'en' | 'hi' | 'mr') => void;
 }
 
 export const SearchBar: React.FC<SearchBarProps> = ({
   value,
   onChangeText,
   onSubmit,
-  placeholder = 'Search for a word or type a sentence...',
+  placeholder = 'Type in English, Hindi, or Marathi...',
   isLoading = false,
   disabled = false,
   isSentenceMode = false,
   onToggleSentenceMode,
   dropdownPosition = 'bottom',
+  selectedLanguage: propSelectedLanguage,
+  onLanguageChange,
 }) => {
+  const [internalLanguage, setInternalLanguage] = useState<'en' | 'hi' | 'mr'>('en');
+  const activeLanguage = propSelectedLanguage || internalLanguage;
+
+  const handleLanguageSelect = (lang: 'en' | 'hi' | 'mr') => {
+    setInternalLanguage(lang);
+    onLanguageChange?.(lang);
+  };
+
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<TextInput>(null);
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const listenPulseAnim = useRef(new Animated.Value(1)).current;
+  const webRecognitionRef = useRef<any>(null);
 
   // Pulse animation for loading state
   useEffect(() => {
@@ -103,6 +119,11 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
   // Autocomplete suggestions from database
   useEffect(() => {
+    if (isSentenceMode) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
     const term = getActiveSearchTerm(value, isSentenceMode);
     if (term.length >= 1) {
       const results = autocomplete(term, 6);
@@ -114,8 +135,12 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     }
   }, [value, isSentenceMode, getActiveSearchTerm]);
 
-  const resolveSpeechLocale = useCallback(async () => {
-    const fallbackLocale = 'en-US';
+  const resolveSpeechLocale = useCallback(async (lang: 'en' | 'hi' | 'mr'): Promise<string> => {
+    if (lang === 'hi') return 'hi-IN';
+    if (lang === 'mr') return 'mr-IN';
+
+    const fallbackLocale = 'en-IN';
+    if (Platform.OS === 'web') return fallbackLocale;
 
     try {
       const localesResult = await ExpoSpeechRecognitionModule.getSupportedLocales({});
@@ -124,17 +149,86 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         ...(localesResult.locales || []),
       ];
 
-      const preferredLocales = ['en-US', 'en-IN', 'en-GB'];
+      const preferredLocales = ['en-IN', 'en-US', 'en-GB'];
       const preferredMatch = preferredLocales.find((locale) => availableLocales.includes(locale));
 
       return preferredMatch || availableLocales[0] || fallbackLocale;
     } catch (error) {
-      console.warn('Failed to fetch supported locales. Falling back to en-US.', error);
       return fallbackLocale;
     }
   }, []);
 
-  const handleSpeechRecognition = useCallback(async () => {
+  // Web Speech Recognition for browsers (Chrome, Edge, Safari, Opera)
+  const toggleWebSpeech = useCallback(() => {
+    if (typeof window === 'undefined') return;
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      Alert.alert(
+        'Speech Recognition Unavailable',
+        'Your browser does not support the Web Speech API. Please use Google Chrome, Edge, or Safari.'
+      );
+      return;
+    }
+
+    if (isListening && webRecognitionRef.current) {
+      try {
+        webRecognitionRef.current.stop();
+      } catch (e) {}
+      setIsListening(false);
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      webRecognitionRef.current = recognition;
+      recognition.continuous = false;
+      recognition.interimResults = true;
+
+      // Map language code: Hindi -> hi-IN, Marathi -> mr-IN, English -> en-IN
+      const langCode = activeLanguage === 'hi' ? 'hi-IN' : activeLanguage === 'mr' ? 'mr-IN' : 'en-IN';
+      recognition.lang = langCode;
+
+      recognition.onstart = () => {
+        setIsListening(true);
+      };
+
+      recognition.onresult = (event: any) => {
+        let transcript = '';
+        let isFinal = false;
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          transcript += event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            isFinal = true;
+          }
+        }
+        if (transcript) {
+          onChangeText(transcript);
+        }
+        if (isFinal) {
+          setIsListening(false);
+          onSubmit(transcript.trim(), activeLanguage);
+        }
+      };
+
+      recognition.onerror = (event: any) => {
+        console.warn('Web speech recognition error:', event.error);
+        setIsListening(false);
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognition.start();
+    } catch (err) {
+      console.error('Failed to start web speech recognition:', err);
+      setIsListening(false);
+    }
+  }, [isListening, activeLanguage, onChangeText, onSubmit]);
+
+  // Mobile Speech Recognition using expo-speech-recognition
+  const toggleNativeSpeech = useCallback(async () => {
     if (isListening) {
       try {
         ExpoSpeechRecognitionModule.stop();
@@ -164,14 +258,13 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         return;
       }
 
-      const locale = await resolveSpeechLocale();
-      console.log('Using speech locale:', locale);
+      const locale = await resolveSpeechLocale(activeLanguage);
 
       setIsListening(true);
       Keyboard.dismiss();
 
       ExpoSpeechRecognitionModule.start({
-        lang: locale || 'en-US',
+        lang: locale,
         interimResults: true,
         maxAlternatives: 1,
         requiresOnDeviceRecognition: false,
@@ -183,10 +276,20 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       setIsListening(false);
       Alert.alert('Error', 'Failed to start speech recognition. Please try again.');
     }
-  }, [isListening, resolveSpeechLocale]);
+  }, [isListening, activeLanguage, resolveSpeechLocale]);
 
-  // Result listener
+  const handleSpeechRecognition = useCallback(() => {
+    if (Platform.OS === 'web') {
+      toggleWebSpeech();
+    } else {
+      toggleNativeSpeech();
+    }
+  }, [toggleWebSpeech, toggleNativeSpeech]);
+
+  // Native result listener
   useEffect(() => {
+    if (Platform.OS === 'web') return;
+
     const subscription = ExpoSpeechRecognitionModule.addListener('result', (event: ExpoSpeechRecognitionResultEvent) => {
       const transcript = event.results?.[0]?.transcript?.trim();
       if (!transcript) return;
@@ -195,17 +298,19 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
       if (event.isFinal) {
         setIsListening(false);
-        onSubmit(transcript);
+        onSubmit(transcript, activeLanguage);
       }
     });
 
     return () => {
       subscription.remove();
     };
-  }, [onChangeText, onSubmit]);
+  }, [activeLanguage, onChangeText, onSubmit]);
 
-  // Start & end listeners
+  // Native start & end listeners
   useEffect(() => {
+    if (Platform.OS === 'web') return;
+
     const startSubscription = ExpoSpeechRecognitionModule.addListener('start', () => {
       setIsListening(true);
     });
@@ -220,8 +325,10 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     };
   }, []);
 
-  // Error listener
+  // Native error listener
   useEffect(() => {
+    if (Platform.OS === 'web') return;
+
     const errorSubscription = ExpoSpeechRecognitionModule.addListener('error', (event: ExpoSpeechRecognitionErrorEvent) => {
       setIsListening(false);
       if (event.error !== 'no-speech' && event.error !== 'aborted') {
@@ -240,9 +347,9 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       Keyboard.dismiss();
       inputRef.current?.blur();
       setShowSuggestions(false);
-      onSubmit(value.trim());
+      onSubmit(value.trim(), activeLanguage);
     }
-  }, [value, onSubmit]);
+  }, [value, activeLanguage, onSubmit]);
 
   const handleSuggestionPress = useCallback((word: string) => {
     if (isSentenceMode) {
@@ -271,6 +378,10 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   }, [onChangeText]);
 
   const handleFocus = useCallback(() => {
+    if (isSentenceMode) {
+      setShowSuggestions(false);
+      return;
+    }
     const term = getActiveSearchTerm(value, isSentenceMode);
     if (term.length >= 1 && suggestions.length > 0) {
       setShowSuggestions(true);
@@ -283,7 +394,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   }, []);
 
   const renderSuggestions = () => (
-    showSuggestions && suggestions.length > 0 && (
+    showSuggestions && !isSentenceMode && suggestions.length > 0 && (
       <View
         style={[
           styles.suggestionsContainer,
@@ -329,11 +440,50 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       {/* Autocomplete Suggestions Popover (when position is top) */}
       {dropdownPosition === 'top' && renderSuggestions()}
 
+      {/* Language Selector Chips */}
+      <View style={styles.langPillsRow}>
+        <TouchableOpacity
+          style={[styles.langPill, activeLanguage === 'en' && styles.langPillActive]}
+          onPress={() => handleLanguageSelect('en')}
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel="Switch voice and translation to English"
+        >
+          <Text style={[styles.langPillText, activeLanguage === 'en' && styles.langPillTextActive]}>
+            English
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.langPill, activeLanguage === 'hi' && styles.langPillActive]}
+          onPress={() => handleLanguageSelect('hi')}
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel="Switch voice and translation to Hindi"
+        >
+          <Text style={[styles.langPillText, activeLanguage === 'hi' && styles.langPillTextActive]}>
+            हिंदी (Hindi)
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.langPill, activeLanguage === 'mr' && styles.langPillActive]}
+          onPress={() => handleLanguageSelect('mr')}
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel="Switch voice and translation to Marathi"
+        >
+          <Text style={[styles.langPillText, activeLanguage === 'mr' && styles.langPillTextActive]}>
+            मराठी (Marathi)
+          </Text>
+        </TouchableOpacity>
+      </View>
+
       {/* Listening Status Banner */}
       {isListening && (
         <Animated.View style={[styles.listeningBanner, { opacity: listenPulseAnim }]}>
           <View style={styles.recordingDot} />
-          <Text style={styles.listeningBannerText}>Listening... Speak clearly in English</Text>
+          <Text style={styles.listeningBannerText}>
+            Listening... Speak clearly in {activeLanguage === 'hi' ? 'Hindi' : activeLanguage === 'mr' ? 'Marathi' : 'English'}
+          </Text>
         </Animated.View>
       )}
 
@@ -341,6 +491,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       <Animated.View
         style={[
           styles.composerContainer,
+          isFocused && styles.composerFocused,
           disabled && styles.composerDisabled,
           isListening && styles.composerListening,
           { opacity: disabled ? 0.6 : pulseAnim },
@@ -371,7 +522,9 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         )}
 
         {/* Search Magnifying Glass Icon */}
-        <Text style={styles.searchIcon}>🔍</Text>
+        <View style={styles.searchIconWrapper}>
+          <SearchMagnifyIcon size={18} color={isFocused ? '#38BDF8' : '#94A3B8'} />
+        </View>
 
         {/* Input Field */}
         <TextInput
@@ -380,9 +533,19 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           value={value}
           onChangeText={onChangeText}
           onSubmitEditing={handleSubmit}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
-          placeholder={isListening ? 'Listening to voice...' : placeholder}
+          onFocus={() => {
+            setIsFocused(true);
+            handleFocus();
+          }}
+          onBlur={() => {
+            setIsFocused(false);
+            handleBlur();
+          }}
+          placeholder={
+            isListening
+              ? `Listening in ${activeLanguage === 'hi' ? 'Hindi' : activeLanguage === 'mr' ? 'Marathi' : 'English'}...`
+              : placeholder
+          }
           placeholderTextColor="#64748B"
           autoCapitalize="none"
           autoCorrect={false}
@@ -421,12 +584,14 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             isListening && styles.micBtnListening,
           ]}
         >
-          <Text style={styles.micIconText}>
-            {isListening ? '⏹' : '🎙'}
-          </Text>
+          {isListening ? (
+            <Text style={styles.micIconText}>⏹</Text>
+          ) : (
+            <MicIcon size={16} color={isListening ? '#FFF' : '#94A3B8'} />
+          )}
         </TouchableOpacity>
 
-        {/* Action Button (Sign >) */}
+        {/* Circular Blue Submit Button with White Right Arrow (matching reference) */}
         {isListening ? (
           <TouchableOpacity
             onPress={handleSpeechRecognition}
@@ -440,15 +605,17 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             onPress={handleSubmit}
             disabled={!value.trim() && disabled}
             style={[
-              styles.signActionBtn,
-              isLoading && styles.signActionBtnLoading,
+              styles.circularSubmitBtn,
+              circularSubmitBtnWebStyle,
+              isLoading && styles.circularSubmitBtnLoading,
             ]}
             accessibilityLabel="Translate text to sign language"
           >
-            <Text style={styles.signActionText}>
-              {isLoading ? '...' : 'Sign'}
-            </Text>
-            {!isLoading && <Text style={styles.signChevron}>›</Text>}
+            {isLoading ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <ArrowRightIcon size={16} color="#FFFFFF" />
+            )}
           </TouchableOpacity>
         )}
       </Animated.View>
@@ -459,26 +626,63 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   );
 };
 
+const circularSubmitBtnWebStyle = Platform.OS === 'web' ? ({
+  backgroundImage: 'linear-gradient(135deg, #0284C7 0%, #00C9D8 100%)',
+} as any) : null;
+
 const styles = StyleSheet.create({
   wrapper: {
     width: '100%',
     zIndex: 100,
   },
+  langPillsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 8,
+    alignItems: 'center',
+  },
+  langPill: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: RADII.full,
+    backgroundColor: '#0A1220',
+    borderWidth: 1,
+    borderColor: '#182436',
+  },
+  langPillActive: {
+    backgroundColor: '#10243C',
+    borderColor: '#38BDF8',
+  },
+  langPillText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#8E9CAE',
+  },
+  langPillTextActive: {
+    color: '#38BDF8',
+  },
   composerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#0A121D',
-    borderRadius: 28,
-    paddingHorizontal: 12,
+    backgroundColor: '#0B1320',
+    borderRadius: RADII.full,
+    paddingLeft: 14,
+    paddingRight: 8,
     paddingVertical: Platform.OS === 'ios' ? 7 : 5,
-    borderWidth: 1.5,
-    borderColor: 'rgba(6, 182, 212, 0.35)',
+    borderWidth: 1,
+    borderColor: '#1D2B3D',
     minHeight: 52,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.5,
-    shadowRadius: 16,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    elevation: 4,
+  },
+  composerFocused: {
+    borderColor: '#38BDF8',
+    shadowColor: '#38BDF8',
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
   },
   composerDisabled: {
     backgroundColor: COLORS.stage,
@@ -488,11 +692,10 @@ const styles = StyleSheet.create({
     borderColor: COLORS.ruby,
     backgroundColor: 'rgba(23, 14, 20, 0.95)',
   },
-  searchIcon: {
-    fontSize: 16,
-    color: '#64748B',
-    marginLeft: 4,
-    marginRight: 4,
+  searchIconWrapper: {
+    marginRight: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   modeToggleChip: {
     paddingHorizontal: 8,
@@ -521,63 +724,50 @@ const styles = StyleSheet.create({
     flex: 1,
     ...TYPOGRAPHY.body,
     fontSize: 15,
-    color: COLORS.textPrimary,
+    color: '#F5F7FA',
     paddingVertical: Platform.OS === 'ios' ? 8 : 6,
     paddingHorizontal: 6,
   },
   clearBtn: {
     padding: 6,
-    marginRight: 4,
+    marginRight: 2,
   },
   clearIcon: {
-    color: COLORS.textMuted,
+    color: '#64748B',
     fontSize: 14,
     fontWeight: 'bold',
   },
   micBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#1E293B',
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 8,
+    marginRight: 6,
   },
   micBtnListening: {
     backgroundColor: COLORS.ruby,
     borderColor: '#FDA4AF',
   },
   micIconText: {
-    fontSize: 16,
-  },
-  signActionBtn: {
-    backgroundColor: '#00DF8F',
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#00DF8F',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.45,
-    shadowRadius: 10,
-    elevation: 4,
-  },
-  signActionBtnLoading: {
-    opacity: 0.7,
-  },
-  signActionText: {
-    color: '#07080D',
-    fontWeight: '800',
     fontSize: 14,
   },
-  signChevron: {
-    color: '#07080D',
-    fontWeight: '800',
-    fontSize: 17,
-    marginLeft: 3,
-    marginTop: -1,
+  circularSubmitBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#0284C7',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#00C9D8',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  circularSubmitBtnLoading: {
+    opacity: 0.8,
   },
   stopActionBtn: {
     backgroundColor: COLORS.ruby,

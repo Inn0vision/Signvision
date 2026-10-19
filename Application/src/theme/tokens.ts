@@ -58,6 +58,17 @@ export const COLORS = {
   textSecondary: '#A6B0C0',    // Secondary labels, subtitles
   textMuted: '#637083',        // Metadata, timestamps, placeholders
   textInverse: '#07080D',      // Dark contrast on emerald buttons
+
+  // Reference Palette
+  bgDark: '#050A12',
+  surfaceDark: '#0B1320',
+  surfaceElevated: '#101B2A',
+  borderDark: '#1D2B3D',
+  brandBlue: '#38BDF8',
+  brandBlueAccent: '#45A5FF',
+  brandCyan: '#00C9D8',
+  textSecondaryDark: '#9AA9BD',
+  liveGreen: '#00D6A5',
 } as const;
 
 export const ISL_GRAMMAR_COLORS: Record<string, { bg: string; border: string; text: string }> = {

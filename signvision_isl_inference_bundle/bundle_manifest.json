@@ -1,0 +1,94 @@
+{
+  "bundle_name": "signvision_isl_inference_bundle",
+  "created_at": "2026-10-15T09:35:18.980332",
+  "task": "Indian Sign Language 23-Class Recognition",
+  "num_classes": 23,
+  "classes": [
+    "BROTHER",
+    "COLLEGE",
+    "DO_YOU_UNDERSTAND",
+    "GOOD_MORNING",
+    "GOOD_NIGHT",
+    "HE_IS_FATHER",
+    "HOW_ARE_YOU",
+    "HUSBAN",
+    "ITS_BEAUTIFUL_PLACE",
+    "LIKE_DANCE",
+    "MAN",
+    "NAMSATE",
+    "NO",
+    "PLEASE",
+    "SAD",
+    "SCHOOL",
+    "SHOP",
+    "SORRY",
+    "THANK_YOU",
+    "WHAT_IS_YOUR_NAME",
+    "WOMEN",
+    "WORK",
+    "YES"
+  ],
+  "sequence_length": 16,
+  "feature_dimension": 2464,
+  "system_requirements": {
+    "os": "Linux (Fedora, Debian, Ubuntu, Alpine) / macOS / Windows",
+    "runtime": "Python 3.10+",
+    "hardware": "CPU-only (no GPU required)"
+  },
+  "exclusions_verified": [
+    "Raw training videos (*.mp4, *.avi)",
+    "Metadata CSV logs (metadata.csv)",
+    "Training scripts (train_model.py, record_videos.py)",
+    "Feature caches (*cache*.joblib)",
+    "Virtual environments (.venv)",
+    "Compiled bytecode (__pycache__)",
+    "Git revision histories (.git)"
+  ],
+  "files": {
+    "README.md": {
+      "description": "Production integration instructions, FastAPI code example, and API documentation",
+      "size_bytes": 4904,
+      "sha256": "1613e54f9d3faa17017eca867474efaf9324080d90e152151f8f111720e912fd"
+    },
+    "inference.py": {
+      "description": "Production SignVisionInferenceEngine & RollingInferenceBuffer classes",
+      "size_bytes": 15031,
+      "sha256": "584981e700254d278d805d207f2f15a71c35af6a770546808a6f1161d3e114f7"
+    },
+    "requirements-inference.txt": {
+      "description": "Minimal inference-only requirements (headless, CPU-friendly)",
+      "size_bytes": 152,
+      "sha256": "367787c41c3009a806ab917418288ec2ddd24e1b19a215ce23a1dabe747986b1"
+    },
+    "smoke_test.py": {
+      "description": "Self-contained bundle verification test without retraining or GUI",
+      "size_bytes": 4568,
+      "sha256": "d21333efbab6018c4bd38758105cc9f483bfe673590aa413ce490467732a40cf"
+    },
+    "src/__init__.py": {
+      "description": "Package initializer for shared landmark feature module",
+      "size_bytes": 476,
+      "sha256": "23380872a1c448bfaf2255ba474bb673e0cb7a1f95d88e75d27cc9b329478151"
+    },
+    "src/landmark_features.py": {
+      "description": "Exact shared MediaPipe 16-frame landmark feature extractor",
+      "size_bytes": 12988,
+      "sha256": "c12829f3c395aee76ed741b8021f1fcf1b9f029035fc9a9d9ef00f631a24a10e"
+    },
+    "models/hand_landmarker.task": {
+      "description": "MediaPipe Hand Landmarker task asset (Google DeepMind / MediaPipe)",
+      "size_bytes": 7819105,
+      "sha256": "fbc2a30080c3c557093b5ddfc334698132eb341044ccee322ccf8bcf3607cde1"
+    },
+    "models/model_metadata.json": {
+      "description": "Trained class names, ID mappings, feature specifications, and config",
+      "size_bytes": 2773,
+      "sha256": "9dbdf1914049732e7ca46402d8be7fc7e2143cd4f8fa628b1c355527ed9e5b58"
+    },
+    "models/sign_classifier.joblib": {
+      "description": "Fitted scikit-learn classifier pipeline (StandardScaler + RBF-SVM)",
+      "size_bytes": 287477,
+      "sha256": "22ccb2638194430cf1f6410506b4a34b9f88bee38d3aedc7ae0a04baff57cef9"
+    }
+  }
+}

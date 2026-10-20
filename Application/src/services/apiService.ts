@@ -1,9 +1,23 @@
-// API Configuration
-// Using ADB reverse proxy: run `adb reverse tcp:8000 tcp:8000`
+import { Platform } from 'react-native';
+
+const resolveBaseUrl = (): string => {
+  if (process.env.EXPO_PUBLIC_CORE_API_URL) {
+    return process.env.EXPO_PUBLIC_CORE_API_URL;
+  }
+  if (typeof window !== 'undefined' && window.location && window.location.hostname) {
+    const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:';
+    return `${protocol}//${window.location.hostname}:8000`;
+  }
+  if (__DEV__) {
+    // Android emulators reach the host machine through 10.0.2.2.
+    // The NLP backend is currently running on 8001 (video service uses 8000).
+    return Platform.OS === 'android' ? 'http://10.0.2.2:8001' : 'http://localhost:8001';
+  }
+  return 'https://your-production-api.com';
+};
+
 const API_CONFIG = {
-  baseUrl: __DEV__ 
-    ? 'http://localhost:8000'
-    : 'https://your-production-api.com',
+  baseUrl: resolveBaseUrl(),
   timeout: 60000,
   retries: 3,
   retryDelay: 1000,
@@ -33,10 +47,27 @@ export interface ProcessingResult {
   signs: SignLookup[];
 }
 
+export interface GroqTokens {
+  input: number;
+  output: number;
+  overall: number;
+}
+
 export interface ProcessResponse {
   success: boolean;
   text: string;
+  original_text?: string;
+  detected_language?: string;
+  translated_text?: string;
   results: ProcessingResult[];
+  error?: string;
+  groq_tokens?: GroqTokens;
+}
+
+export interface TranscribeResponse {
+  success: boolean;
+  text?: string;
+  language?: string;
   error?: string;
 }
 
@@ -148,22 +179,67 @@ async function apiRequestWithRetry<T>(
   }
 }
 
-export async function processSentence(text: string): Promise<ProcessResponse> {
-  return apiRequestWithRetry<ProcessResponse>('/process', {
-    method: 'POST',
-    body: JSON.stringify({ text }),
-  });
+// In-memory cache for sentence processing results to eliminate redundant network requests
+const sentenceProcessCache = new Map<string, ProcessResponse>();
+const MAX_SENTENCE_CACHE_SIZE = 200;
+
+export function clearProcessSentenceCache(): void {
+  sentenceProcessCache.clear();
 }
 
-export async function transcribeAudio(audioUri: string): Promise<ProcessResponse> {
+export async function processSentence(
+  text: string,
+  language: string = 'auto',
+  useSemanticFallback: boolean = true
+): Promise<ProcessResponse> {
+  const normalizedKey = `${language}:${text.trim().toLowerCase()}`;
+  const cached = sentenceProcessCache.get(normalizedKey);
+  if (cached) {
+    return cached;
+  }
+
+  const response = await apiRequestWithRetry<ProcessResponse>('/process', {
+    method: 'POST',
+    body: JSON.stringify({
+      text,
+      language,
+      use_semantic_fallback: useSemanticFallback,
+    }),
+  });
+
+  if (response && response.success && response.results && response.results.length > 0) {
+    if (sentenceProcessCache.size >= MAX_SENTENCE_CACHE_SIZE) {
+      const oldestKey = sentenceProcessCache.keys().next().value;
+      if (oldestKey) sentenceProcessCache.delete(oldestKey);
+    }
+    sentenceProcessCache.set(normalizedKey, response);
+  }
+
+  return response;
+}
+
+export async function transcribeAudio(
+  audio: string | Blob,
+  language: 'en' | 'hi' | 'mr' = 'en'
+): Promise<TranscribeResponse> {
   const formData = new FormData();
-  const filename = audioUri.split('/').pop() || 'audio.wav';
   
-  formData.append('file', {
-    uri: audioUri,
-    type: 'audio/wav',
-    name: filename,
-  } as unknown as Blob);
+  if (typeof Blob !== 'undefined' && audio instanceof Blob) {
+    const filename = (audio as any).name || (audio.type.includes('webm') ? 'audio.webm' : 'audio.wav');
+    formData.append('file', audio, filename);
+  } else if (typeof audio === 'string') {
+    const filename = audio.split('/').pop() || 'audio.wav';
+    formData.append('file', {
+      uri: audio,
+      type: 'audio/wav',
+      name: filename,
+    } as unknown as Blob);
+  } else {
+    throw new ApiError('Invalid audio input provided for transcription');
+  }
+
+  const langCode = language === 'hi' ? 'hi-IN' : language === 'mr' ? 'mr-IN' : 'en-IN';
+  formData.append('language', langCode);
 
   let retriesLeft = API_CONFIG.retries;
   
@@ -251,4 +327,97 @@ export function setApiBaseUrl(url: string): void {
 
 export function getApiBaseUrl(): string {
   return API_CONFIG.baseUrl;
+}
+
+export const VIDEO_API_CONFIG = {
+  baseUrl: process.env.EXPO_PUBLIC_VIDEO_API_URL || (__DEV__ 
+    ? Platform.OS === 'android' ? 'http://10.0.2.2:8000' : 'http://localhost:8000'
+    : 'https://your-video-api.com'),
+  timeout: 60000,
+  retries: 3,
+  retryDelay: 1000,
+};
+
+import { TranslateVideoResponse } from '../types';
+export { TranslateVideoResponse };
+
+export interface TranslateVideoOptions {
+  isMirrored?: boolean;
+  facingMode?: 'front' | 'back' | 'environment';
+  threshold?: number;
+  minHandCoverage?: number;
+}
+
+export async function translateVideoClip(
+  videoData: string | Blob,
+  options?: TranslateVideoOptions,
+  retriesLeft: number = VIDEO_API_CONFIG.retries
+): Promise<TranslateVideoResponse> {
+  const formData = new FormData();
+  
+  if (typeof videoData === 'string') {
+    const filename = videoData.split('/').pop() || 'video.mp4';
+    formData.append('video', {
+      uri: videoData,
+      type: 'video/mp4',
+      name: filename,
+    } as unknown as Blob);
+  } else {
+    formData.append('video', videoData, 'video.webm');
+  }
+
+  const queryParams = new URLSearchParams();
+  if (options?.isMirrored !== undefined) {
+    queryParams.append('is_mirrored', String(options.isMirrored));
+  }
+  if (options?.facingMode) {
+    queryParams.append('facing_mode', options.facingMode);
+  }
+  if (options?.threshold !== undefined) {
+    queryParams.append('threshold', String(options.threshold));
+  }
+  if (options?.minHandCoverage !== undefined) {
+    queryParams.append('min_hand_coverage', String(options.minHandCoverage));
+  }
+  const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), VIDEO_API_CONFIG.timeout);
+
+  try {
+    const response = await fetch(`${VIDEO_API_CONFIG.baseUrl}/api/translate-video${queryString}`, {
+      method: 'POST',
+      body: formData,
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorBody = await response.text();
+      const isRetryable = response.status >= 500 || response.status === 429;
+      throw new ApiError(
+        `Video translation failed: ${response.statusText}`,
+        response.status,
+        errorBody,
+        isRetryable
+      );
+    }
+
+    return await response.json();
+  } catch (error) {
+    clearTimeout(timeoutId);
+
+    if (retriesLeft > 0 && isRetryableError(error)) {
+      console.log(`[Video API] Retry ${VIDEO_API_CONFIG.retries - retriesLeft + 1}/${VIDEO_API_CONFIG.retries} for video upload`);
+      await sleep(VIDEO_API_CONFIG.retryDelay * (VIDEO_API_CONFIG.retries - retriesLeft + 1));
+      return translateVideoClip(videoData, options, retriesLeft - 1);
+    }
+
+    if (error instanceof ApiError) throw error;
+    if (error instanceof Error) {
+      throw new ApiError(`Video upload error: ${error.message}`, undefined, undefined, false);
+    }
+    throw new ApiError('Unknown video processing error');
+  }
 }

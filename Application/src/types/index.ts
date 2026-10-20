@@ -11,12 +11,35 @@ export interface AvatarMessage {
   gloss?: string;
   avatar?: string;
   initialized?: boolean;
+  signIndex?: number;
 }
 
 export interface PlayMessage {
   type: 'play';
   url: string;
   word: string;
+}
+
+export interface PlaySequenceMessage {
+  type: 'playSequence';
+  sigmlText: string;
+  words: string[];
+  initialIndex?: number;
+}
+
+export interface PlaySequenceUrlsMessage {
+  type: 'playSequenceUrls';
+  urls: string[];
+  words: string[];
+  initialIndex?: number;
+}
+
+export interface PauseMessage {
+  type: 'pause';
+}
+
+export interface ResumeMessage {
+  type: 'resume';
 }
 
 export interface StopMessage {
@@ -32,7 +55,26 @@ export interface PingMessage {
   type: 'ping';
 }
 
-export type WebViewOutgoingMessage = PlayMessage | StopMessage | ChangeAvatarMessage | PingMessage;
+export interface SpeedMessage {
+  type: 'speed';
+  speed: number;
+}
+
+export interface ResetCameraMessage {
+  type: 'resetCamera';
+}
+
+export type WebViewOutgoingMessage =
+  | PlayMessage
+  | PlaySequenceMessage
+  | PlaySequenceUrlsMessage
+  | PauseMessage
+  | ResumeMessage
+  | StopMessage
+  | ChangeAvatarMessage
+  | PingMessage
+  | SpeedMessage
+  | ResetCameraMessage;
 
 // App state types
 export type PlaybackStatus = 'idle' | 'loading' | 'playing' | 'finished' | 'error';
@@ -46,15 +88,23 @@ export interface AppState {
   searchHistory: string[];
 }
 
-// Search history item
 export interface HistoryItem {
   word: string;
   timestamp: number;
   found: boolean;
+  signCount?: number;
+}
+
+export interface SearchHistoryItem {
+  id: string;
+  query: string;
+  timestamp: number;
+  isSentence?: boolean;
+  foundCount?: number;
 }
 
 // Avatar options
-export const AVATAR_OPTIONS = ['anna', 'marc', 'francoise', 'luna'] as const;
+export const AVATAR_OPTIONS = ['luna', 'marc', 'anna', 'francoise', 'siggi'] as const;
 export type AvatarName = typeof AVATAR_OPTIONS[number];
 
 // API Response types (from backend)
@@ -82,10 +132,27 @@ export interface ProcessingResult {
   signs: SignLookup[];
 }
 
+export interface GroqTokens {
+  input: number;
+  output: number;
+  overall: number;
+}
+
 export interface ProcessResponse {
   success: boolean;
   text: string;
+  original_text?: string;
+  detected_language?: string;
+  translated_text?: string;
   results: ProcessingResult[];
+  error?: string;
+  groq_tokens?: GroqTokens;
+}
+
+export interface TranscribeResponse {
+  success: boolean;
+  text?: string;
+  language?: string;
   error?: string;
 }
 
@@ -98,3 +165,28 @@ export interface SignQueueItem {
 
 // Processing mode for the app
 export type ProcessingMode = 'word' | 'sentence';
+
+// Video recognition microservice response (:8001)
+export interface TranslateVideoCandidate {
+  sign: string;
+  probability: number;
+}
+
+export interface TranslateVideoResponse {
+  translation: string;
+  status?: 'CONFIDENT' | 'UNCERTAIN';
+  predicted_sign?: string;
+  raw_predicted_sign?: string;
+  confidence?: number;
+  hand_coverage?: number;
+  rejection_reason?: string;
+  status_message?: string;
+  runner_up?: { sign: string | null; probability: number } | null;
+  decision_margin?: number | null;
+  wrist_motion?: number | null;
+  gate_checks?: Record<string, { value: number; threshold: number; passed: boolean }>;
+  top_candidates?: TranslateVideoCandidate[];
+  temporal_window?: Record<string, any>;
+  inference_time_ms?: number;
+  total_processing_time_ms?: number;
+}

@@ -32,7 +32,7 @@ const signData = signLanguageData as SignLanguageDataMap;
 
 // S3 bucket configuration (fallback if not in JSON)
 const S3_CONFIG = {
-  bucket: "signvision-085587597556",
+  bucket: "signvision-data-741452524968-bucket",
   region: "ap-south-1",
   basePath: "sigml-files",
 };
@@ -44,7 +44,7 @@ const S3_CONFIG = {
  * - Trim whitespace
  */
 export function normalizeWord(word: string): string {
-  return word.trim().toUpperCase().replace(/\s+/g, "_");
+  return word.trim().toUpperCase().replace(/\s+/g, " ");
 }
 
 /**
@@ -230,21 +230,52 @@ export function getCategories(): string[] {
 }
 
 /**
- * Search words with autocomplete
+ * Search words with autocomplete from the sign language database
+ * Supports prefix matching, substring matching, and anchor synonym matching
  */
-export function autocomplete(prefix: string, limit: number = 10): string[] {
+export function autocomplete(prefix: string, limit: number = 8): string[] {
   const normalizedPrefix = normalizeWord(prefix);
 
   if (!normalizedPrefix) return [];
 
   const matches: string[] = [];
+  const seen = new Set<string>();
 
+  // 1. Exact or prefix match (starts with) - Highest relevance
   for (const word of Object.keys(signData)) {
     if (word.startsWith(normalizedPrefix)) {
       const data = signData[word];
       if (data.s3_url && data.s3_url.length > 0) {
         matches.push(word);
-        if (matches.length >= limit) break;
+        seen.add(word);
+        if (matches.length >= limit) return matches;
+      }
+    }
+  }
+
+  // 2. Substring match (contains prefix, e.g. 'YOU' matches 'THANK YOU')
+  for (const word of Object.keys(signData)) {
+    if (!seen.has(word) && word.includes(normalizedPrefix)) {
+      const data = signData[word];
+      if (data.s3_url && data.s3_url.length > 0) {
+        matches.push(word);
+        seen.add(word);
+        if (matches.length >= limit) return matches;
+      }
+    }
+  }
+
+  // 3. Anchor synonym match from dataset
+  for (const [word, data] of Object.entries(signData)) {
+    if (
+      !seen.has(word) &&
+      data.anchors &&
+      data.anchors.some((a) => a.toUpperCase().startsWith(normalizedPrefix) || a.toUpperCase().includes(normalizedPrefix))
+    ) {
+      if (data.s3_url && data.s3_url.length > 0) {
+        matches.push(word);
+        seen.add(word);
+        if (matches.length >= limit) return matches;
       }
     }
   }

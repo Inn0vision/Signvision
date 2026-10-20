@@ -1,71 +1,73 @@
-# Semantic Search (Words + ChromaDB)
+# SignVision — Semantic Search Prototyping (`feats/Semantic-search/`)
 
-This project builds embeddings for words from `words.txt` and stores them in ChromaDB, then lets you run interactive semantic search from the terminal.
+> **Standalone vector search prototyping toolkit utilizing `sentence-transformers` and ChromaDB.**
 
-## Project Files
+---
 
-- `embedStore.py`: Loads words, generates embeddings, stores them in ChromaDB
-- `searchEmbeddings.py`: Interactive search over stored embeddings
-- `words.txt`: Input word list (one word or phrase per line)
-- `requirement.txt`: Python dependencies
+## ⚡ 1. Brief Quickstart (TL;DR)
 
-## Prerequisites
+This module provides standalone tools to build and test ChromaDB vector embeddings for the SignVision vocabulary independently of the main FastAPI server.
 
-- Python 3.10 or newer
-- `pip`
-
-## Setup
-
-1. Open a terminal in the project folder.
-2. (Recommended) Create and activate a virtual environment.
-3. Install dependencies.
+### Quick Commands
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirement.txt
-```
+cd feats/Semantic-search
 
-## Run the Project
+# 1. Install required packages
+pip install sentence-transformers chromadb
 
-### 1) Build and Store Embeddings
-
-Run this first. It reads `words.txt` and creates a persistent local database in `./chroma_db`.
-
-```bash
+# 2. Compute embeddings and persist ChromaDB index
 python embedStore.py
-```
 
-### 2) Start Semantic Search
-
-```bash
+# 3. Test queries interactively in terminal
 python searchEmbeddings.py
 ```
 
-## Search Commands
+---
 
-Inside the search prompt:
+## 🛠️ 2. Detailed Technical Guide
 
-- Type any word or phrase to search
-- `:q` to quit
-- `:k <number>` to change number of results (top-k)
-- `:min <0-1>` to change minimum similarity threshold
+### 2.1 Architecture & Components
 
-## Typical Workflow
+```
+feats/Semantic-search/
+├── embedStore.py            # Generates vectors and populates ChromaDB collection
+├── searchEmbeddings.py      # CLI query tool for testing retrieval accuracy
+└── chromadb_store/          # Local persistent database files
+```
 
-1. Edit `words.txt` with your own terms.
-2. Run `python embedStore.py` to rebuild embeddings.
-3. Run `python searchEmbeddings.py` and query terms interactively.
+- **Embedding Model**: `sentence-transformers/all-MiniLM-L6-v2`
+  - Dimensions: 384
+  - Max Sequence Length: 256 tokens
+  - Distance Metric: Cosine similarity
+- **Vector Database**: ChromaDB (v0.4+)
+  - Storage: In-process SQLite + DuckDB index on disk
+  - Collection: `sign_language_embeddings`
 
-## Notes
+---
 
-- On first run, the embedding model (`all-MiniLM-L6-v2`) is downloaded, so it may take longer.
-- Re-running `embedStore.py` replaces the previous `words` collection to avoid duplicates.
+### 2.2 Script Breakdown
 
-## Troubleshooting
+#### `embedStore.py`
+1. Loads `sign_language_data.json`.
+2. Extracts each word and its associated anchor synonyms into descriptive text chunks.
+3. Passes texts through the transformer model to generate 384-dimensional dense vectors.
+4. Adds embeddings, metadata (word name, S3 URL, category), and IDs to the persistent ChromaDB collection.
 
-- `No such collection` or collection not found:
-  - Run `python embedStore.py` before starting search.
-- Dependency install issues:
-  - Upgrade pip: `python -m pip install --upgrade pip`
-  - Re-run: `pip install -r requirement.txt`
+#### `searchEmbeddings.py`
+1. Prompts user for a search query in terminal (e.g. `"airplane"`, `"physician"`, `"automobile"`).
+2. Encodes the query into a 384-dimensional vector.
+3. Executes a nearest-neighbor query against ChromaDB (`n_results=5`).
+4. Prints matching words, similarity scores, and S3 URLs.
+
+---
+
+### 2.3 Integration into Core Backend
+
+This prototype was adapted into the production backend at:
+- `backend/app/services/semantic_search.py`
+- `backend/app/services/word_lookup.py` (Tier 4 fallback)
+
+---
+
+*SignVision — Semantic Search Prototyping Guide.*

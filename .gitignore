@@ -1,48 +1,116 @@
-chroma_db/
-*.chroma/
-*.db
+# ==========================================
+# SignVision - Comprehensive .gitignore
+# ==========================================
 
-.DS_Store
-Thumbs.db
-*.log
-*.tmp
-*.swp
-*.swo
+# Environment variables & secrets
 .env
 .env.*
-*.env
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+!.env.example
+project
 
-.expo/
-.expo-shared/
-
-android/.gradle/
-android/app/build/
-android/build/
-ios/build/
-ios/Pods/
-*.xcworkspace
-.metro-cache/
-**pycache**/
-*.pyc
-*.pyo
-*.pyd
-venv/
+# Python & Virtual Environments
+__pycache__/
+*/__pycache__/
+*/**/__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
 env/
+venv/
 .venv/
+ENV/
 build/
 dist/
 *.egg-info/
-chroma_db/
-*.db
-*.sqlite3
-.ipynb_checkpoints/
-.vscode/
-.idea/
-coverage/
+.eggs/
+chatbotai
+
+# Testing, Coverage & Linters
 .pytest_cache/
+*/.pytest_cache/
+*/**/.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.cache
+.mypy_cache/
+.ruff_cache/
+
+# Databases, Embeddings & Vectors
+chroma_db/
+*/chroma_db/
+*/**/chroma_db/
+*.chroma/
+*.db
+*.sqlite
+*.sqlite3
+
+# Audio / Video runtime recordings
+recordings/
+backend/recordings/
+*.mp4
+*.webm
+*.avi
+*.mov
+*.wav
+*.flac
+*.m4a
+*.ogg
+
+# Node & Package Managers
+node_modules/
+*/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json.bak
+
+# Expo & Web Bundles
+.expo/
+*/.expo/
+.expo-shared/
+.metro-cache/
+web-build/
+Application/dist/
+
+# Android Native Builds
+android/.gradle/
+android/app/build/
+android/build/
+Application/android/.gradle/
+Application/android/build/
+Application/android/app/build/
+Application/android/app/.cxx/
+Application/android/.kotlin/
+*.apk
+*.aab
+
+# iOS Native Builds
+ios/build/
+ios/Pods/
+Application/ios/build/
+Application/ios/Pods/
+*.xcworkspace
+*.xcuserdatad
+chatbotai
+# OS & Editor configurations
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
 *.bak
-*.cache
+*.tmp
+*.log
+*.logs
+*.backup.*
+index.backup.html
+.idea/
+.vscode/
+!.vscode/settings.json
+!.vscode/launch.json
+.ipynb_checkpoints/
+*.pem
+to_delete/
+scratch/
+

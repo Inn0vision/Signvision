@@ -24,6 +24,7 @@ build/
 dist/
 *.egg-info/
 .eggs/
+chatbotai
 
 # Testing, Coverage & Linters
 .pytest_cache/
@@ -92,7 +93,7 @@ Application/ios/build/
 Application/ios/Pods/
 *.xcworkspace
 *.xcuserdatad
-
+chatbotai
 # OS & Editor configurations
 .DS_Store
 Thumbs.db
@@ -100,9 +101,16 @@ Thumbs.db
 *.swo
 *.bak
 *.tmp
+*.log
+*.logs
+*.backup.*
+index.backup.html
 .idea/
 .vscode/
 !.vscode/settings.json
 !.vscode/launch.json
 .ipynb_checkpoints/
 *.pem
+to_delete/
+scratch/
+

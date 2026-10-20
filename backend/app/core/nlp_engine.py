@@ -355,6 +355,40 @@ def clear_nlp_cache() -> None:
     _PROCESS_TEXT_CACHE.clear()
 
 
+import contextvars
+
+_DEFAULT_GROQ_TOKENS = {"input": 0, "output": 0, "overall": 0}
+request_groq_tokens: contextvars.ContextVar[Dict[str, int]] = contextvars.ContextVar(
+    "request_groq_tokens", default=_DEFAULT_GROQ_TOKENS
+)
+
+
+def reset_request_groq_tokens() -> Dict[str, int]:
+    """Reset token accumulator for the current request context."""
+    tokens = {"input": 0, "output": 0, "overall": 0}
+    request_groq_tokens.set(tokens)
+    return tokens
+
+
+def get_request_groq_tokens() -> Dict[str, int]:
+    """Get total Groq tokens accumulated for the current request."""
+    return dict(request_groq_tokens.get())
+
+
+def record_groq_tokens(
+    prompt: Optional[int], completion: Optional[int], total: Optional[int]
+) -> None:
+    """Add tokens from a Groq API completion to the current request."""
+    curr = dict(request_groq_tokens.get())
+    p = prompt or 0
+    c = completion or 0
+    t = total or (p + c)
+    curr["input"] += p
+    curr["output"] += c
+    curr["overall"] += t
+    request_groq_tokens.set(curr)
+
+
 def call_llm(prompt: str, max_tokens: int = 256) -> Dict[str, Any]:
     """Call Groq LLM with automatic key failover across fallback keys and network retries."""
     import time
@@ -406,6 +440,8 @@ def call_llm(prompt: str, max_tokens: int = 256) -> Dict[str, Any]:
             prompt_tokens = getattr(usage, "prompt_tokens", None) if usage else None
             completion_tokens = getattr(usage, "completion_tokens", None) if usage else None
             total_tokens = getattr(usage, "total_tokens", None) if usage else None
+
+            record_groq_tokens(prompt_tokens, completion_tokens, total_tokens)
 
             logger.info(
                 f"Groq LLM call succeeded - model: {settings.GROQ_MODEL}, "

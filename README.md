@@ -69,32 +69,39 @@ Ensure the following runtimes and toolchains are installed on the host machine:
 
 ### 2.3 Environment Variable Configuration
 
-SignVision relies on environment variables for external API keys and local network binding. Copy `.env.example` at root or configure individual services:
+SignVision relies on environment variables for external API keys and local network binding. Copy `.env.example` at root:
 
-#### Root `.env` / Service Defaults
-```ini
-# Core Backend (:8000)
-GPT_API_KEY=your_nvidia_openai_compatible_api_key_here
-GPT_BASE_URL=https://integrate.api.nvidia.com/v1
-GPT_MODEL=openai/gpt-oss-120b
-CHROMA_DB_PATH=./data/chroma_db
-DATA_DIR=../data
-
-# Video Microservice (:8001)
-GEMINI_API_KEY=your_google_gemini_api_key_here
-
-# AWS S3 Storage
-AWS_ACCESS_KEY_ID=your_aws_key
-AWS_SECRET_ACCESS_KEY=your_aws_secret
-AWS_REGION=ap-south-1
-S3_BUCKET_NAME=signvision-085587597556
-
-# Application Frontend (Application/.env)
-EXPO_PUBLIC_API_URL=http://localhost:8000
-EXPO_PUBLIC_VIDEO_API_URL=http://localhost:8001
+```bash
+cp .env.example .env
 ```
 
-> **Important**: When running on a physical Android device over Wi-Fi, replace `localhost` in `Application/.env` with your host computer's LAN IPv4 address (e.g., `http://10.26.215.140:8000`).
+#### Key Variables in `.env`
+```ini
+# Core Backend (:8000)
+# Get your free key at https://console.groq.com/keys
+GROQ_API_KEY=your_groq_api_key_here
+GROQ_MODEL=openai/gpt-oss-20b
+
+# Optional: Groq fallback keys for automatic failover
+GROQ_API_KEY_FALLBACK_1=
+GROQ_API_KEY_FALLBACK_2=
+GROQ_API_KEY_FALLBACK_3=
+
+# Video Microservice (:8001)
+SIGN_CONFIDENCE_THRESHOLD=0.50
+MIN_HAND_COVERAGE=0.50
+
+# Application Frontend (Application/ or root .env)
+# For local web browser testing:
+EXPO_PUBLIC_CORE_API_URL=http://localhost:8000
+EXPO_PUBLIC_VIDEO_API_URL=http://localhost:8001
+
+# For physical mobile device / Expo Go on local Wi-Fi:
+# EXPO_PUBLIC_CORE_API_URL=http://192.168.1.100:8000
+# EXPO_PUBLIC_VIDEO_API_URL=http://192.168.1.100:8001
+```
+
+> **Important**: When running on a physical Android/iOS device over Wi-Fi via Expo Go, replace `localhost` with your host computer's local network IPv4 address (e.g., `http://192.168.1.100:8000`).
 
 ---
 

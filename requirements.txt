@@ -1,4 +1,6 @@
-# Unified SignVision Dependencies
+# ==========================================
+# Unified SignVision Python Dependencies
+# ==========================================
 
 # Base API & Server
 fastapi>=0.104.0
@@ -8,16 +10,31 @@ pydantic-settings>=2.1.0
 python-dotenv>=1.0.0
 python-multipart>=0.0.6
 
-# SignVision AI Backends (LLM & NLP)
+# Core NLP & LLM Engines
 spacy>=3.7.0,<3.9.0
 https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl
 groq>=0.4.0
-google-genai>=0.2.0
 
-# VectorDB & Embeddings
+# VectorDB & Embeddings (Semantic Search)
 sentence-transformers>=2.2.0
 chromadb>=0.4.0
 
-# Audio Processing
+# Audio Processing & Speech-to-Text
+# (Note: pydub format conversion requires system ffmpeg: sudo apt-get install ffmpeg)
 SpeechRecognition>=3.10.0
 pydub>=0.25.0
+
+# Redis Cache (Optional for fast caching)
+redis>=5.0.0
+
+# Video Microservice ML & Landmark Inference
+opencv-python-headless>=4.9.0
+mediapipe>=0.10.0
+scikit-learn>=1.4.0
+joblib>=1.3.0
+numpy>=1.26.0
+
+# Testing & Linting
+pytest>=8.0.0
+pytest-asyncio>=0.23.0
+httpx>=0.27.0

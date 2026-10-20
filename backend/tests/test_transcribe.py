@@ -170,3 +170,37 @@ class TestTranscribeEndpoint:
         response = client.get("/transcribe")
         # GET is not defined, but if the route exists FastAPI returns 405, not 404
         assert response.status_code != 404
+
+    @patch("backend.app.main._SR_AVAILABLE", True)
+    @patch("backend.app.main._recognize_audio", return_value="नमस्ते")
+    def test_transcription_with_hindi_language(self, mock_recog):
+        client = self._make_client()
+        response = client.post(
+            "/transcribe",
+            data={"language": "hi"},
+            files={"file": ("audio.wav", io.BytesIO(_make_wav_bytes()), "audio/wav")},
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["success"] is True
+        assert data["text"] == "नमस्ते"
+        assert data["language"] == "hi-IN"
+        mock_recog.assert_called_once()
+        assert mock_recog.call_args[1]["language"] == "hi-IN"
+
+    @patch("backend.app.main._SR_AVAILABLE", True)
+    @patch("backend.app.main._recognize_audio", return_value="नमस्कार")
+    def test_transcription_with_marathi_language(self, mock_recog):
+        client = self._make_client()
+        response = client.post(
+            "/transcribe?lang=mr",
+            files={"file": ("audio.wav", io.BytesIO(_make_wav_bytes()), "audio/wav")},
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["success"] is True
+        assert data["text"] == "नमस्कार"
+        assert data["language"] == "mr-IN"
+        mock_recog.assert_called_once()
+        assert mock_recog.call_args[1]["language"] == "mr-IN"
+

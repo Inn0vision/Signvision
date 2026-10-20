@@ -8,7 +8,7 @@ from datetime import datetime
 
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, File, HTTPException, UploadFile, Response
+from fastapi import FastAPI, File, HTTPException, UploadFile, Response, Form, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -36,7 +36,11 @@ except ImportError:
     _PYDUB_AVAILABLE = False
 
 from .core.config import settings
-from .core.nlp_engine import process_text
+from .core.nlp_engine import (
+    process_text,
+    reset_request_groq_tokens,
+    get_request_groq_tokens,
+)
 from .services.word_lookup import word_lookup_service, WordLookupResult
 from .services.semantic_search import semantic_search_service, build_embeddings
 from .services.translation_cache import translation_cache
@@ -105,6 +109,12 @@ class ProcessingResult(BaseModel):
     signs: List[SignLookup]
 
 
+class GroqTokens(BaseModel):
+    input: int = 0
+    output: int = 0
+    overall: int = 0
+
+
 class FullResponse(BaseModel):
     success: bool
     text: str
@@ -113,16 +123,32 @@ class FullResponse(BaseModel):
     translated_text: Optional[str] = None
     results: List[ProcessingResult]
     error: Optional[str] = None
+    groq_tokens: Optional[GroqTokens] = None
 
 
 class TranscribeResponse(BaseModel):
     success: bool
     text: Optional[str] = None
+    language: Optional[str] = None
     error: Optional[str] = None
 
 
 # Supported audio input formats that pydub can convert to WAV.
 _SUPPORTED_FORMATS = {"wav", "webm", "ogg", "mp3", "mp4", "m4a", "flac", "aiff"}
+
+
+def _normalize_speech_language(lang: Optional[str]) -> str:
+    """Normalize language code for speech recognition."""
+    if not lang:
+        return "en-IN"
+    lang_clean = lang.strip().lower()
+    if lang_clean in ("hi", "hi-in", "hindi"):
+        return "hi-IN"
+    if lang_clean in ("mr", "mr-in", "marathi"):
+        return "mr-IN"
+    if lang_clean in ("en", "en-in", "en-us", "en-gb", "english"):
+        return "en-IN"
+    return "en-IN"
 
 
 def _convert_to_wav(audio_bytes: bytes, src_format: str) -> bytes:
@@ -133,13 +159,18 @@ def _convert_to_wav(audio_bytes: bytes, src_format: str) -> bytes:
     return wav_buffer.getvalue()
 
 
-def _recognize_audio(wav_bytes: bytes) -> str:
+def _recognize_audio(wav_bytes: bytes, language: str = "en-IN") -> str:
     """Run Google Speech Recognition on WAV bytes. Returns transcribed text."""
     recognizer = sr.Recognizer()
     audio_file = io.BytesIO(wav_bytes)
     with sr.AudioFile(audio_file) as source:
         audio_data = recognizer.record(source)
-    return recognizer.recognize_google(audio_data)
+    try:
+        return recognizer.recognize_google(audio_data, language=language)
+    except _SrUnknownValueError:
+        if language != "en-IN":
+            return recognizer.recognize_google(audio_data, language="en-IN")
+        raise
 
 
 def _process_and_lookup(
@@ -170,6 +201,26 @@ def _process_and_lookup(
 
 
 
+def _log_request_groq_tokens(request_text: str = "") -> Dict[str, int]:
+    """Log and return the 3 Groq token numbers (input, output, overall) used for this request."""
+    tokens = get_request_groq_tokens()
+    inp = int(tokens.get("input", 0))
+    out = int(tokens.get("output", 0))
+    tot = int(tokens.get("overall", inp + out))
+
+    logger.info(f"Groq Tokens Used: input: {inp}, output: {out}, overall: {tot}")
+    print(
+        f"\n==================================================\n"
+        f"Groq Tokens Used:\n"
+        f"  input:   {inp}\n"
+        f"  output:  {out}\n"
+        f"  overall: {tot}\n"
+        f"==================================================",
+        flush=True,
+    )
+    return {"input": inp, "output": out, "overall": tot}
+
+
 @app.post("/process")
 async def process_endpoint(payload: TextPayload, response: Response):
     """
@@ -183,15 +234,18 @@ async def process_endpoint(payload: TextPayload, response: Response):
     5. For each GLOSS token, lookup S3 URL
     6. Cache successful result with configured TTL
     """
+    reset_request_groq_tokens()
     text_stripped = payload.text.strip()
     if not text_stripped:
         response.headers["X-Translation-Cache"] = "BYPASS"
+        groq_toks = _log_request_groq_tokens(payload.text)
         return {
             "success": False,
             "text": payload.text,
             "original_text": payload.text,
             "results": [],
             "error": "Empty input text",
+            "groq_tokens": groq_toks,
         }
 
     req_lang = payload.language or "auto"
@@ -206,7 +260,10 @@ async def process_endpoint(payload: TextPayload, response: Response):
     if cached_data is not None:
         logger.info("Translation cache HIT [key=%s, len=%d]", cache_key[:24], len(payload.text))
         response.headers["X-Translation-Cache"] = "HIT"
-        return cached_data
+        groq_toks = _log_request_groq_tokens(payload.text)
+        result_copy = dict(cached_data)
+        result_copy["groq_tokens"] = groq_toks
+        return result_copy
 
     # 2. Inflight deduplication
     async with translation_cache.inflight.lock(cache_key):
@@ -215,7 +272,10 @@ async def process_endpoint(payload: TextPayload, response: Response):
         if cached_data is not None:
             logger.info("Translation cache HIT (deduplicated) [key=%s, len=%d]", cache_key[:24], len(payload.text))
             response.headers["X-Translation-Cache"] = "HIT"
-            return cached_data
+            groq_toks = _log_request_groq_tokens(payload.text)
+            result_copy = dict(cached_data)
+            result_copy["groq_tokens"] = groq_toks
+            return result_copy
 
         logger.info("Translation cache %s [key=%s, len=%d]", cache_status, cache_key[:24], len(payload.text))
 
@@ -235,6 +295,7 @@ async def process_endpoint(payload: TextPayload, response: Response):
                 use_semantic_fallback=payload.use_semantic_fallback,
                 pre_extracted_frame=pre_extracted_frame,
             )
+            groq_toks = _log_request_groq_tokens(payload.text)
             response_data = {
                 "success": True,
                 "text": english_text,
@@ -242,6 +303,7 @@ async def process_endpoint(payload: TextPayload, response: Response):
                 "detected_language": detected_lang,
                 "translated_text": english_text,
                 "results": results,
+                "groq_tokens": groq_toks,
             }
 
             if response_data["success"] and len(response_data["results"]) > 0:
@@ -250,6 +312,7 @@ async def process_endpoint(payload: TextPayload, response: Response):
             response.headers["X-Translation-Cache"] = cache_status
             return response_data
         except ValueError as ve:
+            groq_toks = _log_request_groq_tokens(payload.text)
             logger.warning(f"Validation or translation error: {ve}")
             return {
                 "success": False,
@@ -257,8 +320,10 @@ async def process_endpoint(payload: TextPayload, response: Response):
                 "original_text": payload.text,
                 "results": [],
                 "error": str(ve),
+                "groq_tokens": groq_toks,
             }
         except Exception as e:
+            _log_request_groq_tokens(payload.text)
             logger.error(f"Processing failed: {e}")
             raise HTTPException(status_code=500, detail=str(e))
 
@@ -266,14 +331,17 @@ async def process_endpoint(payload: TextPayload, response: Response):
 @app.post("/process_text")
 async def process_text_endpoint(payload: TextPayload):
     """Process text through NLP engine only (returns GLOSS without sign lookup)"""
+    reset_request_groq_tokens()
     text_stripped = payload.text.strip()
     if not text_stripped:
+        groq_toks = _log_request_groq_tokens(payload.text)
         return {
             "success": False,
             "text": payload.text,
             "original_text": payload.text,
             "results": [],
             "error": "Empty input text",
+            "groq_tokens": groq_toks,
         }
 
     try:
@@ -284,6 +352,7 @@ async def process_text_endpoint(payload: TextPayload):
         english_text = trans_result.translated_text
         pre_extracted_frame = getattr(trans_result, "semantic_frame", None)
         results = process_text(english_text, pre_extracted_frame=pre_extracted_frame)
+        groq_toks = _log_request_groq_tokens(payload.text)
         return {
             "success": True,
             "text": english_text,
@@ -291,27 +360,36 @@ async def process_text_endpoint(payload: TextPayload):
             "detected_language": trans_result.detected_language,
             "translated_text": english_text,
             "results": results,
+            "groq_tokens": groq_toks,
         }
     except ValueError as ve:
+        groq_toks = _log_request_groq_tokens(payload.text)
         return {
             "success": False,
             "text": payload.text,
             "original_text": payload.text,
             "results": [],
             "error": str(ve),
+            "groq_tokens": groq_toks,
         }
     except Exception as e:
+        _log_request_groq_tokens(payload.text)
         logger.error(f"NLP processing failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
 
 @app.post("/transcribe", response_model=TranscribeResponse)
-async def transcribe_audio(file: UploadFile = File(...)) -> TranscribeResponse:
+async def transcribe_audio(
+    file: UploadFile = File(...),
+    language: Optional[str] = Form(None),
+    lang: Optional[str] = Query(None),
+) -> TranscribeResponse:
     """
     Audio -> Text transcription via Google Speech Recognition.
 
-    Accepts multipart/form-data with field 'file' containing an audio file.
+    Accepts multipart/form-data with field 'file' containing an audio file,
+    and optional 'language' (e.g. 'en-IN', 'hi-IN', 'mr-IN', 'en', 'hi', 'mr').
     Supported formats: wav, webm, ogg, mp3, mp4, m4a, flac, aiff.
 
     System requirements:
@@ -328,6 +406,8 @@ async def transcribe_audio(file: UploadFile = File(...)) -> TranscribeResponse:
             status_code=503,
             detail="SpeechRecognition library is not installed. Run: pip install SpeechRecognition",
         )
+
+    speech_lang = _normalize_speech_language(language or lang)
 
     # Determine file extension / audio format from uploaded filename
     filename = file.filename or "audio.wav"
@@ -367,7 +447,7 @@ async def transcribe_audio(file: UploadFile = File(...)) -> TranscribeResponse:
 
         # Run speech recognition
         try:
-            transcribed_text = _recognize_audio(wav_bytes)
+            transcribed_text = _recognize_audio(wav_bytes, language=speech_lang)
         except _SrUnknownValueError:
             logger.warning("Speech recognition could not understand audio")
             return TranscribeResponse(success=False, error="Could not understand the audio. Please speak clearly.")
@@ -381,8 +461,8 @@ async def transcribe_audio(file: UploadFile = File(...)) -> TranscribeResponse:
         if not transcribed_text or not transcribed_text.strip():
             return TranscribeResponse(success=False, error="Transcription returned empty text.")
 
-        logger.info(f"Transcribed ({len(audio_bytes)} bytes): '{transcribed_text}'")
-        return TranscribeResponse(success=True, text=transcribed_text.strip())
+        logger.info(f"Transcribed ({len(audio_bytes)} bytes, lang={speech_lang}): '{transcribed_text}'")
+        return TranscribeResponse(success=True, text=transcribed_text.strip(), language=speech_lang)
 
     except HTTPException:
         raise

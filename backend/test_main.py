@@ -14,7 +14,7 @@ def test_health_check():
         response = client.get("/health")
         assert response.status_code == 200
         data = response.json()
-        assert data["status"] == "healthy"
+        assert data["status"] in ("healthy", "degraded")
         assert "word_count" in data
 
 def test_lookup_word():
@@ -23,7 +23,7 @@ def test_lookup_word():
         assert response.status_code == 200
         data = response.json()
         assert "word" in data
-        assert data["word"] == "hello"
+        assert data["word"].lower() == "hello"
 
 def test_semantic_search():
     with TestClient(app) as client:

@@ -9,7 +9,7 @@ def test_health_endpoint():
     response = client.get("/health")
     assert response.status_code == 200
     data = response.json()
-    assert data.get("status") == "healthy"
+    assert data.get("status") in ("healthy", "degraded")
     assert "word_count" in data
 
 

@@ -16,6 +16,31 @@ except Exception:
 
 logger = logging.getLogger("word_lookup")
 
+ISL_FILLER_WORDS = {
+    "just", "actually", "basically", "literally", "simply", "really",
+    "quite", "rather", "somewhat", "perhaps", "maybe", "please",
+    "kind", "sort", "well", "um", "uh", "anyway", "somehow",
+    "already", "even", "definitely", "absolutely", "totally",
+    "frankly", "honestly", "clearly", "if", "whether"
+}
+
+COMMON_GRAMMATICAL_WORDS = {
+    "IF", "OF", "IN", "ON", "AT", "BY", "TO", "UP", "DO", "GO", "NO", "SO", "OR",
+    "MY", "ME", "HE", "WE", "US", "AM", "IS", "IT", "AS", "AN", "BE", "FOR", "THE",
+    "AND", "BUT", "NOT", "CAN", "MAY", "ALL", "ANY", "ARE", "WAS", "HAD", "HAS", "HAVE",
+    "JUST", "TELL", "NEED", "HELP", "SIGN", "MAKE", "COME", "GIVE", "TAKE", "KNOW",
+    "THINK", "SEE", "LOOK", "WANT", "USE", "FIND", "SAY", "WORK", "CALL", "TRY",
+    "ASK", "FEEL", "BECOME", "LEAVE", "PUT", "MEAN", "KEEP", "LET", "BEGIN", "SEEM",
+    "SHOW", "HEAR", "PLAY", "RUN", "MOVE", "LIVE", "BELIEVE", "BRING", "HAPPEN",
+    "WRITE", "PROVIDE", "SIT", "STAND", "LOSE", "PAY", "MEET", "INCLUDE", "CONTINUE",
+    "SET", "LEARN", "CHANGE", "LEAD", "UNDERSTAND", "WATCH", "FOLLOW", "STOP", "CREATE",
+    "SPEAK", "READ", "ALLOW", "ADD", "SPEND", "GROW", "OPEN", "WALK", "WIN", "OFFER",
+    "REMEMBER", "LOVE", "CONSIDER", "APPEAR", "BUY", "WAIT", "SERVE", "DIE", "SEND",
+    "EXPECT", "BUILD", "STAY", "FALL", "CUT", "REACH", "KILL", "REMAIN", "ANYTHING",
+    "SOMETHING", "NOTHING", "EVERYTHING", "SOMEONE", "ANYONE", "EVERYONE", "NOBODY",
+    "SOMEBODY", "ANYBODY", "WITH", "FROM", "ABOUT", "INTO", "OVER", "AFTER", "BEFORE"
+}
+
 
 @dataclass
 class WordLookupResult:
@@ -349,49 +374,108 @@ class WordLookupService:
             match_type="none",
         )
 
+    def is_eligible_for_fingerspelling(
+        self, token: str, named_entities: Optional[List[str]] = None
+    ) -> bool:
+        clean = token.strip().upper()
+        if not clean:
+            return False
+
+        # Single letter or single digit is always fingerspellable (e.g. 'P', 'A', '1')
+        if len(clean) == 1 and clean.isalnum():
+            return True
+
+        # Filler words must NEVER be fingerspelled
+        if clean.lower() in ISL_FILLER_WORDS:
+            return False
+
+        # Common grammatical function words must NEVER be fingerspelled
+        if clean in COMMON_GRAMMATICAL_WORDS:
+            return False
+
+        # Check explicitly provided named entities
+        if named_entities:
+            ne_upper = {ne.strip().upper() for ne in named_entities if ne}
+            if clean in ne_upper:
+                return True
+            for ne in ne_upper:
+                if clean in ne.split():
+                    return True
+
+        # Known or pattern-based acronyms (e.g. "VIT", "IIT", "AIIMS", "ISL", "NASA", "USA", "ATM", "OTP")
+        if clean.isupper() and 2 <= len(clean) <= 6 and clean.isalpha():
+            if clean in {"VIT", "IIT", "NIT", "AIIMS", "ISL", "WHO", "NASA", "ISRO", "USA", "UK", "ATM", "OTP", "PIN", "PAN", "GST", "ID"}:
+                return True
+            if named_entities is not None and len(named_entities) > 0:
+                return False
+            return True
+
+        # Standalone name test fallback (when named_entities is not passed from NLP pipeline)
+        if named_entities is None and clean.isalpha() and len(clean) >= 2:
+            if clean not in COMMON_GRAMMATICAL_WORDS:
+                return True
+
+        return False
+
     def lookup_gloss_sequence(
-        self, gloss_tokens: List[str], use_semantic_fallback: bool = False
+        self,
+        gloss_tokens: List[str],
+        use_semantic_fallback: bool = False,
+        named_entities: Optional[List[str]] = None,
     ) -> List[WordLookupResult]:
         """
-        Resolves sequence of GLOSS tokens. Unresolved words (names, places, unknown terms)
-        are decomposed letter-by-letter via fingerspelling in correct character order.
+        Resolves sequence of GLOSS tokens according to ISL standards:
+        - Drops conversational filler words.
+        - Signs matching dictionary entries directly or via semantic fallback.
+        - Strictly restricts letter-by-letter fingerspelling to Names, Acronyms, and single characters.
         """
         results: List[WordLookupResult] = []
         for token in gloss_tokens:
-            sub_words = token.strip().split()
+            token_clean = token.strip().upper()
+            if not token_clean or token_clean.lower() in ISL_FILLER_WORDS or token_clean == "IF":
+                continue
+
+            sub_words = token_clean.split()
             # If multi-word token, check if it is an exact/anchor phrase (e.g. "THANK YOU", "GOOD MORNING")
             # If not an exact phrase, resolve each sub-word directly (e.g. "P SIGN" -> "P", "SIGN")
             if len(sub_words) > 1:
-                exact_unit = self.lookup(token, use_semantic_fallback=False)
+                exact_unit = self.lookup(token_clean, use_semantic_fallback=False)
                 if exact_unit.found and exact_unit.s3_url and exact_unit.match_type in ("exact", "anchor"):
                     results.append(exact_unit)
                     continue
 
                 sub_results: List[WordLookupResult] = []
                 for sub_w in sub_words:
+                    if sub_w.lower() in ISL_FILLER_WORDS or sub_w == "IF":
+                        continue
                     sub_res = self.lookup(sub_w, use_semantic_fallback=use_semantic_fallback)
                     if sub_res.found and sub_res.s3_url:
                         sub_results.append(sub_res)
-                    else:
+                    elif self.is_eligible_for_fingerspelling(sub_w, named_entities=named_entities):
                         letter_res = self.lookup_fingerspell(sub_w)
                         if letter_res:
                             sub_results.extend(letter_res)
                         else:
                             sub_results.append(sub_res)
+                    else:
+                        sub_results.append(sub_res)
                 if sub_results and any(r.found for r in sub_results):
                     results.extend(sub_results)
                     continue
 
-            res = self.lookup(token, use_semantic_fallback=use_semantic_fallback)
+            res = self.lookup(token_clean, use_semantic_fallback=use_semantic_fallback)
             if res.found and res.s3_url:
                 results.append(res)
-            else:
-                # Fingerspelling fallback for unresolved words
-                letter_results = self.lookup_fingerspell(token)
+            elif self.is_eligible_for_fingerspelling(token_clean, named_entities=named_entities):
+                # Fingerspelling strictly restricted to eligible Names / Acronyms / single letters
+                letter_results = self.lookup_fingerspell(token_clean)
                 if letter_results:
                     results.extend(letter_results)
                 else:
                     results.append(res)
+            else:
+                # Regular vocabulary with no sign match: keep as ungrounded result (do NOT decompose to letters)
+                results.append(res)
         return results
 
     def get_all_words(self) -> List[str]:

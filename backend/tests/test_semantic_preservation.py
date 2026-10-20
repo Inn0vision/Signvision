@@ -34,12 +34,12 @@ def test_target_sentence_semantic_preservation_and_zero_groq():
     """
     Target Problem: "If you need any help, just make a sign of P"
     Verifies:
-    1. Condition fronted: IF YOU HELP NEED
-    2. Consequence: P SIGN MAKE (or P, SIGN, MAKE)
-    3. Essential concepts preserved: IF, YOU, HELP, NEED, P, SIGN, MAKE
-    4. NO spurious "NOW"
+    1. Condition fronted: YOU HELP NEED
+    2. Consequence: SIGN OF P MAKE
+    3. Essential concepts preserved: YOU, HELP, NEED, P, SIGN, MAKE
+    4. NO spurious "NOW" and NO filler signs "IF" / "JUST"
     5. Route A execution with 0 Groq calls
-    6. All signs grounded to S3 URLs (exact, semantic, or fingerspelling)
+    6. All signs grounded to S3 URLs (exact, semantic, or letter P)
     """
     sentence = "If you need any help, just make a sign of P"
 
@@ -55,7 +55,8 @@ def test_target_sentence_semantic_preservation_and_zero_groq():
 
     # Verify essential concepts exist in gloss
     gloss_str = " ".join(gloss)
-    assert "IF" in gloss
+    assert "IF" not in gloss
+    assert "JUST" not in gloss
     assert "YOU" in gloss
     assert "HELP" in gloss
     assert "NEED" in gloss
@@ -67,13 +68,13 @@ def test_target_sentence_semantic_preservation_and_zero_groq():
     assert "NOW" not in gloss
 
     # Verify ISL condition order: condition clause precedes consequence
-    if_idx = gloss.index("IF")
+    need_idx = gloss.index("NEED")
     make_idx = gloss.index("MAKE")
-    assert if_idx < make_idx, "Condition clause MUST precede main consequence verb"
+    assert need_idx < make_idx, "Condition clause MUST precede main consequence verb"
 
     # Verify sign resolution via word lookup
     sign_lookups = word_lookup_service.lookup_gloss_sequence(gloss, use_semantic_fallback=True)
-    assert len(sign_lookups) >= 7
+    assert len(sign_lookups) >= 6
 
     # Verify every token resolved to a valid S3 URL
     for s in sign_lookups:
@@ -82,11 +83,10 @@ def test_target_sentence_semantic_preservation_and_zero_groq():
 
     # Specific match type checks
     found_types = {s.original_query: s.match_type for s in sign_lookups}
-    assert found_types.get("I") == "partial" or found_types.get("IF") == "partial"
     assert found_types.get("YOU") == "exact"
     assert found_types.get("NEED") == "exact"
     assert found_types.get("HELP") in ("semantic", "exact", "anchor")
-    assert found_types.get("P") == "exact"
+    assert found_types.get("P") in ("exact", "partial")
     assert found_types.get("SIGN") == "exact"
     assert found_types.get("MAKE") == "exact"
 
@@ -105,13 +105,13 @@ def test_conditional_when_clause_preservation():
 
 
 def test_conditional_rain_future_preservation():
-    """Verify 'If it rains, we will stay home' preserves condition, pronouns, and verbs."""
+    """Verify 'If it rains, we will stay home' preserves condition, pronouns, and verbs without IF sign."""
     sentence = "If it rains, we will stay home"
     results = process_text(sentence)
     assert len(results) == 1
     gloss = results[0]["gloss"]
 
-    assert "IF" in gloss
+    assert "IF" not in gloss
     assert "RAIN" in gloss
     assert "STAY" in gloss
     assert "HOME" in gloss
@@ -179,7 +179,8 @@ def test_end_to_end_api_target_sentence():
 
     result = data["results"][0]
     gloss = result["gloss"]["gloss"]
-    assert "IF" in gloss
+    assert "IF" not in gloss
+    assert "JUST" not in gloss
     assert "YOU" in gloss
     assert "HELP" in gloss
     assert "NEED" in gloss
@@ -187,7 +188,39 @@ def test_end_to_end_api_target_sentence():
 
     signs = result["signs"]
     # All returned sign items must be found
-    assert len(signs) >= 7
+    assert len(signs) >= 6
     for sign in signs:
         assert sign["found"] is True
         assert sign["s3_url"] is not None
+
+
+def test_user_sentence_filler_removal_and_no_letter_spelling():
+    """
+    Verifies: "if you need anything just tell me"
+    1. Eliminates filler words "if" and "just"
+    2. Avoids duplicate clause tokens
+    3. Produces clean 5-token gloss: [YOU, ANYTHING, NEED, I, TELL]
+    4. Does NOT fingerspell letter-by-letter for vocabulary words (0 single-letter signs)
+    """
+    client = TestClient(app)
+    response = client.post(
+        "/process",
+        json={"text": "if you need anything just tell me", "use_semantic_fallback": True},
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["success"] is True
+    result = data["results"][0]
+    gloss = result["gloss"]["gloss"]
+    assert "IF" not in gloss
+    assert "JUST" not in gloss
+    assert "YOU" in gloss
+    assert "NEED" in gloss
+    assert "ANYTHING" in gloss
+    assert "TELL" in gloss
+    signs = result["signs"]
+    assert len(signs) == 5
+    # Ensure none of the signs are single-letter fingerspellings
+    for s in signs:
+        assert s["found"] is True
+        assert s["match_type"] != "partial"

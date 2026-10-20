@@ -183,9 +183,12 @@ def _process_and_lookup(
     output = []
     for gloss_result in gloss_results:
         gloss_tokens = gloss_result.get("gloss", [])
+        named_entities = gloss_result.get("named_entities", [])
 
         sign_lookups = word_lookup_service.lookup_gloss_sequence(
-            gloss_tokens, use_semantic_fallback=use_semantic_fallback
+            gloss_tokens,
+            use_semantic_fallback=use_semantic_fallback,
+            named_entities=named_entities,
         )
 
         output.append(

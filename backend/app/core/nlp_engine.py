@@ -247,17 +247,20 @@ def preprocess_text(text: str) -> List[str]:
             normalized,
         )
 
-    # Split on sentence boundaries (. ! ? ; or newline)
-    raw_sentences = re.split(r"(?:[.!?;\n]+)\s*", normalized)
+    # Split on sentence boundaries (. ! ? ; or newline) while preserving question marks
+    raw_sentences = re.findall(r'[^.!?;\n]+(?:[?]|[.!\n;]|$)', normalized)
 
     sentences = []
-    for sentence in raw_sentences:
-        sentence = sentence.strip()
-        if not sentence:
+    for raw in raw_sentences:
+        raw_stripped = raw.strip()
+        if not raw_stripped:
             continue
+        is_q = "?" in raw_stripped
         # Strip remaining non-alphanumeric punctuation while keeping whitespace
-        sentence = re.sub(r"[^\w\s]", "", sentence)
+        sentence = re.sub(r"[^\w\s]", "", raw_stripped)
         sentence = re.sub(r"\s+", " ", sentence).strip()
+        if is_q:
+            sentence = f"{sentence}?"
         if sentence:
             sentences.append(sentence)
 
@@ -519,14 +522,26 @@ def _parse_llm_json(response_text: str) -> Dict[str, Any]:
 
 CONDITIONAL_MARKS = {"if", "when", "unless", "whenever", "suppose", "providing", "provided"}
 
+# Conversational filler words that should NOT be signed in Indian Sign Language (ISL)
+ISL_FILLER_WORDS = {
+    "just", "actually", "basically", "literally", "simply", "really",
+    "quite", "rather", "somewhat", "perhaps", "maybe", "please",
+    "kind", "sort", "well", "um", "uh", "anyway", "somehow",
+    "already", "even", "definitely", "absolutely", "totally",
+    "frankly", "honestly", "clearly", "if", "whether"
+}
+
 
 def extract_isl_gloss_sequence(
-    doc: Any, sentence: str, condition_clause: Optional[Dict[str, Any]] = None
+    doc: Any,
+    sentence: str,
+    condition_clause: Optional[Dict[str, Any]] = None,
+    cond_tokens: Optional[Set[Any]] = None,
 ) -> List[str]:
     """
     Extracts complete, rich ISL gloss sequence according to authentic Indian Sign Language grammar:
     Time / Condition -> Subject / Topic Pronouns & Entities -> Objects / Modifiers -> Adjectives -> Action Verbs -> Negation -> Question Markers.
-    Preserves ALL meaningful content words from long sentences without artificially compressing into 3 words.
+    Preserves meaningful content words while removing conversational fillers and duplicate condition clauses.
     """
     time_tokens: List[str] = []
     subject_tokens: List[str] = []
@@ -536,15 +551,34 @@ def extract_isl_gloss_sequence(
     neg_tokens: List[str] = []
     wh_tokens: List[str] = []
 
+    # If condition_clause exists, front the condition arguments: Subject -> Object -> Verb -> Negation
+    # In ISL, conditional marker "if" / "suppose" is NOT signed; it is conveyed via facial cues and topic fronting
     if condition_clause:
-        if condition_clause.get("mark"):
-            time_tokens.append(str(condition_clause["mark"]).upper())
+        c_mark = condition_clause.get("mark")
+        if (
+            c_mark
+            and str(c_mark).lower() not in {"if", "suppose", "whether", "providing", "provided"}
+            and str(c_mark).lower() not in ISL_FILLER_WORDS
+        ):
+            time_tokens.append(str(c_mark).upper())
         if condition_clause.get("subject"):
-            time_tokens.append(str(condition_clause["subject"]).upper())
+            c_s = str(condition_clause["subject"]).strip()
+            if c_s.lower() not in ARTICLES and c_s.lower() not in ISL_FILLER_WORDS:
+                time_tokens.append(c_s.upper())
         if condition_clause.get("object"):
-            time_tokens.append(str(condition_clause["object"]).upper())
+            c_o = condition_clause["object"]
+            if isinstance(c_o, list):
+                for item in c_o:
+                    if str(item).lower() not in ARTICLES and str(item).lower() not in ISL_FILLER_WORDS:
+                        time_tokens.append(str(item).upper())
+            else:
+                for item in str(c_o).split():
+                    if item.lower() not in ARTICLES and item.lower() not in ISL_FILLER_WORDS:
+                        time_tokens.append(item.upper())
         if condition_clause.get("verb"):
-            time_tokens.append(str(condition_clause["verb"]).upper())
+            c_v = str(condition_clause["verb"]).strip()
+            if c_v.lower() not in AUXILIARY_VERBS and c_v.lower() not in ISL_FILLER_WORDS:
+                time_tokens.append(c_v.upper())
         if condition_clause.get("negation"):
             time_tokens.append("NOT")
 
@@ -557,7 +591,7 @@ def extract_isl_gloss_sequence(
         "it", "me", "them", "us", "him", "her", "my", "your", "his", "her", "our", "their"
     }
     POSS_MAP = {"my": "I", "your": "YOU", "his": "HE", "her": "SHE", "our": "WE", "their": "THEY"}
-    CONNECTORS = {"but", "and", "or", "so", "if", "because", "then"}
+    CONNECTORS = {"but", "and", "or", "so", "because", "then"}  # 'if' excluded from signed connectors
 
     skip_indices = set()
     tokens_list = list(doc)
@@ -573,12 +607,17 @@ def extract_isl_gloss_sequence(
     for idx, t in enumerate(tokens_list):
         if idx in skip_indices:
             continue
+        # CRITICAL: Skip any tokens belonging to the condition subtree to avoid duplicate glossing
+        if cond_tokens is not None and t in cond_tokens:
+            continue
+
         w = t.lower_
         lemma = t.lemma_.lower()
         pos = t.pos_
         dep = t.dep_
 
-        if pos == "PUNCT" or w in ARTICLES:
+        # Skip punctuation, articles, and ISL conversational fillers
+        if pos in ("PUNCT", "SPACE") or w in ARTICLES or w in ISL_FILLER_WORDS or lemma in ISL_FILLER_WORDS:
             continue
 
         if w == "to" and t.head.pos_ == "VERB":
@@ -614,8 +653,6 @@ def extract_isl_gloss_sequence(
 
         if w in PRONOUNS_TOPIC or dep in ("nsubj", "nsubjpass", "nmod"):
             pron_val = POSS_MAP.get(w, lemma.upper())
-            if pron_val == "THEY" or w == "they":
-                pron_val = "THEY"
             subject_tokens.append(pron_val)
             continue
 
@@ -639,8 +676,11 @@ def extract_isl_gloss_sequence(
     gloss: List[str] = []
     for grp in [time_tokens, subject_tokens, object_tokens, adj_tokens, verb_tokens, neg_tokens, wh_tokens]:
         for token in grp:
-            if not gloss or gloss[-1] != token:
-                gloss.append(token)
+            clean_tok = token.strip().upper()
+            if not clean_tok or clean_tok.lower() in ISL_FILLER_WORDS or clean_tok == "IF":
+                continue
+            if not gloss or gloss[-1] != clean_tok:
+                gloss.append(clean_tok)
 
     if is_q and not wh_tokens and "Q" not in gloss:
         gloss.append("Q")
@@ -871,7 +911,9 @@ def extract_local_frame(doc: Any, sentence: str) -> Optional[SemanticFrame]:
         and tense in ("PAST", "FUTURE")
     )
 
-    raw_gloss_tokens = extract_isl_gloss_sequence(doc, sentence, condition_clause)
+    raw_gloss_tokens = extract_isl_gloss_sequence(
+        doc, sentence, condition_clause, cond_tokens=cond_tokens
+    )
 
     if not any([normalized_verb, adjective, obj, subject, condition_clause, raw_gloss_tokens]):
         return None
@@ -985,26 +1027,34 @@ def apply_isl_rules(parsed_data: Union[SemanticFrame, Dict[str, Any]], tokens: L
             c_obj = condition.get("object")
             c_verb = condition.get("verb")
             c_neg = condition.get("negation", False)
-            if c_mark:
+            if (
+                c_mark
+                and str(c_mark).lower() not in {"if", "suppose", "whether", "providing", "provided"}
+                and str(c_mark).lower() not in ISL_FILLER_WORDS
+            ):
                 condition_gloss.append(str(c_mark).upper())
-            if c_subj:
+            if c_subj and str(c_subj).lower() not in ARTICLES and str(c_subj).lower() not in ISL_FILLER_WORDS:
                 condition_gloss.append(str(c_subj).upper())
             if c_obj:
                 if isinstance(c_obj, list):
                     for co in c_obj:
-                        if str(co).lower() not in ARTICLES:
+                        if str(co).lower() not in ARTICLES and str(co).lower() not in ISL_FILLER_WORDS:
                             condition_gloss.append(str(co).upper())
                 else:
                     for co in str(c_obj).split():
-                        if co.lower() not in ARTICLES:
+                        if co.lower() not in ARTICLES and co.lower() not in ISL_FILLER_WORDS:
                             condition_gloss.append(co.upper())
-            if c_verb:
+            if c_verb and str(c_verb).lower() not in AUXILIARY_VERBS and str(c_verb).lower() not in ISL_FILLER_WORDS:
                 condition_gloss.append(str(c_verb).upper())
             if c_neg:
                 condition_gloss.append("NOT")
         elif isinstance(condition, str):
             for co in condition.split():
-                if co.lower() not in ARTICLES:
+                if (
+                    co.lower() not in ARTICLES
+                    and co.lower() not in ISL_FILLER_WORDS
+                    and co.lower() not in {"if", "suppose", "whether"}
+                ):
                     condition_gloss.append(co.upper())
 
     subject = parsed_data.get("subject")
@@ -1143,6 +1193,13 @@ def build_gloss_output(transformed: Dict[str, Any]) -> Dict[str, Any]:
     obj_str = " ".join([str(o).upper() for o in obj]) if isinstance(obj, list) else (obj.upper() if obj else None)
 
     if raw_gloss and isinstance(raw_gloss, list) and len(raw_gloss) > 0:
+        cleaned_gloss = [
+            str(t).upper().strip()
+            for t in raw_gloss
+            if str(t).strip()
+            and str(t).strip().lower() not in ISL_FILLER_WORDS
+            and str(t).strip().upper() != "IF"
+        ]
         output = {
             "subject": subject.upper() if subject else None,
             "object": obj_str,
@@ -1150,7 +1207,7 @@ def build_gloss_output(transformed: Dict[str, Any]) -> Dict[str, Any]:
             "tense": tense,
             "negation": negation,
             "question": is_question,
-            "gloss": [str(t).upper().strip() for t in raw_gloss if str(t).strip()],
+            "gloss": cleaned_gloss,
         }
         logger.info(f"Gloss output (from raw_gloss_tokens): {output}")
         return output
@@ -1159,27 +1216,37 @@ def build_gloss_output(transformed: Dict[str, Any]) -> Dict[str, Any]:
 
     condition_gloss = transformed.get("condition_gloss", [])
     if condition_gloss:
-        gloss_tokens.extend(condition_gloss)
+        gloss_tokens.extend([cg for cg in condition_gloss if cg.lower() not in ISL_FILLER_WORDS and cg != "IF"])
 
     if explicit_time_words:
         for tw in explicit_time_words:
-            gloss_tokens.append(tw.upper())
+            if tw.lower() not in ISL_FILLER_WORDS:
+                gloss_tokens.append(tw.upper())
     elif time_marker:
-        gloss_tokens.append(time_marker.upper())
+        if time_marker.lower() not in ISL_FILLER_WORDS:
+            gloss_tokens.append(time_marker.upper())
 
     if subject:
         # Avoid duplicate subject pronoun if condition clause already established it in imperative
         if not (condition_gloss and sentence_type == "imperative" and subject.upper() in condition_gloss):
-            gloss_tokens.append(subject.upper())
+            if subject.lower() not in ISL_FILLER_WORDS:
+                gloss_tokens.append(subject.upper())
 
     if obj:
-        gloss_tokens.append(obj.upper())
+        if isinstance(obj, list):
+            for o_item in obj:
+                if str(o_item).lower() not in ISL_FILLER_WORDS:
+                    gloss_tokens.append(str(o_item).upper())
+        elif obj.lower() not in ISL_FILLER_WORDS:
+            gloss_tokens.append(obj.upper())
 
     if verb:
-        gloss_tokens.append(verb.upper())
+        if verb.lower() not in ISL_FILLER_WORDS:
+            gloss_tokens.append(verb.upper())
 
     if adjective:
-        gloss_tokens.append(adjective.upper())
+        if adjective.lower() not in ISL_FILLER_WORDS:
+            gloss_tokens.append(adjective.upper())
 
     if negation:
         gloss_tokens.append("NOT")
@@ -1190,6 +1257,14 @@ def build_gloss_output(transformed: Dict[str, Any]) -> Dict[str, Any]:
     if is_question and not question_word:
         gloss_tokens.append("Q")
 
+    final_gloss = [
+        str(t).upper().strip()
+        for t in gloss_tokens
+        if str(t).strip()
+        and str(t).strip().lower() not in ISL_FILLER_WORDS
+        and str(t).strip().upper() != "IF"
+    ]
+
     output = {
         "subject": subject.upper() if subject else None,
         "object": obj_str,
@@ -1197,7 +1272,7 @@ def build_gloss_output(transformed: Dict[str, Any]) -> Dict[str, Any]:
         "tense": tense,
         "negation": negation,
         "question": is_question,
-        "gloss": gloss_tokens,
+        "gloss": final_gloss,
     }
 
     logger.info(f"Gloss output: {output}")
@@ -1437,6 +1512,7 @@ def process_text(
         fixed_result = _check_fixed_expression(sentence)
         if fixed_result:
             logger.info(f"Fixed expression matched: {fixed_result['gloss']}")
+            fixed_result["named_entities"] = []
             all_results.append(fixed_result)
             continue
 
@@ -1487,6 +1563,27 @@ def process_text(
 
         transformed = apply_isl_rules(frame_data, tokens)
         gloss_output = build_gloss_output(transformed)
+
+        # Extract named entities for fingerspelling eligibility (Names, Acronyms, Places)
+        named_entities = set()
+        if doc is not None:
+            for ent in doc.ents:
+                if ent.label_ in ("PERSON", "ORG", "GPE", "LOC", "FAC", "PRODUCT", "NORP"):
+                    named_entities.add(ent.text.upper())
+                    for p in ent.text.split():
+                        named_entities.add(p.upper())
+            for t in doc:
+                if t.pos_ == "PROPN" or t.tag_ in ("NNP", "NNPS"):
+                    named_entities.add(t.text.upper())
+
+        # Also capture all-caps acronyms (2-6 chars) and Titlecase names from input text
+        for w in re.findall(r"\b[A-Za-z0-9]+\b", text):
+            if w.isupper() and 2 <= len(w) <= 6 and w.lower() not in ARTICLES and w.lower() not in ISL_FILLER_WORDS:
+                named_entities.add(w.upper())
+            elif w[0].isupper() and len(w) >= 2 and w.lower() not in ARTICLES and w.lower() not in ISL_FILLER_WORDS:
+                named_entities.add(w.upper())
+
+        gloss_output["named_entities"] = list(named_entities)
 
         logger.info(f"Final gloss: {gloss_output['gloss']}")
         all_results.append(gloss_output)

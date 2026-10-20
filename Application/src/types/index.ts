@@ -132,6 +132,12 @@ export interface ProcessingResult {
   signs: SignLookup[];
 }
 
+export interface GroqTokens {
+  input: number;
+  output: number;
+  overall: number;
+}
+
 export interface ProcessResponse {
   success: boolean;
   text: string;
@@ -139,6 +145,14 @@ export interface ProcessResponse {
   detected_language?: string;
   translated_text?: string;
   results: ProcessingResult[];
+  error?: string;
+  groq_tokens?: GroqTokens;
+}
+
+export interface TranscribeResponse {
+  success: boolean;
+  text?: string;
+  language?: string;
   error?: string;
 }
 

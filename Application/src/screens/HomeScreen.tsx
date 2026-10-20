@@ -66,7 +66,7 @@ const INITIAL_DEMO_SIGNS: SignQueueItem[] = [
 
 const INITIAL_DEMO_HISTORY: HistoryItem[] = [
   {
-    word: 'who are they are those are you friends',
+    word: 'please tell me if you need any help',
     timestamp: 1792300320000,
     found: true,
     signCount: 3,
@@ -107,7 +107,7 @@ export const HomeScreen: React.FC = () => {
   const responsive = useResponsive();
 
   const [isCameraActive, setIsCameraActive] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('who are they are those are you friends');
+  const [searchQuery, setSearchQuery] = useState('hello');
   const [currentWord, setCurrentWord] = useState<string | null>(null);
   const [playbackStatus, setPlaybackStatus] = useState<PlaybackStatus>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);

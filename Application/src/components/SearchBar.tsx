@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { Button } from './ui/Button';
 import { autocomplete } from '../services/s3Service';
+import { transcribeAudio } from '../services/apiService';
 import { COLORS, RADII, TYPOGRAPHY, SHADOWS } from '../theme/tokens';
 import {
   ExpoSpeechRecognitionModule,
@@ -60,11 +61,16 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<TextInput>(null);
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const listenPulseAnim = useRef(new Animated.Value(1)).current;
   const webRecognitionRef = useRef<any>(null);
+  const mediaRecorderRef = useRef<any>(null);
+  const audioStreamRef = useRef<any>(null);
+  const audioChunksRef = useRef<any[]>([]);
+  const latestTranscriptRef = useRef<string>('');
 
   // Pulse animation for loading state
   useEffect(() => {
@@ -88,9 +94,9 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     }
   }, [isLoading, pulseAnim]);
 
-  // Pulse animation for listening state
+  // Pulse animation for listening / transcribing state
   useEffect(() => {
-    if (isListening) {
+    if (isListening || isTranscribing) {
       Animated.loop(
         Animated.sequence([
           Animated.timing(listenPulseAnim, {
@@ -108,7 +114,28 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     } else {
       listenPulseAnim.setValue(1);
     }
-  }, [isListening, listenPulseAnim]);
+  }, [isListening, isTranscribing, listenPulseAnim]);
+
+  // Clean up any ongoing audio recording when component unmounts
+  useEffect(() => {
+    return () => {
+      if (webRecognitionRef.current) {
+        try {
+          webRecognitionRef.current.abort();
+        } catch (e) {}
+      }
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        try {
+          mediaRecorderRef.current.stop();
+        } catch (e) {}
+      }
+      if (audioStreamRef.current) {
+        try {
+          audioStreamRef.current.getTracks().forEach((track: any) => track.stop());
+        } catch (e) {}
+      }
+    };
+  }, []);
 
   // Helper to extract active word for recommendations
   const getActiveSearchTerm = useCallback((text: string, isSentence: boolean): string => {
@@ -158,32 +185,184 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     }
   }, []);
 
-  // Web Speech Recognition for browsers (Chrome, Edge, Safari, Opera)
-  const toggleWebSpeech = useCallback(() => {
-    if (typeof window === 'undefined') return;
+  // Stop any active Web audio recording or speech recognition
+  const stopWebSpeech = useCallback(() => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      try {
+        mediaRecorderRef.current.stop();
+      } catch (e) {}
+    }
 
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
+    if (webRecognitionRef.current) {
+      try {
+        webRecognitionRef.current.stop();
+      } catch (e) {}
+    }
+
+    if (audioStreamRef.current) {
+      try {
+        audioStreamRef.current.getTracks().forEach((track: any) => track.stop());
+      } catch (e) {}
+      audioStreamRef.current = null;
+    }
+
+    setIsListening(false);
+  }, []);
+
+  // Web MediaRecorder fallback: Records audio and transcribes via backend /transcribe
+  const startMediaRecorderWeb = useCallback(async () => {
+    if (typeof window === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
       Alert.alert(
-        'Speech Recognition Unavailable',
-        'Your browser does not support the Web Speech API. Please use Google Chrome, Edge, or Safari.'
+        'Microphone Unsupported',
+        'Audio recording is not supported in this browser environment.'
       );
       return;
     }
 
-    if (isListening && webRecognitionRef.current) {
-      try {
-        webRecognitionRef.current.stop();
-      } catch (e) {}
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioStreamRef.current = stream;
+
+      let mimeType = '';
+      if (typeof MediaRecorder !== 'undefined') {
+        const types = [
+          'audio/webm;codecs=opus',
+          'audio/webm',
+          'audio/ogg;codecs=opus',
+          'audio/mp4',
+        ];
+        for (const t of types) {
+          if (MediaRecorder.isTypeSupported(t)) {
+            mimeType = t;
+            break;
+          }
+        }
+      }
+
+      const recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+      mediaRecorderRef.current = recorder;
+      audioChunksRef.current = [];
+
+      recorder.ondataavailable = (e: any) => {
+        if (e.data && e.data.size > 0) {
+          audioChunksRef.current.push(e.data);
+        }
+      };
+
+      recorder.onstop = async () => {
+        if (audioStreamRef.current) {
+          try {
+            audioStreamRef.current.getTracks().forEach((track: any) => track.stop());
+          } catch (e) {}
+          audioStreamRef.current = null;
+        }
+
+        const chunks = audioChunksRef.current;
+        if (chunks.length === 0) {
+          setIsListening(false);
+          return;
+        }
+
+        const audioBlob = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' });
+        if (audioBlob.size < 200) {
+          setIsListening(false);
+          return;
+        }
+
+        setIsListening(false);
+        setIsTranscribing(true);
+
+        try {
+          const res = await transcribeAudio(audioBlob, activeLanguage);
+          if (res.success && res.text) {
+            const transcribed = res.text.trim();
+            onChangeText(transcribed);
+            onSubmit(transcribed, activeLanguage);
+          } else {
+            Alert.alert(
+              'Voice Recognition',
+              res.error || 'Could not understand the audio. Please speak clearly.'
+            );
+          }
+        } catch (transcribeErr: any) {
+          console.error('Web voice transcription error:', transcribeErr);
+          Alert.alert(
+            'Transcription Failed',
+            transcribeErr.message || 'Could not transcribe speech. Please try again.'
+          );
+        } finally {
+          setIsTranscribing(false);
+        }
+      };
+
+      recorder.start(250);
+      setIsListening(true);
+    } catch (err: any) {
+      console.error('Failed to start MediaRecorder:', err);
       setIsListening(false);
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        Alert.alert(
+          'Microphone Blocked',
+          'Microphone access was denied. Please allow microphone permissions in your browser address bar.'
+        );
+      } else {
+        Alert.alert(
+          'Microphone Error',
+          err.message || 'Could not access your microphone.'
+        );
+      }
+    }
+  }, [activeLanguage, onChangeText, onSubmit]);
+
+  // Web Speech Recognition with fallback for Chrome, Edge, Safari, Firefox, Opera
+  const toggleWebSpeech = useCallback(async () => {
+    if (typeof window === 'undefined') return;
+
+    if (isListening || isTranscribing) {
+      stopWebSpeech();
       return;
+    }
+
+    latestTranscriptRef.current = '';
+
+    // Request/check microphone permission via getUserMedia
+    let micStream: any = null;
+    if (navigator.mediaDevices?.getUserMedia) {
+      try {
+        micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      } catch (permErr: any) {
+        console.warn('Microphone permission request failed:', permErr);
+        if (permErr.name === 'NotAllowedError' || permErr.name === 'PermissionDeniedError') {
+          Alert.alert(
+            'Microphone Blocked',
+            'Microphone permission is blocked. Please click the microphone icon in your browser address bar to allow access.'
+          );
+          return;
+        }
+      }
+    }
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+    // If browser doesn't have Web Speech API (Firefox, Brave shields, etc.), use backend MediaRecorder
+    if (!SpeechRecognition) {
+      if (micStream) {
+        micStream.getTracks().forEach((track: any) => track.stop());
+      }
+      startMediaRecorderWeb();
+      return;
+    }
+
+    if (micStream) {
+      micStream.getTracks().forEach((track: any) => track.stop());
     }
 
     try {
       const recognition = new SpeechRecognition();
       webRecognitionRef.current = recognition;
-      recognition.continuous = false;
+      recognition.continuous = true;
       recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
 
       // Map language code: Hindi -> hi-IN, Marathi -> mr-IN, English -> en-IN
       const langCode = activeLanguage === 'hi' ? 'hi-IN' : activeLanguage === 'mr' ? 'mr-IN' : 'en-IN';
@@ -194,38 +373,64 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       };
 
       recognition.onresult = (event: any) => {
-        let transcript = '';
-        let isFinal = false;
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          transcript += event.results[i][0].transcript;
-          if (event.results[i].isFinal) {
-            isFinal = true;
+        let interimTranscript = '';
+        let finalTranscript = '';
+
+        for (let i = 0; i < event.results.length; ++i) {
+          const item = event.results[i];
+          if (item.isFinal) {
+            finalTranscript += item[0].transcript + ' ';
+          } else {
+            interimTranscript += item[0].transcript;
           }
         }
-        if (transcript) {
-          onChangeText(transcript);
-        }
-        if (isFinal) {
-          setIsListening(false);
-          onSubmit(transcript.trim(), activeLanguage);
+
+        const fullText = (finalTranscript + interimTranscript).trim();
+        if (fullText) {
+          latestTranscriptRef.current = fullText;
+          onChangeText(fullText);
         }
       };
 
       recognition.onerror = (event: any) => {
-        console.warn('Web speech recognition error:', event.error);
+        const error = event.error;
+        console.warn('Web speech recognition error:', error);
+
+        // If network error (common in Linux Chromium / Brave / offline) or service-not-allowed,
+        // automatically fallback to backend MediaRecorder audio transcription!
+        if (error === 'network' || error === 'service-not-allowed') {
+          try {
+            recognition.stop();
+          } catch (e) {}
+          startMediaRecorderWeb();
+          return;
+        }
+
+        if (error === 'not-allowed') {
+          Alert.alert(
+            'Microphone Blocked',
+            'Microphone permission was denied. Please allow microphone access in your browser settings.'
+          );
+        } else if (error !== 'no-speech' && error !== 'aborted') {
+          console.error('Speech recognition error:', error);
+        }
         setIsListening(false);
       };
 
       recognition.onend = () => {
         setIsListening(false);
+        const textToSubmit = latestTranscriptRef.current.trim();
+        if (textToSubmit) {
+          onSubmit(textToSubmit, activeLanguage);
+        }
       };
 
       recognition.start();
     } catch (err) {
-      console.error('Failed to start web speech recognition:', err);
-      setIsListening(false);
+      console.warn('SpeechRecognition failed to start, falling back to MediaRecorder:', err);
+      startMediaRecorderWeb();
     }
-  }, [isListening, activeLanguage, onChangeText, onSubmit]);
+  }, [isListening, isTranscribing, stopWebSpeech, activeLanguage, startMediaRecorderWeb, onChangeText, onSubmit]);
 
   // Mobile Speech Recognition using expo-speech-recognition
   const toggleNativeSpeech = useCallback(async () => {
@@ -477,12 +682,18 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         </TouchableOpacity>
       </View>
 
-      {/* Listening Status Banner */}
-      {isListening && (
+      {/* Listening or Transcribing Status Banner */}
+      {(isListening || isTranscribing) && (
         <Animated.View style={[styles.listeningBanner, { opacity: listenPulseAnim }]}>
-          <View style={styles.recordingDot} />
+          {isTranscribing ? (
+            <ActivityIndicator size="small" color="#38BDF8" style={{ marginRight: 8 }} />
+          ) : (
+            <View style={styles.recordingDot} />
+          )}
           <Text style={styles.listeningBannerText}>
-            Listening... Speak clearly in {activeLanguage === 'hi' ? 'Hindi' : activeLanguage === 'mr' ? 'Marathi' : 'English'}
+            {isTranscribing
+              ? `Transcribing ${activeLanguage === 'hi' ? 'Hindi' : activeLanguage === 'mr' ? 'Marathi' : 'English'} speech...`
+              : `Listening... Speak clearly in ${activeLanguage === 'hi' ? 'Hindi' : activeLanguage === 'mr' ? 'Marathi' : 'English'}`}
           </Text>
         </Animated.View>
       )}
@@ -493,7 +704,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           styles.composerContainer,
           isFocused && styles.composerFocused,
           disabled && styles.composerDisabled,
-          isListening && styles.composerListening,
+          (isListening || isTranscribing) && styles.composerListening,
           { opacity: disabled ? 0.6 : pulseAnim },
         ]}
       >
@@ -542,7 +753,9 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             handleBlur();
           }}
           placeholder={
-            isListening
+            isTranscribing
+              ? `Transcribing speech in ${activeLanguage === 'hi' ? 'Hindi' : activeLanguage === 'mr' ? 'Marathi' : 'English'}...`
+              : isListening
               ? `Listening in ${activeLanguage === 'hi' ? 'Hindi' : activeLanguage === 'mr' ? 'Marathi' : 'English'}...`
               : placeholder
           }
@@ -550,7 +763,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           autoCapitalize="none"
           autoCorrect={false}
           returnKeyType="search"
-          editable={!disabled && !isListening}
+          editable={!disabled && !isListening && !isTranscribing}
           selectTextOnFocus
           accessible={true}
           accessibilityRole="search"
@@ -558,7 +771,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         />
 
         {/* Clear Button */}
-        {value.length > 0 && !isListening && (
+        {value.length > 0 && !isListening && !isTranscribing && (
           <TouchableOpacity
             onPress={handleClear}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -574,20 +787,22 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         {/* Microphone Button */}
         <TouchableOpacity
           onPress={handleSpeechRecognition}
-          disabled={disabled}
+          disabled={disabled || isTranscribing}
           hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
           accessible={true}
           accessibilityRole="button"
-          accessibilityLabel={isListening ? 'Stop listening' : 'Start voice input'}
+          accessibilityLabel={isListening ? 'Stop listening' : isTranscribing ? 'Transcribing...' : 'Start voice input'}
           style={[
             styles.micBtn,
-            isListening && styles.micBtnListening,
+            (isListening || isTranscribing) && styles.micBtnListening,
           ]}
         >
-          {isListening ? (
+          {isTranscribing ? (
+            <ActivityIndicator size="small" color="#38BDF8" />
+          ) : isListening ? (
             <Text style={styles.micIconText}>⏹</Text>
           ) : (
-            <MicIcon size={16} color={isListening ? '#FFF' : '#94A3B8'} />
+            <MicIcon size={16} color="#94A3B8" />
           )}
         </TouchableOpacity>
 
@@ -603,15 +818,15 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         ) : (
           <TouchableOpacity
             onPress={handleSubmit}
-            disabled={!value.trim() && disabled}
+            disabled={(!value.trim() && disabled) || isTranscribing}
             style={[
               styles.circularSubmitBtn,
               circularSubmitBtnWebStyle,
-              isLoading && styles.circularSubmitBtnLoading,
+              (isLoading || isTranscribing) && styles.circularSubmitBtnLoading,
             ]}
             accessibilityLabel="Translate text to sign language"
           >
-            {isLoading ? (
+            {isLoading || isTranscribing ? (
               <ActivityIndicator size="small" color="#FFFFFF" />
             ) : (
               <ArrowRightIcon size={16} color="#FFFFFF" />

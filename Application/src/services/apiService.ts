@@ -1,9 +1,16 @@
-// API Configuration
-// Using ADB reverse proxy: run `adb reverse tcp:8000 tcp:8000`
+const resolveBaseUrl = (): string => {
+  if (process.env.EXPO_PUBLIC_CORE_API_URL) {
+    return process.env.EXPO_PUBLIC_CORE_API_URL;
+  }
+  if (typeof window !== 'undefined' && window.location && window.location.hostname) {
+    const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:';
+    return `${protocol}//${window.location.hostname}:8000`;
+  }
+  return __DEV__ ? 'http://192.168.1.11:8000' : 'https://your-production-api.com';
+};
+
 const API_CONFIG = {
-  baseUrl: process.env.EXPO_PUBLIC_CORE_API_URL || (__DEV__ 
-    ? 'http://10.36.211.213:8000'
-    : 'https://your-production-api.com'),
+  baseUrl: resolveBaseUrl(),
   timeout: 60000,
   retries: 3,
   retryDelay: 1000,
@@ -33,6 +40,12 @@ export interface ProcessingResult {
   signs: SignLookup[];
 }
 
+export interface GroqTokens {
+  input: number;
+  output: number;
+  overall: number;
+}
+
 export interface ProcessResponse {
   success: boolean;
   text: string;
@@ -40,6 +53,14 @@ export interface ProcessResponse {
   detected_language?: string;
   translated_text?: string;
   results: ProcessingResult[];
+  error?: string;
+  groq_tokens?: GroqTokens;
+}
+
+export interface TranscribeResponse {
+  success: boolean;
+  text?: string;
+  language?: string;
   error?: string;
 }
 
@@ -190,15 +211,28 @@ export async function processSentence(
   return response;
 }
 
-export async function transcribeAudio(audioUri: string): Promise<ProcessResponse> {
+export async function transcribeAudio(
+  audio: string | Blob,
+  language: 'en' | 'hi' | 'mr' = 'en'
+): Promise<TranscribeResponse> {
   const formData = new FormData();
-  const filename = audioUri.split('/').pop() || 'audio.wav';
   
-  formData.append('file', {
-    uri: audioUri,
-    type: 'audio/wav',
-    name: filename,
-  } as unknown as Blob);
+  if (typeof Blob !== 'undefined' && audio instanceof Blob) {
+    const filename = (audio as any).name || (audio.type.includes('webm') ? 'audio.webm' : 'audio.wav');
+    formData.append('file', audio, filename);
+  } else if (typeof audio === 'string') {
+    const filename = audio.split('/').pop() || 'audio.wav';
+    formData.append('file', {
+      uri: audio,
+      type: 'audio/wav',
+      name: filename,
+    } as unknown as Blob);
+  } else {
+    throw new ApiError('Invalid audio input provided for transcription');
+  }
+
+  const langCode = language === 'hi' ? 'hi-IN' : language === 'mr' ? 'mr-IN' : 'en-IN';
+  formData.append('language', langCode);
 
   let retriesLeft = API_CONFIG.retries;
   

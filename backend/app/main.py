@@ -1,16 +1,19 @@
 import os
 import io
 import re
+import copy
 import logging
 import tempfile
 from typing import List, Dict, Any, Optional, Tuple
 from datetime import datetime
+from pathlib import Path
+from urllib.parse import quote, unquote, urlparse
 
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, File, HTTPException, UploadFile, Response, Form, Query
+from fastapi import FastAPI, File, HTTPException, UploadFile, Response, Request, Form, Query
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 
 try:
@@ -38,6 +41,7 @@ except ImportError:
 from .core.config import settings
 from .core.nlp_engine import (
     process_text,
+    suggest_sign_supported_gloss,
     reset_request_groq_tokens,
     get_request_groq_tokens,
 )
@@ -48,6 +52,7 @@ from .services.multilingual_service import multilingual_service
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s | %(message)s")
 logger = logging.getLogger("main")
+LOCAL_SIGML_DIR = (settings.DATA_DIR.parent.parent / "data" / "Initial-sigml-files").resolve()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -191,6 +196,34 @@ def _process_and_lookup(
             named_entities=named_entities,
         )
 
+        missing_signs = [sign for sign in sign_lookups if not sign.found]
+        if missing_signs:
+            alternatives = {
+                sign.original_query.upper(): word_lookup_service.suggest_available_signs(
+                    sign.original_query
+                )
+                for sign in missing_signs
+            }
+            try:
+                supported_tokens = [sign.original_query.upper() for sign in sign_lookups if sign.found]
+                revised_tokens = suggest_sign_supported_gloss(
+                    text,
+                    gloss_tokens,
+                    supported_tokens,
+                    alternatives,
+                )
+                if revised_tokens:
+                    revised_signs = word_lookup_service.lookup_gloss_sequence(
+                        revised_tokens,
+                        use_semantic_fallback=use_semantic_fallback,
+                        named_entities=named_entities,
+                    )
+                    if sum(sign.found for sign in revised_signs) > sum(sign.found for sign in sign_lookups):
+                        gloss_result["gloss"] = revised_tokens
+                        sign_lookups = revised_signs
+            except Exception as e:
+                logger.warning("LLM sign fallback failed; keeping original gloss: %s", e)
+
         output.append(
             {
                 "gloss": gloss_result,
@@ -199,6 +232,31 @@ def _process_and_lookup(
         )
 
     return output
+
+
+def _with_local_sign_assets(response_data: Dict[str, Any], base_url: str) -> Dict[str, Any]:
+    """Prefer a matching checked-in SiGML asset, while keeping cached data host-independent."""
+    result = copy.deepcopy(response_data)
+    local_root = LOCAL_SIGML_DIR
+    for sentence in result.get("results", []):
+        for sign in sentence.get("signs", []):
+            remote_url = sign.get("s3_url")
+            if not sign.get("found") or not remote_url:
+                continue
+            filename = Path(unquote(urlparse(remote_url).path)).name
+            local_file = (local_root / filename).resolve()
+            if local_file.parent == local_root and local_file.is_file():
+                sign["s3_url"] = f"{base_url.rstrip('/')}/sign-assets/{quote(filename, safe='')}"
+    return result
+
+
+@app.get("/sign-assets/{filename}")
+async def get_local_sign_asset(filename: str):
+    safe_name = Path(unquote(filename)).name
+    asset_path = (LOCAL_SIGML_DIR / safe_name).resolve()
+    if asset_path.parent != LOCAL_SIGML_DIR or not asset_path.is_file():
+        raise HTTPException(status_code=404, detail="Sign asset not found")
+    return FileResponse(asset_path, media_type="application/xml")
 
 
 
@@ -225,7 +283,7 @@ def _log_request_groq_tokens(request_text: str = "") -> Dict[str, int]:
 
 
 @app.post("/process")
-async def process_endpoint(payload: TextPayload, response: Response):
+async def process_endpoint(payload: TextPayload, response: Response, request: Request):
     """
     Main endpoint: Text -> Multilingual Translation (if needed) -> NLP -> GLOSS -> Sign URLs
 
@@ -264,7 +322,7 @@ async def process_endpoint(payload: TextPayload, response: Response):
         logger.info("Translation cache HIT [key=%s, len=%d]", cache_key[:24], len(payload.text))
         response.headers["X-Translation-Cache"] = "HIT"
         groq_toks = _log_request_groq_tokens(payload.text)
-        result_copy = dict(cached_data)
+        result_copy = _with_local_sign_assets(cached_data, str(request.base_url))
         result_copy["groq_tokens"] = groq_toks
         return result_copy
 
@@ -276,7 +334,7 @@ async def process_endpoint(payload: TextPayload, response: Response):
             logger.info("Translation cache HIT (deduplicated) [key=%s, len=%d]", cache_key[:24], len(payload.text))
             response.headers["X-Translation-Cache"] = "HIT"
             groq_toks = _log_request_groq_tokens(payload.text)
-            result_copy = dict(cached_data)
+            result_copy = _with_local_sign_assets(cached_data, str(request.base_url))
             result_copy["groq_tokens"] = groq_toks
             return result_copy
 
@@ -313,7 +371,7 @@ async def process_endpoint(payload: TextPayload, response: Response):
                 translation_cache.set(cache_key, response_data)
 
             response.headers["X-Translation-Cache"] = cache_status
-            return response_data
+            return _with_local_sign_assets(response_data, str(request.base_url))
         except ValueError as ve:
             groq_toks = _log_request_groq_tokens(payload.text)
             logger.warning(f"Validation or translation error: {ve}")

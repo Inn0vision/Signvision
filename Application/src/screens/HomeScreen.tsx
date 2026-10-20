@@ -6,14 +6,12 @@ import {
   SafeAreaView,
   StatusBar,
   TouchableOpacity,
-  FlatList,
   ActivityIndicator,
   LayoutAnimation,
   UIManager,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  TextInput,
 } from 'react-native';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -29,9 +27,6 @@ import { PlaybackQueueBar } from '../components/PlaybackQueueBar';
 import { Header } from '../components/Header';
 import { HistorySheet } from '../components/HistorySheet';
 import { AvatarSelectSheet } from '../components/AvatarSelectSheet';
-import { Card } from '../components/ui/Card';
-import { Badge } from '../components/ui/Badge';
-import { Button } from '../components/ui/Button';
 import { lookupWord, getWordCount } from '../services/s3Service';
 import CameraTranslateScreen from './CameraTranslateScreen';
 import { processSentence, ApiError } from '../services/apiService';
@@ -42,16 +37,12 @@ import type { PlaybackStatus, HistoryItem, SignQueueItem, ProcessingMode, Search
 import { AVATAR_OPTIONS } from '../types';
 import {
   CharacterSwitchIcon,
-  ClockIcon,
-  ChevronRightIcon,
-  ArrowRightIcon,
   PlayIcon,
   PauseIcon,
   PreviousSignIcon,
   NextSignIcon,
   ChevronDownIcon,
   CloseIcon,
-  SearchMagnifyIcon,
 } from '../components/ui/AppIcons';
 
 const HISTORY_STORAGE_KEY = '@signvision_history';
@@ -78,22 +69,6 @@ const INITIAL_DEMO_HISTORY: HistoryItem[] = [
     signCount: 4,
   },
 ];
-
-const formatRecentMeta = (item: HistoryItem): string => {
-  const signs = item.signCount ?? Math.max(1, item.word.trim().split(/\s+/).length);
-  const date = new Date(item.timestamp);
-  const day = date.getDate();
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const month = months[date.getMonth()] || 'Oct';
-  const year = date.getFullYear();
-  let hours = date.getHours();
-  const minutes = date.getMinutes().toString().padStart(2, '0');
-  const ampm = hours >= 12 ? 'PM' : 'AM';
-  hours = hours % 12;
-  hours = hours ? hours : 12;
-  const timeStr = `${hours}:${minutes} ${ampm}`;
-  return `${signs} signs · ${day} ${month} ${year}, ${timeStr}`;
-};
 
 const AVATAR_LABELS: Record<AvatarName, string> = {
   luna: '👩 Luna',
@@ -755,9 +730,8 @@ export const HomeScreen: React.FC = () => {
             </View>
           </View>
 
-          {/* Right Column: 3 Stacked Cards */}
+          {/* Right Column: Search */}
           <View style={styles.desktopRightColumn}>
-            {/* Card 1: Enter Sign Sequence */}
             <View style={styles.desktopCard}>
               <Text style={styles.desktopCardTitle}>Enter Sign Sequence</Text>
               <SearchBar
@@ -772,118 +746,6 @@ export const HomeScreen: React.FC = () => {
                 selectedLanguage={selectedLanguage}
                 onLanguageChange={setSelectedLanguage}
               />
-            </View>
-
-            {/* Card 2: ISL Sign Sequence */}
-            <View style={styles.desktopCard}>
-              <View style={styles.desktopCardHeaderRow}>
-                <Text style={styles.desktopCardTitle}>ISL Sign Sequence</Text>
-                <Text style={styles.desktopSignCountText}>
-                  {(() => {
-                    const count = signQueue.length > 0 ? signQueue.length : INITIAL_DEMO_SIGNS.length;
-                    return `${count} ${count === 1 ? 'sign' : 'signs'}`;
-                  })()}
-                </Text>
-              </View>
-
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.desktopSignTilesRow}
-              >
-                {(signQueue.length > 0 ? signQueue : INITIAL_DEMO_SIGNS).map((item, index, arr) => {
-                  const isTileActive = (playbackStatus === 'playing' || playbackStatus === 'loading') && currentQueueIndex === index;
-                  return (
-                    <TouchableOpacity
-                      key={`${item.word}-${index}`}
-                      style={[
-                        styles.desktopSignTile,
-                        isTileActive && styles.desktopSignTileActive,
-                        arr.length === 1 && { flex: 0, minWidth: 160 },
-                      ]}
-                      onPress={() => {
-                        const queue = signQueueRef.current.length > 0 ? signQueueRef.current : INITIAL_DEMO_SIGNS;
-                        playSingleSign(index, queue);
-                      }}
-                      accessible={true}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Sign ${index + 1}: ${item.word}`}
-                    >
-                      <View style={[styles.desktopTileBadge, isTileActive && styles.desktopTileBadgeActive]}>
-                        <Text style={[styles.desktopTileBadgeText, isTileActive && styles.desktopTileBadgeTextActive]}>
-                          {index + 1}
-                        </Text>
-                      </View>
-                      <Text
-                        style={[styles.desktopTileWord, isTileActive && styles.desktopTileWordActive]}
-                        numberOfLines={1}
-                      >
-                        {item.word.toUpperCase()}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </ScrollView>
-            </View>
-
-            {/* Card 3: Recent Translations */}
-            <View style={styles.desktopCard}>
-              <View style={styles.desktopCardHeaderRow}>
-                <Text style={styles.desktopCardTitle}>Recent Translations</Text>
-                <TouchableOpacity
-                  onPress={() => setIsHistorySheetOpen(true)}
-                  style={styles.desktopViewAllBtn}
-                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                  accessibilityLabel="View all recent translations"
-                >
-                  <Text style={styles.desktopViewAllText}>View all</Text>
-                  <ArrowRightIcon size={12} color="#38BDF8" style={{ marginLeft: 4 }} />
-                </TouchableOpacity>
-              </View>
-
-              {/* Rows */}
-              {(searchHistory.length > 0 ? searchHistory.slice(0, 2) : INITIAL_DEMO_HISTORY).map((item, index) => (
-                <React.Fragment key={`${item.word}-${item.timestamp}-${index}`}>
-                  {index > 0 && <View style={styles.desktopRecentDivider} />}
-                  <View style={styles.desktopRecentRow}>
-                    <View style={styles.desktopRecentClockCircle}>
-                      <ClockIcon size={18} color="#8E9CAE" />
-                    </View>
-
-                    <TouchableOpacity
-                      style={styles.desktopRecentTextContainer}
-                      onPress={() => handleSelectHistoryItem(item.word, item.word.trim().includes(' '))}
-                      accessible={true}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Select recent translation: ${item.word}`}
-                    >
-                      <Text style={styles.desktopRecentQueryText} numberOfLines={1}>
-                        {item.word}
-                      </Text>
-                      <Text style={styles.desktopRecentMetaText}>
-                        {formatRecentMeta(item)}
-                      </Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                      style={styles.desktopRecentPlayBtn}
-                      onPress={() => handleSelectHistoryItem(item.word, item.word.trim().includes(' '))}
-                      accessible={true}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Play ${item.word}`}
-                    >
-                      <PlayIcon size={14} color="#FFFFFF" />
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                      onPress={() => handleSelectHistoryItem(item.word, item.word.trim().includes(' '))}
-                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                    >
-                      <ChevronRightIcon size={16} color="#64748B" />
-                    </TouchableOpacity>
-                  </View>
-                </React.Fragment>
-              ))}
             </View>
           </View>
         </View>
@@ -925,14 +787,58 @@ export const HomeScreen: React.FC = () => {
         historyCount={searchHistory.length}
       />
 
-      <ScrollView
-        style={styles.mobileScrollView}
-        contentContainerStyle={styles.mobileScrollContent}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
+      <KeyboardAvoidingView
+        style={styles.mobileKeyboardAvoiding}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={0}
       >
-        {/* Search Bar: directly below header and ABOVE avatar */}
-        <View style={styles.mobileComposerWrapper}>
+        <ScrollView
+          style={styles.mobileScrollView}
+          contentContainerStyle={styles.mobileScrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* 3D Avatar Stage: large vertically-oriented viewing area */}
+          <View style={styles.mobileStageContainer}>
+            <AvatarWebView
+              ref={avatarRef}
+              avatar={selectedAvatar}
+              onReady={handleAvatarReady}
+              onPlaying={handlePlaying}
+              onFinished={handleFinished}
+              onError={handleError}
+              onStatusChange={handleStatusChange}
+              onAvatarChange={(av) => setSelectedAvatar(av as AvatarName)}
+            />
+
+            {/* Top-Right Control: Character Switch Button (replaces former fullscreen button) */}
+            <TouchableOpacity
+              style={styles.avatarTopRightBtn}
+              onPress={() => setIsAvatarSheetOpen(true)}
+              accessible={true}
+              accessibilityRole="button"
+              accessibilityLabel="Switch character"
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <CharacterSwitchIcon size={18} color="#FFFFFF" />
+            </TouchableOpacity>
+
+            {/* Bottom-Left Control: Live Camera Indicator Chip */}
+            <TouchableOpacity
+              style={styles.liveCameraChip}
+              onPress={() => setIsCameraActive(true)}
+              accessible={true}
+              accessibilityRole="button"
+              accessibilityLabel="Open live camera"
+              hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+            >
+              <View style={styles.liveCameraDot} />
+              <Text style={styles.liveCameraText}>Live Camera</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+
+        <View style={styles.mobileComposerDock}>
           <SearchBar
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -941,147 +847,16 @@ export const HomeScreen: React.FC = () => {
             disabled={!isAvatarReady}
             isSentenceMode={processingMode === 'sentence'}
             placeholder="Type in English, Hindi, or Marathi..."
-            dropdownPosition="bottom"
+            dropdownPosition="top"
+            micPlacement="above"
             selectedLanguage={selectedLanguage}
             onLanguageChange={setSelectedLanguage}
           />
         </View>
-
-        {/* 3D Avatar Stage: large vertically-oriented viewing area */}
-        <View style={styles.mobileStageContainer}>
-          <AvatarWebView
-            ref={avatarRef}
-            avatar={selectedAvatar}
-            onReady={handleAvatarReady}
-            onPlaying={handlePlaying}
-            onFinished={handleFinished}
-            onError={handleError}
-            onStatusChange={handleStatusChange}
-            onAvatarChange={(av) => setSelectedAvatar(av as AvatarName)}
-          />
-
-          {/* Top-Right Control: Character Switch Button (replaces former fullscreen button) */}
-          <TouchableOpacity
-            style={styles.avatarTopRightBtn}
-            onPress={() => setIsAvatarSheetOpen(true)}
-            accessible={true}
-            accessibilityRole="button"
-            accessibilityLabel="Switch character"
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
-            <CharacterSwitchIcon size={18} color="#FFFFFF" />
-          </TouchableOpacity>
-
-          {/* Bottom-Left Control: Live Camera Indicator Chip */}
-          <TouchableOpacity
-            style={styles.liveCameraChip}
-            onPress={() => setIsCameraActive(true)}
-            accessible={true}
-            accessibilityRole="button"
-            accessibilityLabel="Open live camera"
-            hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
-          >
-            <View style={styles.liveCameraDot} />
-            <Text style={styles.liveCameraText}>Live Camera</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* ISL Sign Sequence Section: immediately below avatar viewer */}
-        <View style={styles.sectionCard}>
-          <View style={styles.sectionHeaderRow}>
-            <Text style={styles.sectionTitle}>ISL Sign Sequence</Text>
-            <Text style={styles.sectionCountText}>
-              {(() => {
-                const count = signQueue.length > 0 ? signQueue.length : INITIAL_DEMO_SIGNS.length;
-                return `${count} ${count === 1 ? 'sign' : 'signs'}`;
-              })()}
-            </Text>
-          </View>
-
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.signSequenceRow}
-          >
-            {(signQueue.length > 0 ? signQueue : INITIAL_DEMO_SIGNS).map((item, index, arr) => {
-              const isCardActive = (playbackStatus === 'playing' || playbackStatus === 'loading') && currentQueueIndex === index;
-              return (
-                <TouchableOpacity
-                  key={`${item.word}-${index}`}
-                  style={[
-                    styles.signCard,
-                    isCardActive && styles.signCardActive,
-                    arr.length === 1 && { flex: 0, minWidth: 140 },
-                  ]}
-                  onPress={() => {
-                    const queue = signQueueRef.current.length > 0 ? signQueueRef.current : INITIAL_DEMO_SIGNS;
-                    playSingleSign(index, queue);
-                  }}
-                  accessible={true}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Sign ${index + 1}: ${item.word}`}
-                >
-                  <View style={[styles.signCardBadge, isCardActive && styles.signCardBadgeActive]}>
-                    <Text style={[styles.signCardBadgeText, isCardActive && styles.signCardBadgeTextActive]}>
-                      {index + 1}
-                    </Text>
-                  </View>
-                  <Text style={[styles.signCardWord, isCardActive && styles.signCardWordActive]} numberOfLines={1}>
-                    {item.word.toUpperCase()}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
-        </View>
-
-        {/* Recent Translations Section: replaces old bottom playback control area */}
-        <View style={[styles.sectionCard, styles.recentSectionCard]}>
-          <View style={styles.sectionHeaderRow}>
-            <Text style={styles.sectionTitle}>Recent</Text>
-            <TouchableOpacity
-              onPress={() => setIsHistorySheetOpen(true)}
-              style={styles.viewAllBtn}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              accessibilityLabel="View all recent translations"
-            >
-              <Text style={styles.mobileViewAllText}>View all</Text>
-              <ArrowRightIcon size={12} color="#38BDF8" style={{ marginLeft: 4 }} />
-            </TouchableOpacity>
-          </View>
-
-          {(searchHistory.length > 0 ? searchHistory.slice(0, 2) : INITIAL_DEMO_HISTORY).map((item, index) => (
-            <React.Fragment key={`${item.word}-${item.timestamp}-${index}`}>
-              {index > 0 && <View style={styles.recentDivider} />}
-              <TouchableOpacity
-                style={styles.mobileRecentItemRow}
-                onPress={() => handleSelectHistoryItem(item.word, item.word.trim().includes(' '))}
-                accessible={true}
-                accessibilityRole="button"
-                accessibilityLabel={`Translate recent phrase: ${item.word}`}
-              >
-                <View style={styles.recentClockCircle}>
-                  <ClockIcon size={16} color="#94A3B8" />
-                </View>
-
-                <View style={styles.recentTextContainer}>
-                  <Text style={styles.recentQueryText} numberOfLines={1}>
-                    {item.word}
-                  </Text>
-                  <Text style={styles.recentMetaText}>
-                    {formatRecentMeta(item)}
-                  </Text>
-                </View>
-
-                <ChevronRightIcon size={16} color="#64748B" />
-              </TouchableOpacity>
-            </React.Fragment>
-          ))}
-        </View>
-      </ScrollView>
+      </KeyboardAvoidingView>
 
       {/* Search History Bottom Sheet */}
-      <HistorySheet
+      {/* <HistorySheet
         visible={isHistorySheetOpen}
         onClose={() => setIsHistorySheetOpen(false)}
         history={formattedHistory}
@@ -1091,7 +866,7 @@ export const HomeScreen: React.FC = () => {
           const word = id.split('-')[0];
           handleRemoveHistoryItem(word);
         }}
-      />
+      /> */}
 
       {/* Avatar Selection Bottom Sheet */}
       <AvatarSelectSheet
@@ -1402,14 +1177,23 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#050A12',
   },
+  mobileKeyboardAvoiding: {
+    flex: 1,
+  },
   mobileScrollContent: {
     paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 40,
+    paddingTop: 16,
+    paddingBottom: 16,
   },
-  mobileComposerWrapper: {
+  mobileComposerDock: {
     width: '100%',
-    marginBottom: 14,
+    flexShrink: 0,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: Platform.OS === 'android' ? 36 : 12,
+    backgroundColor: '#050A12',
+    borderTopWidth: 1,
+    borderTopColor: '#162234',
     zIndex: 100,
   },
   mobileStageContainer: {
@@ -1421,7 +1205,7 @@ const styles = StyleSheet.create({
     position: 'relative',
     borderWidth: 1,
     borderColor: '#182436',
-    marginBottom: 14,
+    marginBottom: 16,
   },
   avatarTopRightBtn: {
     position: 'absolute',

@@ -1,7 +1,7 @@
 import re
 import json
 import logging
-from typing import List, Dict, Any, Optional, Union
+from typing import List, Dict, Any, Optional, Set, Union
 from pydantic import BaseModel, Field
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s | %(message)s")
@@ -103,6 +103,7 @@ groq_key_manager = GroqKeyManager()
 
 llm_client = Groq(
     api_key=groq_key_manager.get_active_key() or settings.GROQ_API_KEY,
+    timeout=10.0,
 )
 
 AUXILIARY_VERBS = {
@@ -395,7 +396,7 @@ def record_groq_tokens(
 def call_llm(prompt: str, max_tokens: int = 256) -> Dict[str, Any]:
     """Call Groq LLM with automatic key failover across fallback keys and network retries."""
     import time
-    from groq import AuthenticationError, RateLimitError
+    from groq import APIConnectionError, AuthenticationError, RateLimitError
 
     available_keys = groq_key_manager.keys or [settings.GROQ_API_KEY]
     # Each key gets at least 1 attempt, with a minimum of 2 attempts total
@@ -464,6 +465,17 @@ def call_llm(prompt: str, max_tokens: int = 256) -> Dict[str, Any]:
             latency_ms = round((time.perf_counter() - start_time) * 1000, 2)
             is_auth_error = isinstance(e, AuthenticationError)
             is_rate_limit = isinstance(e, RateLimitError) or "429" in str(e) or "rate limit" in str(e).lower()
+            if isinstance(e, APIConnectionError):
+                cause = e.__cause__ or e.__context__
+                cause_text = f"{type(cause).__name__}: {cause}" if cause else str(e)
+                cause_lower = cause_text.lower()
+                if any(marker in cause_lower for marker in ("name or service not known", "nodename", "getaddrinfo", "dns")):
+                    diagnostic = "DNS resolution failure"
+                elif "ssl" in cause_lower or "tls" in cause_lower or "certificate" in cause_lower:
+                    diagnostic = "SSL/TLS handshake failure"
+                else:
+                    diagnostic = "network connection failure"
+                logger.error("Groq API connection diagnostic: %s (%s)", diagnostic, cause_text)
             if "json_validate_failed" in str(e):
                 json_mode_failed = True
 
@@ -1012,6 +1024,44 @@ def detect_phrases_llm(sentence: str, analysis: Dict[str, List[str]]) -> Dict[st
     _LLM_EXTRACTION_CACHE[norm_key] = result
 
     return result
+
+
+def suggest_sign_supported_gloss(
+    sentence: str,
+    gloss_tokens: List[str],
+    supported_tokens: List[str],
+    alternatives: Dict[str, List[str]],
+) -> Optional[List[str]]:
+    """Ask Groq to resolve unsupported gloss concepts using only playable alternatives."""
+    prompt = f"""You are selecting ISL gloss tokens for signs that exist in a dictionary.
+Sentence: {sentence!r}
+Current gloss tokens: {gloss_tokens}
+Tokens that already have signs and must be kept: {supported_tokens}
+Unsupported token alternatives (each list contains playable dictionary signs): {alternatives}
+
+Preserve the sentence meaning and ISL token order. Replace an unsupported token only with a
+semantically equivalent token from its listed alternatives. Keep unsupported tokens unchanged
+when no listed alternative is appropriate. Do not add or remove other tokens. Return JSON only:
+{{"gloss_tokens": ["YOU", "GOOD"]}}"""
+    parsed = call_llm(prompt, max_tokens=256)
+    proposed = parsed.get("gloss_tokens") if isinstance(parsed, dict) else None
+    if not isinstance(proposed, list):
+        return None
+
+    normalized = [str(token).strip().upper() for token in proposed if str(token).strip()]
+    current = [str(token).strip().upper() for token in gloss_tokens if str(token).strip()]
+    supported = {str(token).strip().upper() for token in supported_tokens if str(token).strip()}
+    allowed_alternatives = {
+        str(option).strip().upper()
+        for options in alternatives.values()
+        for option in options
+        if str(option).strip()
+    }
+    if not normalized or not supported.issubset(normalized):
+        return None
+    if any(token not in current and token not in allowed_alternatives for token in normalized):
+        return None
+    return normalized
 
 
 def apply_isl_rules(parsed_data: Union[SemanticFrame, Dict[str, Any]], tokens: List[str]) -> Dict[str, Any]:

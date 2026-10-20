@@ -82,7 +82,7 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://127.0.0.1:6379/0"
     REDIS_CACHE_ENABLED: bool = True
     REDIS_CACHE_TTL: int = 604800  # 7 days
-    TRANSLATION_CACHE_VERSION: str = "v1"
+    TRANSLATION_CACHE_VERSION: str = "v2"
 
     class Config:
         env_file = str(Path(__file__).resolve().parent.parent.parent.parent / ".env")

@@ -1,3 +1,5 @@
+import { Platform } from 'react-native';
+
 const resolveBaseUrl = (): string => {
   if (process.env.EXPO_PUBLIC_CORE_API_URL) {
     return process.env.EXPO_PUBLIC_CORE_API_URL;
@@ -6,7 +8,12 @@ const resolveBaseUrl = (): string => {
     const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:';
     return `${protocol}//${window.location.hostname}:8000`;
   }
-  return __DEV__ ? 'http://192.168.1.11:8000' : 'https://your-production-api.com';
+  if (__DEV__) {
+    // Android emulators reach the host machine through 10.0.2.2.
+    // The NLP backend is currently running on 8001 (video service uses 8000).
+    return Platform.OS === 'android' ? 'http://10.0.2.2:8001' : 'http://localhost:8001';
+  }
+  return 'https://your-production-api.com';
 };
 
 const API_CONFIG = {
@@ -324,7 +331,7 @@ export function getApiBaseUrl(): string {
 
 export const VIDEO_API_CONFIG = {
   baseUrl: process.env.EXPO_PUBLIC_VIDEO_API_URL || (__DEV__ 
-    ? 'http://10.36.211.213:8001'
+    ? Platform.OS === 'android' ? 'http://10.0.2.2:8000' : 'http://localhost:8000'
     : 'https://your-video-api.com'),
   timeout: 60000,
   retries: 3,

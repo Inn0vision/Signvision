@@ -33,6 +33,7 @@ export interface SearchBarProps {
   isSentenceMode?: boolean;
   onToggleSentenceMode?: () => void;
   dropdownPosition?: 'top' | 'bottom';
+  micPlacement?: 'inline' | 'above';
   selectedLanguage?: 'en' | 'hi' | 'mr';
   onLanguageChange?: (lang: 'en' | 'hi' | 'mr') => void;
 }
@@ -47,6 +48,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   isSentenceMode = false,
   onToggleSentenceMode,
   dropdownPosition = 'bottom',
+  micPlacement = 'inline',
   selectedLanguage: propSelectedLanguage,
   onLanguageChange,
 }) => {
@@ -71,6 +73,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   const audioStreamRef = useRef<any>(null);
   const audioChunksRef = useRef<any[]>([]);
   const latestTranscriptRef = useRef<string>('');
+  const nativeFallbackLanguageRef = useRef<'hi' | 'mr' | null>(null);
+  const nativeRecognitionFailedRef = useRef(false);
 
   // Pulse animation for loading state
   useEffect(() => {
@@ -464,6 +468,12 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       }
 
       const locale = await resolveSpeechLocale(activeLanguage);
+      const fallbackLanguage =
+        activeLanguage !== 'en' && ExpoSpeechRecognitionModule.supportsRecording()
+          ? activeLanguage
+          : null;
+      nativeFallbackLanguageRef.current = fallbackLanguage;
+      nativeRecognitionFailedRef.current = false;
 
       setIsListening(true);
       Keyboard.dismiss();
@@ -474,10 +484,13 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         maxAlternatives: 1,
         requiresOnDeviceRecognition: false,
         addsPunctuation: true,
+        recordingOptions: fallbackLanguage ? { persist: true } : undefined,
         iosTaskHint: 'dictation',
       });
     } catch (error) {
       console.error('Speech recognition error:', error);
+      nativeFallbackLanguageRef.current = null;
+      nativeRecognitionFailedRef.current = false;
       setIsListening(false);
       Alert.alert('Error', 'Failed to start speech recognition. Please try again.');
     }
@@ -497,18 +510,61 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
     const subscription = ExpoSpeechRecognitionModule.addListener('result', (event: ExpoSpeechRecognitionResultEvent) => {
       const transcript = event.results?.[0]?.transcript?.trim();
-      if (!transcript) return;
+      if (!transcript) {
+        if (event.isFinal && nativeFallbackLanguageRef.current) {
+          nativeRecognitionFailedRef.current = true;
+        }
+        return;
+      }
 
       onChangeText(transcript);
 
       if (event.isFinal) {
         setIsListening(false);
+        nativeFallbackLanguageRef.current = null;
+        nativeRecognitionFailedRef.current = false;
         onSubmit(transcript, activeLanguage);
+      }
+    });
+
+    const audioEndSubscription = ExpoSpeechRecognitionModule.addListener('audioend', async (event) => {
+      const language = nativeRecognitionFailedRef.current
+        ? nativeFallbackLanguageRef.current
+        : null;
+      nativeFallbackLanguageRef.current = null;
+      nativeRecognitionFailedRef.current = false;
+
+      if (!language) return;
+      if (!event.uri) {
+        setIsListening(false);
+        Alert.alert(
+          'Speech Recognition Error',
+          'Could not record audio for Hindi/Marathi transcription. Please try again.'
+        );
+        return;
+      }
+
+      setIsListening(false);
+      setIsTranscribing(true);
+      try {
+        const response = await transcribeAudio(event.uri, language);
+        if (response.success && response.text?.trim()) {
+          const transcript = response.text.trim();
+          onChangeText(transcript);
+          onSubmit(transcript, language);
+        } else {
+          Alert.alert('Voice Recognition', response.error || 'Could not understand the audio.');
+        }
+      } catch (error: any) {
+        Alert.alert('Transcription Failed', error.message || 'Could not transcribe speech.');
+      } finally {
+        setIsTranscribing(false);
       }
     });
 
     return () => {
       subscription.remove();
+      audioEndSubscription.remove();
     };
   }, [activeLanguage, onChangeText, onSubmit]);
 
@@ -536,7 +592,13 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
     const errorSubscription = ExpoSpeechRecognitionModule.addListener('error', (event: ExpoSpeechRecognitionErrorEvent) => {
       setIsListening(false);
-      if (event.error !== 'no-speech' && event.error !== 'aborted') {
+      if (nativeFallbackLanguageRef.current && event.error !== 'audio-capture') {
+        nativeRecognitionFailedRef.current = true;
+        return;
+      }
+      if (event.error === 'no-speech') {
+        Alert.alert('No speech detected', 'Check the emulator microphone input, then tap the microphone and speak again.');
+      } else if (event.error !== 'aborted') {
         console.error('Speech error:', event.error, event.message);
         Alert.alert('Speech Error', event.message || `Error: ${event.error}`);
       }
@@ -645,8 +707,33 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       {/* Autocomplete Suggestions Popover (when position is top) */}
       {dropdownPosition === 'top' && renderSuggestions()}
 
+      {micPlacement === 'above' && (
+        <View style={styles.standaloneMicRow}>
+          <TouchableOpacity
+            onPress={handleSpeechRecognition}
+            disabled={disabled || isTranscribing}
+            accessible={true}
+            accessibilityRole="button"
+            accessibilityLabel={isListening ? 'Stop listening' : isTranscribing ? 'Transcribing...' : 'Start voice input'}
+            style={[
+              styles.standaloneMicBtn,
+              (isListening || isTranscribing) && styles.micBtnListening,
+              disabled && styles.standaloneMicBtnDisabled,
+            ]}
+          >
+            {isTranscribing ? (
+              <ActivityIndicator size="small" color="#38BDF8" />
+            ) : isListening ? (
+              <Text style={styles.standaloneMicStopText}>⏹</Text>
+            ) : (
+              <MicIcon size={28} color="#FFFFFF" />
+            )}
+          </TouchableOpacity>
+        </View>
+      )}
+
       {/* Language Selector Chips */}
-      <View style={styles.langPillsRow}>
+      <View style={[styles.langPillsRow, micPlacement === 'above' && styles.stackedLangPillsRow]}>
         <TouchableOpacity
           style={[styles.langPill, activeLanguage === 'en' && styles.langPillActive]}
           onPress={() => handleLanguageSelect('en')}
@@ -702,6 +789,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       <Animated.View
         style={[
           styles.composerContainer,
+          micPlacement === 'above' && styles.stackedComposerContainer,
           isFocused && styles.composerFocused,
           disabled && styles.composerDisabled,
           (isListening || isTranscribing) && styles.composerListening,
@@ -785,29 +873,31 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         )}
 
         {/* Microphone Button */}
-        <TouchableOpacity
-          onPress={handleSpeechRecognition}
-          disabled={disabled || isTranscribing}
-          hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
-          accessible={true}
-          accessibilityRole="button"
-          accessibilityLabel={isListening ? 'Stop listening' : isTranscribing ? 'Transcribing...' : 'Start voice input'}
-          style={[
-            styles.micBtn,
-            (isListening || isTranscribing) && styles.micBtnListening,
-          ]}
-        >
-          {isTranscribing ? (
-            <ActivityIndicator size="small" color="#38BDF8" />
-          ) : isListening ? (
-            <Text style={styles.micIconText}>⏹</Text>
-          ) : (
-            <MicIcon size={16} color="#94A3B8" />
-          )}
-        </TouchableOpacity>
+        {micPlacement === 'inline' && (
+          <TouchableOpacity
+            onPress={handleSpeechRecognition}
+            disabled={disabled || isTranscribing}
+            hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+            accessible={true}
+            accessibilityRole="button"
+            accessibilityLabel={isListening ? 'Stop listening' : isTranscribing ? 'Transcribing...' : 'Start voice input'}
+            style={[
+              styles.micBtn,
+              (isListening || isTranscribing) && styles.micBtnListening,
+            ]}
+          >
+            {isTranscribing ? (
+              <ActivityIndicator size="small" color="#38BDF8" />
+            ) : isListening ? (
+              <Text style={styles.micIconText}>⏹</Text>
+            ) : (
+              <MicIcon size={16} color="#94A3B8" />
+            )}
+          </TouchableOpacity>
+        )}
 
         {/* Circular Blue Submit Button with White Right Arrow (matching reference) */}
-        {isListening ? (
+        {isListening && micPlacement === 'inline' ? (
           <TouchableOpacity
             onPress={handleSpeechRecognition}
             style={styles.stopActionBtn}
@@ -818,7 +908,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         ) : (
           <TouchableOpacity
             onPress={handleSubmit}
-            disabled={(!value.trim() && disabled) || isTranscribing}
+            disabled={(!value.trim() && disabled) || isTranscribing || (isListening && micPlacement === 'above')}
             style={[
               styles.circularSubmitBtn,
               circularSubmitBtnWebStyle,
@@ -855,6 +945,41 @@ const styles = StyleSheet.create({
     gap: 8,
     marginBottom: 8,
     alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stackedLangPillsRow: {
+    marginBottom: 16,
+  },
+  stackedComposerContainer: {
+    marginTop: 2,
+  },
+  standaloneMicRow: {
+    width: '100%',
+    alignItems: 'center',
+    marginTop: 2,
+    marginBottom: 16,
+  },
+  standaloneMicBtn: {
+    width: 66,
+    height: 66,
+    borderRadius: 33,
+    backgroundColor: '#0284C7',
+    borderWidth: 2,
+    borderColor: 'rgba(56, 189, 248, 0.55)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#00C9D8',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.32,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  standaloneMicBtnDisabled: {
+    opacity: 0.55,
+  },
+  standaloneMicStopText: {
+    fontSize: 23,
+    color: '#FFFFFF',
   },
   langPill: {
     paddingHorizontal: 10,

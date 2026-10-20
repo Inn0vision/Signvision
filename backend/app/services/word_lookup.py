@@ -483,6 +483,34 @@ class WordLookupService:
             self.initialize()
         return list(self._sign_data.keys())
 
+    def suggest_available_signs(self, query: str, limit: int = 8) -> List[str]:
+        """Return semantically nearby words that have playable sign assets."""
+        if not self._initialized:
+            self.initialize()
+
+        suggestions: List[str] = []
+        if semantic_search_service._initialized:
+            candidates = semantic_search_service.search(query, top_k=limit * 2, min_similarity=0.2)
+        else:
+            from .semantic_search import dice_similarity
+
+            candidates = sorted(
+                (
+                    (word, dice_similarity(query, word))
+                    for word in semantic_search_service._get_fallback_words()
+                ),
+                key=lambda item: item[1],
+                reverse=True,
+            )[: limit * 2]
+
+        for candidate, _score in candidates:
+            resolved = self.lookup(candidate, use_semantic_fallback=False)
+            if resolved.found and resolved.s3_url and resolved.word not in suggestions:
+                suggestions.append(resolved.word)
+            if len(suggestions) >= limit:
+                break
+        return suggestions
+
     def get_word_count(self) -> int:
         if not self._initialized:
             self.initialize()

@@ -113,6 +113,17 @@ OFFLINE_TRANSLATIONS: Dict[str, Tuple[str, str]] = {
     "aabhar": ("Thank you", "mr-Latn"),
 
     # Hindi Devanagari
+    "आपका नाम क्या है": ("What is your name?", "hi"),
+    "आपका नाम क्या है?": ("What is your name?", "hi"),
+    "तुम्हारा नाम क्या है": ("What is your name?", "hi"),
+    "तुम्हारा नाम क्या है?": ("What is your name?", "hi"),
+    "तेरा नाम क्या है": ("What is your name?", "hi"),
+    "तेरा नाम क्या है?": ("What is your name?", "hi"),
+    "मेरा नाम": ("My name", "hi"),
+    "आप कहाँ जा रहे हैं": ("Where are you going?", "hi"),
+    "आप कहाँ जा रहे हैं?": ("Where are you going?", "hi"),
+    "मुझे मदद चाहिए": ("I need help", "hi"),
+    "मुझे मदद चाहिए।": ("I need help", "hi"),
     "क्या आपने खाना खाया": ("Have you eaten food?", "hi"),
     "क्या आपने खाना खाया?": ("Have you eaten food?", "hi"),
     "क्या तुमने खाना खाया": ("Have you eaten food?", "hi"),
@@ -127,6 +138,18 @@ OFFLINE_TRANSLATIONS: Dict[str, Tuple[str, str]] = {
     "मैं ठीक हूँ": ("I am fine", "hi"),
 
     # Marathi Devanagari
+    "तुमचं नाव काय आहे": ("What is your name?", "mr"),
+    "तुमचं नाव काय आहे?": ("What is your name?", "mr"),
+    "तुमचे नाव काय आहे": ("What is your name?", "mr"),
+    "तुमचे नाव काय आहे?": ("What is your name?", "mr"),
+    "तुझे नाव काय आहे": ("What is your name?", "mr"),
+    "तुझे नाव काय आहे?": ("What is your name?", "mr"),
+    "माझे नाव": ("My name", "mr"),
+    "माझं नाव": ("My name", "mr"),
+    "तुम्ही कुठे जात आहात": ("Where are you going?", "mr"),
+    "तुम्ही कुठे जात आहात?": ("Where are you going?", "mr"),
+    "मला मदत हवी आहे": ("I need help", "mr"),
+    "मला मदत हवी आहे.": ("I need help", "mr"),
     "तुम्ही जेवण केले का": ("Have you eaten food?", "mr"),
     "तुम्ही जेवण केले का?": ("Have you eaten food?", "mr"),
     "तुम्ही जेवण केला का": ("Have you eaten food?", "mr"),
@@ -313,6 +336,26 @@ class MultilingualService:
         except Exception as e:
             logger.error(f"LLM translation failed for '{stripped}': {e}")
 
+            # Keep Indic speech usable when Groq is temporarily unreachable.
+            try:
+                translated = self._translate_with_google(stripped)
+                fallback_language = source_lang if source_lang in ("hi", "mr", "hi-Latn", "mr-Latn") else (
+                    self.detect_devanagari_language(stripped) if has_indic_script else "hi-Latn"
+                )
+                result = TranslationResult(
+                    original_text=stripped,
+                    detected_language=fallback_language,
+                    confidence=0.85,
+                    is_english=False,
+                    translated_text=translated,
+                    semantic_frame=None,
+                )
+                self._save_cache(cache_key, result)
+                logger.info("Google Translate fallback succeeded for Indic input (%s)", fallback_language)
+                return result
+            except Exception as fallback_error:
+                logger.warning("Google Translate fallback failed: %s", fallback_error)
+
             # If text had Devanagari script and LLM failed, we cannot pass Devanagari to English NLP
             if self.has_devanagari(stripped):
                 raise ValueError(
@@ -328,6 +371,30 @@ class MultilingualService:
             raise ValueError(
                 f"Could not translate or verify language for: '{stripped}'. Please check your input or connection."
             )
+
+    @staticmethod
+    def _translate_with_google(text: str) -> str:
+        """Translate text to English with Google's public web translation endpoint."""
+        import json
+        from urllib.parse import urlencode
+        from urllib.request import Request, urlopen
+
+        query = urlencode({"client": "gtx", "sl": "auto", "tl": "en", "dt": "t", "q": text})
+        request = Request(
+            f"https://translate.googleapis.com/translate_a/single?{query}",
+            headers={"User-Agent": "SignVision/1.0"},
+        )
+        with urlopen(request, timeout=8) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+
+        translated = "".join(
+            segment[0]
+            for segment in payload[0]
+            if isinstance(segment, list) and segment and isinstance(segment[0], str)
+        ).strip()
+        if not translated or DEVANAGARI_PATTERN.search(translated):
+            raise ValueError("Google Translate returned an empty or non-English result")
+        return translated
 
     def _translate_with_llm(
         self, text: str, source_lang: Optional[str] = None

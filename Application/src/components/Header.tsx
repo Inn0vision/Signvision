@@ -5,6 +5,7 @@ import {
   Pressable,
   StyleSheet,
   Platform,
+  StatusBar,
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
@@ -46,8 +47,8 @@ export function Header({
       {/* Brand Logo: Clean "SignVision" with "Sign" in light blue and "Vision" in white */}
       <View style={styles.brandRow}>
         <Text style={styles.logoContainer} accessibilityRole="header">
-          <Text style={styles.logoSign}>Sign</Text>
-          <Text style={styles.logoVision}>Vision</Text>
+          <Text style={styles.logoSign}>Vani</Text>
+          <Text style={styles.logoVision}>Mudra</Text>
         </Text>
       </View>
 
@@ -104,7 +105,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 18,
-    paddingTop: Platform.OS === 'ios' ? 4 : 10,
+    paddingTop:
+      Platform.OS === 'android'
+        ? (StatusBar.currentHeight ?? 24) + 6
+        : Platform.OS === 'ios'
+        ? 4
+        : 10,
     paddingBottom: 10,
     backgroundColor: COLORS.bgDark || '#050A12',
   },
